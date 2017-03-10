@@ -46,7 +46,9 @@ public:
     ZMutex(const ZMutex &other) = delete;
     ZMutex &operator=(const ZMutex &) = delete;
 
-    //! If mutex is unlocked, mutex is locked by calling thread. If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
+    /*! If mutex is unlocked, mutex is locked by calling thread.
+     *  If mutex is locked by other thread, function blocks until mutex is unlocked by other thread, then mutex is locked by calling thread.
+     */
     void lock();
 
     //! Locks mutex and returns true if unlocked, else returns false.
@@ -55,7 +57,10 @@ public:
     //! Tries to lock the mutex for <milliseconds> milliseconds, then returns false.
     bool timelock(zu32 milliseconds);
 
-    //! If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
+    /*! If mutex is unlocked, returns true.
+     *  If mutex is locked by calling thread, mutex is unlocked.
+     *  If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
+     */
     void unlock();
 
 #if ZMUTEX_VERSION == 1
