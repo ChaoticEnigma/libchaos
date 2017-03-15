@@ -22,6 +22,8 @@ SET(LibChaos_SOURCES
     abstract/zstorage.h
     abstract/zwriter.h
 
+    base/zallocator.h
+    base/zallocatorpool.h
     base/zclock.h
     base/zclock.cpp
     base/zerror.h
@@ -35,7 +37,6 @@ SET(LibChaos_SOURCES
     base/ztime.h
     base/ztime.cpp
 
-    data/zallocator.h
     data/zarray.h
     data/zassoc.h
     data/zbinary.h
