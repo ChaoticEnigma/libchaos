@@ -27,7 +27,7 @@ void allocator_pool(){
     zbyte *ptrs[tnum];
 
     LOG("1");
-    palloc->debug();
+//    palloc->debug();
 
     for(zu8 i = 0; i < tnum; ++i){
         const zu16 tsize = 32;
@@ -38,7 +38,7 @@ void allocator_pool(){
     }
 
     LOG("2");
-    palloc->debug();
+//    palloc->debug();
 //    RLOG(pool.dumpBytes());
 
     for(zu8 i = 0; i < tnum; ++i){
@@ -46,7 +46,7 @@ void allocator_pool(){
     }
 
     LOG("3");
-    palloc->debug();
+//    palloc->debug();
 //    RLOG(pool.dumpBytes());
 
     const zu16 tsize = 64;
@@ -55,13 +55,13 @@ void allocator_pool(){
     memset(ptr, 0xff, tsize);
 
     LOG("4");
-    palloc->debug();
+//    palloc->debug();
 //    RLOG(pool.dumpBytes());
 
     palloc->dealloc(ptr);
 
     LOG("5");
-    palloc->debug();
+//    palloc->debug();
 //    RLOG(pool.dumpBytes());
 
     delete palloc;

@@ -117,18 +117,6 @@ public:
         }
     }
 
-    void debug(){
-        AllocNode *node = _pool;
-        while(true){
-            LOG("node " << node->size << " " << node->flag);
-
-            if(node->flag & TAIL){
-                return;
-            }
-            node = nextNode(node);
-        }
-    }
-
     static void nodeMerge(AllocNode *node){
         // can't merge allocated or tail node
         if(node->flag & ALLOC || node->flag & TAIL)
