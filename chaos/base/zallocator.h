@@ -25,9 +25,11 @@ public:
     virtual ~ZAllocator(){}
 
     /*! Allocates memory to hold \p count T's.
-     * Does not construct objects.
+    *   Does not construct objects.
      */
     virtual T *alloc(zu64 count = 1){
+        if(!count)
+            return nullptr;
         T *ptr = (T*)::operator new(sizeof(T) * count, std::nothrow);
         if(ptr == nullptr)
             throw zallocator_exception("Failed to alloc()");

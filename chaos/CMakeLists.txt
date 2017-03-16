@@ -23,7 +23,7 @@ SET(LibChaos_SOURCES
     abstract/zwriter.h
 
     base/zallocator.h
-    base/zallocatorpool.h
+    base/zpoolallocator.h
     base/zclock.h
     base/zclock.cpp
     base/zerror.h
