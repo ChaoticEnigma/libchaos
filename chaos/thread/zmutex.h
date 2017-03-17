@@ -40,7 +40,12 @@ typedef zu64 ztid;
 */
 class ZMutex {
 public:
-    ZMutex();
+    enum mutexoption {
+        PSHARE = 1,
+    };
+
+public:
+    ZMutex(int options = 0);
     ~ZMutex();
 
     ZMutex(const ZMutex &other) = delete;

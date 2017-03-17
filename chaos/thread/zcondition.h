@@ -21,7 +21,12 @@ namespace LibChaos {
  */
 class ZCondition {
 public:
-    ZCondition();
+    enum condoption {
+        PSHARE = 1,
+    };
+
+public:
+    ZCondition(int options = 0);
     ~ZCondition();
 
     ZCondition(const ZCondition &) = delete;
@@ -46,10 +51,10 @@ public:
     }
 #else
     inline pthread_cond_t *getHandle(){
-        return &cond;
+        return &_cond;
     }
     inline pthread_mutex_t *getMutex(){
-        return &mutex;
+        return &_mutex;
     }
 #endif
 
@@ -58,8 +63,10 @@ private:
     CRITICAL_SECTION *mutex;
     CONDITION_VARIABLE *cond;
 #else
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
+    pthread_mutex_t _mutex;
+    pthread_mutexattr_t _mattr;
+    pthread_cond_t _cond;
+    pthread_condattr_t _cattr;
 #endif
 };
 
