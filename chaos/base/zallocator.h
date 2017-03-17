@@ -46,7 +46,7 @@ public:
         ::operator delete(ptr);
     }
 
-    /*! Expects \p ptr originally returned by alloc().
+    /*! Construct a number of objects with \p args in-place.
      *  Does not directly allocate memory, but constructors may.
      *  \p ptr must point to memory large enough to hold \p count T's.
      */

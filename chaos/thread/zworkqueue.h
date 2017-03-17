@@ -26,7 +26,6 @@ public:
 
         _queue.push(item);
 
-//        LOG("signal");
         _condtion.signal();
         _condtion.unlock();
     }
@@ -34,14 +33,12 @@ public:
     T getWork(){
         _condtion.lock();
         while(_queue.size() == 0){
-//            LOG("block");
             _condtion.wait();
         }
 
         T item = _queue.peek();
         _queue.pop();
 
-//        LOG("done");
         _condtion.unlock();
         return item;
     }

@@ -6,30 +6,21 @@
 #include "zlogworker.h"
 #include "zlog.h"
 #include "zfile.h"
-#include "zqueue.h"
+#include "zworkqueue.h"
+#include "zmutex.h"
 #include "zmap.h"
 
 #include <iostream>
-#include <fstream>
-#include <chrono>
-#include <thread>
-#include <csignal>
-#include <cstdlib>
+#include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 namespace LibChaos {
 
-ZMutex jobmutex;
-ZCondition jobcondition;
-ZQueue<ZLogWorker::LogJob*> jobs;
-
-//ZMutex writemutex;
+ZWorkQueue<ZLogWorker::LogJob *> jobs;
 
 struct LogHandler {
-    enum lhtype {
-       STDOUT, STDERR, FILE
-    };
+    enum lhtype { STDOUT, STDERR, FILE };
     LogHandler(lhtype t, ZString f) : type(t), fmt(f){}
     lhtype type;
     ZString fmt;
@@ -48,13 +39,8 @@ bool enablestdout = true;
 bool enablestderr = true;
 
 ZLogWorker::ZLogWorker() : worker(zlogWorker){
-//    work = work(zlogWorker);
-
     // Output buffering can be default, since it is flushed each line anyway
 //    setbuf(stdout, NULL);
-
-//    formatStdout(ZLogSource::normal, TIMETHREAD); // These cause a memory leak...?
-//    formatStderr(ZLogSource::error, DETAILLOG);
 }
 
 ZLogWorker::~ZLogWorker(){
@@ -67,49 +53,22 @@ void ZLogWorker::run(){
     worker.exec();
 }
 
-void ZLogWorker::stop(){ // Must NEVER be called by log worker thread
+// Must NEVER be called by log worker thread
+void ZLogWorker::stop(){
     // BUG: Sometimes hangs?
     worker.stop();
-    jobcondition.signal(); // Wake up thread
     worker.join();
 }
 
 void ZLogWorker::queue(LogJob *job){
-    jobmutex.lock();
-    jobs.push(job);
-    jobmutex.unlock();
-    jobcondition.signal();
+    jobs.addWork(job);
 }
 
 void *ZLogWorker::zlogWorker(ZThread::ZThreadArg zarg){
-    ZQueue<LogJob*> tmp;
     while(true){
-        jobmutex.lock(); // Lock mutex
-        if(jobs.isEmpty()){ // If no jobs, wait for jobs
-            if(zarg.stop()){ // If stopped, just break
-                jobmutex.unlock();
-                break;
-            }
-
-            // Wait to be woken up with work to do
-            jobcondition.lock();
-            while(jobs.isEmpty()){
-                jobmutex.unlock(); // Unlock while waiting so work can be queued
-                jobcondition.wait();
-                jobmutex.lock(); // Lock again before jobs.empty() check
-            }
-            jobcondition.unlock();
-        }
-        jobs.swap(tmp); // Swap queues
-        jobmutex.unlock(); // Done with jobs
-
-        // Work through temporary queue
-        while(!tmp.isEmpty()){
-            doLog(tmp.peek());
-            tmp.pop();
-        }
-
         ZThread::yield(); // Yield to other threads
+        LogJob *job = jobs.getWork();
+        doLog(job);
     }
     return NULL;
 }
