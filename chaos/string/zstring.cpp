@@ -33,7 +33,6 @@ ZString::ZString(const ZString &other) : ZString(){
 
 ZString::~ZString(){
     _alloc->dealloc(_data);
-    delete _alloc;
 }
 
 //

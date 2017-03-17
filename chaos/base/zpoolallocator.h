@@ -24,7 +24,7 @@ namespace LibChaos {
  *
  *  Allocation data overhead for n allocated elements is 16 * (n+1).
  */
-template <typename T = void> class ZPoolAllocator : public ZAllocator<T> {
+template <typename T> class ZPoolAllocator : public ZAllocator<T> {
 public:
     enum nodeflag {
         ALLOC   = 1,
@@ -43,6 +43,8 @@ public:
             _pool->flag = TAIL;
         }
     }
+
+    ZPoolAllocator(const ZPoolAllocator &) = delete;
 
     /*! Allocates memory to hold \p count T's from the pool.
      *  Does not construct objects.

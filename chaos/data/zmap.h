@@ -98,8 +98,8 @@ public:
             if(!(_data[pos].flags & ZMAP_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _kalloc.construct(&(_data[pos].key), key);
-                _talloc.construct(&(_data[pos].value), value);
+                _kalloc.construct(&(_data[pos].key), 1, key);
+                _talloc.construct(&(_data[pos].value), 1, value);
                 _data[pos].flags |= ZMAP_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZMAP_ENTRY_DELETED; // Unset deleted bit
                 _data[pos].prev = _tail;
@@ -114,9 +114,9 @@ public:
                 if(_data[pos].key == key){
                     // Reassign key and value in existing entry
                     _kalloc.destroy(&(_data[pos].key));
-                    _kalloc.construct(&(_data[pos].key), key);
+                    _kalloc.construct(&(_data[pos].key), 1, key);
                     _talloc.destroy(&(_data[pos].value));
-                    _talloc.construct(&(_data[pos].value), value);
+                    _talloc.construct(&(_data[pos].value), 1, value);
                     return _data[pos].value;
                 }
             }

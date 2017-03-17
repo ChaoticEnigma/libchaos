@@ -22,15 +22,17 @@ namespace LibChaos {
 class ZCondition {
 public:
     enum condoption {
-        PSHARE = 1,
+        NONE    = 0,
+        PSHARE  = 1,
     };
 
 public:
-    ZCondition(int options = 0);
-    ~ZCondition();
+    ZCondition(condoption options = NONE);
 
     ZCondition(const ZCondition &) = delete;
     ZCondition &operator=(const ZCondition &) = delete;
+
+    ~ZCondition();
 
     void waitOnce();
 

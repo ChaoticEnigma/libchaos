@@ -20,9 +20,10 @@ namespace LibChaos {
 
 #if ZMUTEX_VERSION == 1
 
-ZMutex::ZMutex(int options) : owner_tid(0){
+//ZMutex::ZMutex(int options) : owner_tid(0){
+ZMutex::ZMutex(mutexoption options){
     pthread_mutexattr_init(&_attr);
-//    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutexattr_settype(&_attr, PTHREAD_MUTEX_RECURSIVE);
     if(options & PSHARE){
         pthread_mutexattr_setpshared(&_attr, PTHREAD_PROCESS_SHARED);
     }
@@ -35,31 +36,31 @@ ZMutex::~ZMutex(){
 }
 
 void ZMutex::lock(){
-    if(!iOwn()){
+//    if(!iOwn()){
         pthread_mutex_lock(&_mutex);
 #if PLATFORM == MACOSX
-        pthread_threadid_np(pthread_self(), &owner_tid);
+//        pthread_threadid_np(pthread_self(), &owner_tid);
 #else
-        owner_tid = pthread_self();
+//        owner_tid = pthread_self();
 #endif
-    }
+//    }
     // We own the mutex
 }
 
 bool ZMutex::trylock(){
-    if(!iOwn()){
+//    if(!iOwn()){
         if(pthread_mutex_trylock(&_mutex) == 0){
 #if PLATFORM == MACOSX
-            pthread_threadid_np(pthread_self(), &owner_tid);
+//            pthread_threadid_np(pthread_self(), &owner_tid);
 #else
-            owner_tid = pthread_self();
+//            owner_tid = pthread_self();
 #endif
             return true; // We now own the mutex
         }
         return false; // Another thread owns the mutex
-    } else {
-        return true; // We already own the mutex
-    }
+//    } else {
+//        return true; // We already own the mutex
+//    }
 }
 
 bool ZMutex::timelock(zu32 timeout_microsec){
@@ -73,23 +74,23 @@ bool ZMutex::timelock(zu32 timeout_microsec){
 }
 
 void ZMutex::unlock(){
-    if(locked()){
+//    if(locked()){
         lock(); // Make sure we own the mutex first
-        owner_tid = 0;
+//        owner_tid = 0;
         pthread_mutex_unlock(&_mutex);
-    }
+//    }
     // Mutex is unlocked
 }
 
-bool ZMutex::iOwn(){
-#if PLATFORM == MACOSX
-    ztid tid;
-    pthread_threadid_np(pthread_self(), &tid);
-    return (locker() == tid);
-#else
-    return (locker() == pthread_self());
-#endif
-}
+//bool ZMutex::iOwn(){
+//#if PLATFORM == MACOSX
+//    ztid tid;
+//    pthread_threadid_np(pthread_self(), &tid);
+//    return (locker() == tid);
+//#else
+//    return (locker() == pthread_self());
+//#endif
+//}
 
 #elif ZMUTEX_VERSION == 2
 

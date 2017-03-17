@@ -41,11 +41,12 @@ typedef zu64 ztid;
 class ZMutex {
 public:
     enum mutexoption {
-        PSHARE = 1,
+        NONE    = 0,
+        PSHARE  = 1,
     };
 
 public:
-    ZMutex(int options = 0);
+    ZMutex(mutexoption options = NONE);
     ~ZMutex();
 
     ZMutex(const ZMutex &other) = delete;
@@ -70,15 +71,16 @@ public:
 
 #if ZMUTEX_VERSION == 1
     //! Return true if this thread owns the mutex, else returns false
-    bool iOwn();
+//    bool iOwn();
     //! Returns true if mutex is locked, else returns false.
-    inline bool locked(){
-        return (locker() != 0);
-    }
+//    inline bool locked(){
+//        return (locker() != 0);
+//    }
     //! Returns locking thread's id, or 0 if unlocked.
-    inline ztid locker(){
-        return owner_tid;
-    }
+//    inline ztid locker(){
+//        return owner_tid;
+//    }
+
 #elif ZMUTEX_VERSION == 3
     bool iOwn();
     bool locked();
@@ -89,7 +91,7 @@ private:
 #if ZMUTEX_VERSION == 1
     pthread_mutex_t _mutex;
     pthread_mutexattr_t _attr;
-    ztid owner_tid;
+//    ztid owner_tid;
 //    zu32 lock_depth;
 #elif ZMUTEX_VERSION == 2 || ZMUTEX_VERSION == 4
     struct MutexData;

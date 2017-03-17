@@ -8,6 +8,7 @@
 
 #include "ztypes.h"
 #include "zallocator.h"
+#include "zpointer.h"
 #include "ziterator.h"
 #include "yindexedaccess.h"
 #include "ypushpopaccess.h"
@@ -75,7 +76,6 @@ public:
                 current = next;
             }
         }
-        delete _alloc;
     }
 
     /*! Insert \a data before \a node.
@@ -244,7 +244,7 @@ private:
        Node *node = _alloc->alloc();
        node->prev = nullptr;
        node->next = nullptr;
-       _talloc.construct(&(node->data), data);
+       _talloc.construct(&(node->data), 1, data);
        return node;
     }
 
@@ -332,7 +332,7 @@ public:
 
 private:
     //! Node memory allocator.
-    ZAllocator<Node> *_alloc;
+    ZPointer<ZAllocator<Node>> _alloc;
     //! Allocator only for constructing T inside nodes.
     ZAllocator<T> _talloc;
     //! Number of nodes in list.

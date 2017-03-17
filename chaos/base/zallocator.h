@@ -20,8 +20,10 @@ struct zallocator_exception {
     const char *what;
 };
 
-template <class T> class ZAllocator {
+template <typename T> class ZAllocator {
 public:
+    ZAllocator(){}
+    ZAllocator(const ZAllocator &) = delete;
     virtual ~ZAllocator(){}
 
     /*! Allocates memory to hold \p count T's.
@@ -48,12 +50,9 @@ public:
      *  Does not directly allocate memory, but constructors may.
      *  \p ptr must point to memory large enough to hold \p count T's.
      */
-    virtual T *construct(T *ptr, const T &obj = T(), zu64 count = 1){
-        T *tmp = ptr;
+    template <typename ... Args> static T *construct(T *ptr, zu64 count = 1, Args&& ... args){
         for(zu64 i = 0; i < count; ++i){
-//            new (tmp++) T(obj);
-//            new (&(tmp[i])) T(obj);
-            new (tmp + i) T(obj);
+            new (ptr + i) T(args...);
         }
         return ptr;
     }
@@ -82,23 +81,19 @@ public:
      *  \param dest must point to memory large enough to hold at least \p count T's.
      *  \param count is the number of T's to copy, default 1.
      */
-    virtual void copy(const T *src, T *dest, zu64 count = 1){
-        for(zu64 i = 0; i < count; ++i){
-//            new (dest++) T(*++);
-//            new (&(dest[i])) T(src[i]);
-            new (dest + i) T(src[i]);
-        }
-    }
+//    virtual void copy(const T *src, T *dest, zu64 count = 1){
+//        for(zu64 i = 0; i < count; ++i){
+//            construct(dest + i, 1, src[i]);
+//        }
+//    }
 
     // TODO: ZAllocator move
-    virtual void move(T *src, T *dest, zu64 count = 1){
-        for(zu64 i = 0; i < count; ++i){
-//            new (dest++) T(*src++);
-//            new (&(dest[i])) T(src[i]);
-            new (dest + i) T(src[i]);
-            destroy(src);
-        }
-    }
+//    virtual void move(T *src, T *dest, zu64 count = 1){
+//        for(zu64 i = 0; i < count; ++i){
+//            construct(dest + i, 1, src[i]);
+//            destroy(src);
+//        }
+//    }
 
     //! Zero the bytes of \p dest.
     static void zero(T *dest, zu64 count = 1){

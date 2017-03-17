@@ -8,6 +8,7 @@
 
 #include "ztypes.h"
 #include "zallocator.h"
+#include "zpointer.h"
 #include "yindexedaccess.h"
 #include "ypushpopaccess.h"
 #include "ziterator.h"
@@ -39,7 +40,7 @@ public:
         reserve(ls.size());
         zu64 i = 0;
         for(auto item = ls.begin(); item < ls.end(); ++item){
-            _alloc->construct(&_data[i], *item);
+            _alloc->construct(&_data[i], 1, *item);
             ++i;
         }
         _size = ls.size();
@@ -54,7 +55,7 @@ public:
     ZArray(const T *raw, zu64 size) : ZArray(){
         reserve(size);
         for(zu64 i = 0; i < size; ++i)
-            _alloc->construct(&_data[i], raw[i]);
+            _alloc->construct(&_data[i], 1, raw[i]);
         _size = size;
     }
 
@@ -62,14 +63,13 @@ public:
     ZArray(const ZArray<T> &other) : ZArray(){
         reserve(other._size);
         for(zu64 i = 0; i < other._size; ++i)
-            _alloc->construct(&_data[i], other[i]);
+            _alloc->construct(&_data[i], 1, other[i]);
         _size = other._size;
     }
 
     //! ZArray destructor.
     ~ZArray(){
         clear();
-        delete _alloc;
     }
 
     //! Destroy all elements in array.
@@ -88,7 +88,7 @@ public:
         _alloc->destroy(_data, _size); // Destroy contents
         reserve(other.size()); // Make space
         for(zu64 i = 0; i < other.size(); ++i)
-            _alloc->construct(&_data[i], other[i]); // Copy objects
+            _alloc->construct(&_data[i], 1, other[i]); // Copy objects
         _size = other.size();
         return *this;
     }
@@ -135,7 +135,7 @@ public:
     //! Add \a value to the back (end) of the array.
     ZArray<T> &pushBack(const T &value){
         reserve(_size + 1);
-        _alloc->construct(_data + _size, value);
+        _alloc->construct(_data + _size, 1, value);
         ++_size;
         return *this;
     }
@@ -151,7 +151,7 @@ public:
     ZArray<T> &insert(zu64 pos, const T &value){
         reserve(_size + 1);
         _alloc->rawmove(_data + pos, _data + pos + 1, _size - pos);
-        _alloc->construct(_data + pos, value);
+        _alloc->construct(_data + pos, 1, value);
         ++_size;
         return *this;
     }
@@ -160,7 +160,7 @@ public:
     ZArray<T> &append(const ZArray<T> &in){
         reserve(_size + in.size());
         for(zu64 i = 0; i < in.size(); ++i)
-            _alloc->construct(_data + _size + i, in[i]);
+            _alloc->construct(_data + _size + i, 1, in[i]);
         _size += in.size();
         return *this;
     }
@@ -263,7 +263,7 @@ public:
     ZArray<T> &resize(zu64 size, const T &value = T()){
         reserve(size);
         if(size > _size){
-            _alloc->construct(_data + _size, value, size - _size); // Construct new objects
+            _alloc->construct(_data + _size, size - _size, value); // Construct new objects
         } else if(size < _size){
             _alloc->destroy(_data + size, _size - size); // Destroy extra objects
         }
@@ -364,7 +364,7 @@ public:
 
 private:
     //! Buffer memory allocator.
-    ZAllocator<T> *_alloc;
+    ZPointer<ZAllocator<T>> _alloc;
     T *_data;
     zu64 _size;
     zu64 _realsize;

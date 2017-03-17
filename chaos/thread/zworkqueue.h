@@ -13,10 +13,13 @@ namespace LibChaos {
  */
 template <class T> class ZWorkQueue {
 public:
-//    ZWorkQueue(ZAllocator<ZList<T>::Node> *alloc = new ZAllocator<ZList<T>::Node>) : _queue(alloc){
-    ZWorkQueue() : _queue(){
+    ZWorkQueue(ZAllocator<typename ZList<T>::Node> *alloc = new ZAllocator<typename ZList<T>::Node>,
+               ZCondition::condoption condoptions = ZCondition::NONE) :
+        _queue(alloc), _condtion(condoptions){
 
     }
+
+    ZWorkQueue(const ZWorkQueue &) = delete;
 
     void addWork(const T &item){
         _condtion.lock();

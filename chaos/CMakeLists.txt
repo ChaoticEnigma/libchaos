@@ -24,6 +24,7 @@ SET(LibChaos_SOURCES
 
     base/zallocator.h
     base/zpoolallocator.h
+    base/zwrapallocator.h
     base/zclock.h
     base/zclock.cpp
     base/zerror.h

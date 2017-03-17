@@ -16,8 +16,9 @@ namespace LibChaos {
 //! FIFO queue ZList wrapper.
 template <typename T> class ZQueue : public YPushPopAccess<T> {
 public:
-//    ZQueue(ZAllocator<ZList<T>::Node> *alloc = new ZAllocator<ZList<T>::Node>) : _data(alloc){}
-    ZQueue() : _data(){}
+    ZQueue(ZAllocator<typename ZList<T>::Node> *alloc = new ZAllocator<typename ZList<T>::Node>) : _data(alloc){
+
+    }
 
     void push(const T &data){
         _data.pushBack(data);

@@ -7,6 +7,8 @@
 #define ZBINARY_H
 
 #include "ztypes.h"
+#include "zallocator.h"
+#include "zpointer.h"
 #include "zarray.h"
 #include "zaccessor.h"
 #include "zposition.h"
@@ -63,7 +65,6 @@ public:
 
     ~ZBinary(){
         clear();
-        delete _alloc;
     }
 
     void clear(){
@@ -261,7 +262,7 @@ public:
     static void enczu64(zbyte *bin, zu64 num){ encbe64(bin, num); }
 
 private:
-    ZAllocator<bytetype> *_alloc;
+    ZPointer<ZAllocator<bytetype>> _alloc;
     bytetype *_data;
     zu64 _size;
     zu64 _realsize;

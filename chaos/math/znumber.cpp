@@ -56,7 +56,8 @@ ZNumber &ZNumber::operator=(const ZNumber &other){
     if(other._size > 0){
         _size = other._size;
         _data = _alloc->alloc(_size);
-        _alloc->copy(other._data, _data, _size);
+        for(zu64 i = 0; i < _size; ++i)
+            _alloc->construct(_data, 1, other._data[i]);
         _sign = other._sign;
     }
     return *this;
@@ -230,7 +231,8 @@ bool ZNumber::isNegative() const {
 void ZNumber::pad(zu64 num){
     datatype *tmp = _data;
     _data = _alloc->alloc(_size + num);
-    _alloc->copy(tmp, _data, _size);
+    for(zu64 i = 0; i < _size; ++i)
+        _alloc->construct(tmp, 1, _data[i]);
     _alloc->dealloc(tmp);
     for(zu64 i = _size; i < _size + num; ++i){
         _data[i] = 0;

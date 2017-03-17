@@ -447,7 +447,7 @@ private:
 
 private:
     //! Allocator.
-    ZAllocator<codeunit> *_alloc;
+    ZPointer<ZAllocator<codeunit>> _alloc;
     //! Length of string in bytes.
     zu64 _size;
     //! Size of real buffer.

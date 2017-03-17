@@ -72,7 +72,7 @@ public:
             if(!(_data[pos].flags & ZSET_ENTRY_VALID)){
                 // Entry is unset or deleted, insert new entry
                 _data[pos].hash = hash;
-                _talloc.construct(&_data[pos].value, value);
+                _talloc.construct(&_data[pos].value, 1, value);
                 _data[pos].flags |= ZSET_ENTRY_VALID; // Set valid bit
                 _data[pos].flags &= ~ZSET_ENTRY_DELETED; // Unset deleted bit
                 _data[pos].prev = _tail;

@@ -20,7 +20,7 @@ ZCondition::ZCondition() : mutex(new CRITICAL_SECTION), cond(new CONDITION_VARIA
     InitializeConditionVariable(cond);
 }
 #else
-ZCondition::ZCondition(int options){
+ZCondition::ZCondition(condoption options){
     pthread_mutexattr_init(&_mattr);
     pthread_condattr_init(&_cattr);
 

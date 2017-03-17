@@ -15,6 +15,8 @@
 #include <thread>
 #include <csignal>
 #include <cstdlib>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace LibChaos {
 
@@ -134,6 +136,8 @@ ZString ZLogWorker::makeLog(const LogJob *job, ZString fmt){
         fmt.replace("%time%", job->time.timeStr());
         fmt.replace("%datetime%", job->time.dateStr() + " " + job->time.timeStr());
         fmt.replace("%thread%", getThread(job->thread));
+        fmt.replace("%pid%", getpid());
+        fmt.replace("%ppid%", getppid());
 
         fmt.replace("%file%", job->file);
         fmt.replace("%line%", job->line);
