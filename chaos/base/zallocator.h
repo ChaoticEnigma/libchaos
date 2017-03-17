@@ -20,7 +20,7 @@ struct zallocator_exception {
     const char *what;
 };
 
-template <typename T = void> class ZAllocator {
+template <class T> class ZAllocator {
 public:
     virtual ~ZAllocator(){}
 

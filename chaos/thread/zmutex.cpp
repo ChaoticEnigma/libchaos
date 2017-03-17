@@ -20,14 +20,18 @@ namespace LibChaos {
 
 #if ZMUTEX_VERSION == 1
 
-ZMutex::ZMutex() : owner_tid(0){
+ZMutex::ZMutex(int options) : owner_tid(0){
     pthread_mutexattr_init(&_attr);
 //    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    if(options & PSHARE){
+        pthread_mutexattr_setpshared(&_attr, PTHREAD_PROCESS_SHARED);
+    }
     pthread_mutex_init(&_mutex, &_attr);
 }
 
 ZMutex::~ZMutex(){
     pthread_mutex_destroy(&_mutex);
+    pthread_mutexattr_destroy(&_attr);
 }
 
 void ZMutex::lock(){
