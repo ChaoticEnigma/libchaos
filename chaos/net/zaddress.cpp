@@ -19,6 +19,8 @@
 
 #include "zsocket.h"
 
+using namespace LibChaos;
+
 #if COMPILER == MINGW || PLATFORM == CYGWIN
 const char *inet_ntop(int af, const void *src, char *dest, int cnt){
     sockaddr_storage srcaddr;

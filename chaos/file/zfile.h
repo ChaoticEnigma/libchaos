@@ -15,7 +15,7 @@
 #include "zwriter.h"
 
 #if PLATFORM == WINDOWS || PLATFORM == CYGWIN
-    #define ZFILE_WINAPI
+    //#define ZFILE_WINAPI
 #endif
 
 #ifndef ZFILE_WINAPI
@@ -43,6 +43,10 @@ public:
         NOCREATE    = 0x08,     //!< Overrides default behavior to create files.
         TRUNCATE    = 0x10,     //!< Truncate file if it exists.
     };
+
+#ifdef ZFILE_WINAPI
+    typedef void *HANDLE;
+#endif
 
 public:
     ZFile(zfile_special type = REGULAR);
@@ -134,8 +138,6 @@ public:
     static ZString getErrorString();
 
 private:
-    typedef void *HANDLE;
-
     enum zfile_bits {
         readbit         = 0x001,
         writebit        = 0x002,

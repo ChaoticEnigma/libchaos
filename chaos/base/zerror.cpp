@@ -506,8 +506,8 @@ void appendCallTrace( std::string & errorMessage ){
 
 #endif // FUCK_WINDOWS
 
-ArZ getStackTrace(unsigned trim){
-    ArZ trace;
+ZArray<TraceFrame> getStackTrace(unsigned trim){
+    ZArray<TraceFrame> trace;
 
 #ifndef FUCK_WINDOWS
     CONTEXT c;
@@ -528,7 +528,7 @@ ArZ getStackTrace(unsigned trim){
 
     trace.push(getStack());
 #else
-    trace.push("FUCK WINDOWS");
+    ELOG("FUCK WINDOWS");
 #endif // FUCK_WINDOWS
 
     return trace;
