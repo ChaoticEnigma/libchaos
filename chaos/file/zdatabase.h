@@ -9,7 +9,6 @@
 #include "zstring.h"
 #include "zpath.h"
 #include "ztable.h"
-#include "zassoc.h"
 
 //#define SQLITE_CUSTOM
 #include <sqlite3.h>
