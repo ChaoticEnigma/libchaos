@@ -332,7 +332,7 @@ bool ZImage::setFormat(fileformat format){
     return true;
 }
 
-void ZImage::decodeFormat(const ZBinary &data){
+bool ZImage::decodeFormat(const ZBinary &data){
     fileformat format = checkImageFormat(data);
     if(format == NONE){
         LOG("Unknown / Invalid Image Format");
@@ -346,13 +346,15 @@ void ZImage::decodeFormat(const ZBinary &data){
         if(!ok){
             destroy();
         }
+        return ok;
     }
+    return false;
 }
 
-void ZImage::encodeFormat(ZBinary &data){
-    if(_backend){
-        _backend->encode(&data);
-    }
+bool ZImage::encodeFormat(ZBinary &data){
+    if(_backend)
+        return _backend->encode(&data);
+    return false;
 }
 
 }

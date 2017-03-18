@@ -59,6 +59,11 @@ public:
     typedef zu64 ztid;
     typedef void *(*funcType)(ZThreadArg);
 
+#ifdef ZTHREAD_WINTHREADS
+    typedef unsigned long DWORD;
+    typedef void *LPVOID;
+#endif
+
 public:
     ZThread(ZThreadContainer *threadcont);
 
@@ -126,7 +131,7 @@ private:
 #if COMPILER == MSVC
     static DWORD _stdcall _entry_win(LPVOID ptr);
 #else
-    static DWORD __attribute__((__stdcall__)) entry_win(LPVOID ptr);
+    static DWORD __attribute__((__stdcall__)) _entry_win(LPVOID ptr);
 #endif
 #else
     static void *_entry_posix(void *ptr);
