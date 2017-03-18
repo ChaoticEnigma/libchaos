@@ -9,6 +9,7 @@
 #include "ztypes.h"
 #include "zimage.h"
 #include "zstring.h"
+#include "zmap.h"
 #include "zexception.h"
 #include "zbinary.h"
 #include "yimagebackend.h"
@@ -85,7 +86,7 @@ public:
     //! Interlace PNG on encoding.
     bool interlace = false;
     //! Text Chunks to write on encoding.
-    AsArZ text;
+    ZMap<ZString, ZString> text;
 
 private:
     ZImage *_image;

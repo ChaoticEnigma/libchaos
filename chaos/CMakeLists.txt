@@ -37,7 +37,6 @@ SET(LibChaos_SOURCES
 
     data/zallocator.h
     data/zarray.h
-    data/zassoc.h
     data/zbinary.h
     data/zbinary.cpp
     data/zdata.h
