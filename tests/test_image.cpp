@@ -20,8 +20,7 @@ namespace LibChaosTest {
 #define PNGSUITE_DIR    "pngsuite"
 #define TESTJPEG_DIR    "testjpeg/imagetestsuite/jpg"
 
-// 8-bit
-void encode_8bit(){
+ZImage gen_image(){
     zu64 width = 1920;
     zu64 height = 1080;
     LOG("Creating " << width << "x" << height << " 8-bit color image");
@@ -44,21 +43,34 @@ void encode_8bit(){
         ++o;
     }
 
+    return image1;
+}
+
+void encode_bmp(){
+    ZImage image1 = gen_image();
     ZBinary out1;
-    image1.setFormat(ZImage::BMP);
-    image1.encodeFormat(out1);
+    TASSERT(image1.setFormat(ZImage::BMP));
+    TASSERT(image1.encodeFormat(out1));
     TASSERT(ZFile::writeBinary(GEN_BMP, out1));
+}
 
-    out1.clear();
-    image1.setFormat(ZImage::PPM);
-    image1.encodeFormat(out1);
+void encode_ppm(){
+    ZImage image1 = gen_image();
+    ZBinary out1;
+    TASSERT(image1.setFormat(ZImage::PPM));
+    TASSERT(image1.encodeFormat(out1));
     TASSERT(ZFile::writeBinary(GEN_PPM, out1));
+}
 
-    out1.clear();
-    image1.setFormat(ZImage::PNG);
-    image1.encodeFormat(out1);
+void encode_png(){
+    ZImage image1 = gen_image();
+    ZBinary out1;
+    TASSERT(image1.setFormat(ZImage::PNG));
+    TASSERT(image1.encodeFormat(out1));
     TASSERT(ZFile::writeBinary(GEN_PNG, out1));
+}
 
+void invert_png(){
     ZBinary in1;
     TASSERT(ZFile::readBinary(GEN_PNG, in1));
 
@@ -70,8 +82,8 @@ void encode_8bit(){
         imagein1.pixelAt(i)[2] = 0xFF - imagein1.pixelAt(i)[2];
     }
 
-    out1.clear();
-    image1.encodeFormat(out1);
+    ZBinary out1;
+    imagein1.encodeFormat(out1);
     TASSERT(ZFile::writeBinary(GEN_INVERT_PNG, out1));
 }
 
@@ -169,12 +181,25 @@ void decode_png(){
 
 ZArray<Test> image_tests(){
     return {
-        { "encode-8bit",        encode_8bit,        true, {} },
-        { "encode-16bit",       encode_16bit,       true, {} },
+        { "encode-bmp",         encode_bmp,         true, {} },
+        { "encode-ppm",         encode_ppm,         true, {} },
+#ifdef LIBCHAOS_HAS_PNG
+        { "encode-png",         encode_png,         true, {} },
+        { "invert-png",         invert_png,         true, { "encode-png" } },
+#endif
+//        { "encode-jpeg",        encode_jpeg,        ZImage::isFormatSupported(ZImage::JPEG), {} },
+//        { "encode-webp",        encode_webp,        ZImage::isFormatSupported(ZImage::WEBP), {} },
+//        { "encode-16bit",       encode_16bit,       true, {} },
+#if defined(LIBCHAOS_HAS_PNG) && defined(LIBCHAOS_HAS_WEBP)
         { "convert-webp-png",   convert_webp_png,   ZImage::isFormatSupported(ZImage::WEBP) && ZImage::isFormatSupported(ZImage::PNG), {} },
         { "convert-jpeg-png",   convert_jpeg_png,   ZImage::isFormatSupported(ZImage::JPEG) && ZImage::isFormatSupported(ZImage::PNG), {} },
+#endif
+#ifdef LIBCHAOS_HAS_JPEG
         { "decode-jpeg",        decode_jpeg,        ZImage::isFormatSupported(ZImage::JPEG), {} },
+#endif
+#ifdef LIBCHAOS_HAS_PNG
         { "decode-png",         decode_png,         false, {} },
+#endif
     };
 }
 

@@ -200,9 +200,9 @@ public:
     bool setFormat(fileformat format);
 
     //! Decoce an image from formatted \a data.
-    void decodeFormat(const ZBinary &data);
+    bool decodeFormat(const ZBinary &data);
     //! Encode a formatted image.
-    void encodeFormat(ZBinary &data);
+    bool encodeFormat(ZBinary &data);
 
     //! Check that image is loaded, check this before using raw buffer access.
     inline bool isLoaded() const {
