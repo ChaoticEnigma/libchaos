@@ -22,9 +22,12 @@
 
 #include "xxhash.h"
 
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+    #include <windows.h>
+#endif
+
 #ifdef ZFILE_WINAPI
     #define V 1
-    #include <windows.h>
 #else
     #define V 2
 #endif
@@ -570,7 +573,8 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
     if(!isDir(dir)){
         return ZArray<ZPath>();
     }
-#ifdef ZFILE_WINAPI
+//#ifdef ZFILE_WINAPI
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){
@@ -615,7 +619,8 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse, bool hidden){
     ZArray<ZPath> dirs;
     if(!isDir(dir))
         return dirs;
-#ifdef ZFILE_WINAPI
+//#ifdef ZFILE_WINAPI
+#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){
