@@ -15,18 +15,21 @@ compiler:
 addons:
   apt:
     sources:
-    - george-edison55-precise-backport
     - ubuntu-toolchain-r-test
+    - george-edison55-precise-backports
 
     packages:
     - cmake
     - cmake-data
     - libssl-dev
-    - gcc-4.9
-    - g++-4.9
+    - gcc-5
+    - g++-5
     - clang
 
-before_install:
+install:
+    if [ "$CXX" == "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+    $CC --version
+    $CXX --version
 
 script:
 - mkdir libchaos-build
