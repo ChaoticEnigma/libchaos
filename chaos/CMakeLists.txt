@@ -264,6 +264,12 @@ IF(LIBCHAOS_PLATFORM_WINDOWS OR LIBCHAOS_PLATFORM_CYGWIN)
         TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
     ENDIF()
 ELSE()
+    IF(NOT LIBCHAOS_PLATFORM_MACOSX)
+        # For zclock
+        TARGET_LINK_LIBRARIES(chaos rt)
+    ENDIF()
+
+    # For pthreads
     TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)
