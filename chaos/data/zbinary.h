@@ -159,10 +159,10 @@ public:
     }
 
     bytetype &back(){
-        return _data[_size - 1];
+        return at(_size - 1);
     }
     const bytetype &back() const {
-        return _data[_size - 1];
+        return at(_size - 1);
     }
 
     zu64 realSize() const {
@@ -170,8 +170,21 @@ public:
     }
 
     // ZAccessor interface
-    bytetype &at(zu64 i){ return _data[i]; }
-    const bytetype &at(zu64 i) const { return _data[i]; }
+    bytetype &at(zu64 i){
+#if LIBCHAOS_BUILD != LIBCHAOS_RELEASE
+        if(i >= size())
+            throw zexception("ZBinary: Index out of range");
+#endif
+        return _data[i];
+    }
+    const bytetype &at(zu64 i) const {
+#if LIBCHAOS_BUILD != LIBCHAOS_RELEASE
+        if(i >= size())
+            throw zexception("ZBinary: Index out of range");
+#endif
+        return _data[i];
+    }
+
     bytetype *raw(){ return _data; }
     const bytetype *raw() const { return _data; }
     zu64 size() const { return _size; }

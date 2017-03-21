@@ -51,7 +51,7 @@ void encode_bmp(){
     ZBinary out1;
     TASSERT(image1.setFormat(ZImage::BMP));
     TASSERT(image1.encodeFormat(out1));
-    TASSERT(ZFile::writeBinary(GEN_BMP, out1));
+    TASSERT(ZFile::writeBinary(GEN_BMP, out1) == out1.size());
 }
 
 void encode_ppm(){
@@ -59,7 +59,7 @@ void encode_ppm(){
     ZBinary out1;
     TASSERT(image1.setFormat(ZImage::PPM));
     TASSERT(image1.encodeFormat(out1));
-    TASSERT(ZFile::writeBinary(GEN_PPM, out1));
+    TASSERT(ZFile::writeBinary(GEN_PPM, out1) == out1.size());
 }
 
 void encode_png(){
@@ -67,7 +67,7 @@ void encode_png(){
     ZBinary out1;
     TASSERT(image1.setFormat(ZImage::PNG));
     TASSERT(image1.encodeFormat(out1));
-    TASSERT(ZFile::writeBinary(GEN_PNG, out1));
+    TASSERT(ZFile::writeBinary(GEN_PNG, out1) == out1.size());
 }
 
 void invert_png(){
@@ -84,7 +84,7 @@ void invert_png(){
 
     ZBinary out1;
     imagein1.encodeFormat(out1);
-    TASSERT(ZFile::writeBinary(GEN_INVERT_PNG, out1));
+    TASSERT(ZFile::writeBinary(GEN_INVERT_PNG, out1) == out1.size());
 }
 
 // 16-bit
@@ -114,29 +114,29 @@ void encode_16bit(){
     ZBinary out2;
     image2.setFormat(ZImage::PNG);
     image2.encodeFormat(out2);
-    TASSERT(ZFile::writeBinary(GEN_16_PNG, out2));
+    TASSERT(ZFile::writeBinary(GEN_16_PNG, out2) == out2.size());
 }
 
 // Convert Transparent WebP to PNG
 void convert_webp_png(){
     ZBinary bin3i;
-    ZFile::readBinary(DICE_WEBP, bin3i);
+    TASSERT(ZFile::readBinary(DICE_WEBP, bin3i));
     ZImage image3(bin3i);
-    image3.setFormat(ZImage::PNG);
+    TASSERT(image3.setFormat(ZImage::PNG));
     ZBinary bin3o;
-    image3.encodeFormat(bin3o);
-    ZFile::writeBinary(DICE_PNG, bin3o);
+    TASSERT(image3.encodeFormat(bin3o));
+    TASSERT(ZFile::writeBinary(DICE_PNG, bin3o) == bin3o.size());
 }
 
 // Convert JPEG to PNG
 void convert_jpeg_png(){
     ZBinary bin4i;
-    ZFile::readBinary(TREE_JPEG, bin4i);
+    TASSERT(ZFile::readBinary(TREE_JPEG, bin4i));
     ZImage image4(bin4i);
-    image4.setFormat(ZImage::PNG);
+    TASSERT(image4.setFormat(ZImage::PNG));
     ZBinary bin4o;
-    image4.encodeFormat(bin4o);
-    ZFile::writeBinary(TREE_PNG, bin4o);
+    TASSERT(image4.encodeFormat(bin4o));
+    TASSERT(ZFile::writeBinary(TREE_PNG, bin4o) == bin4o.size());
 }
 
 // JPEG Decode Test
@@ -146,15 +146,15 @@ void decode_jpeg(){
         ZPath jfile = list1[i];
         LOG(i+1 << ": Decode " << jfile);
         ZBinary jin;
-        ZFile::readBinary(jfile, jin);
+        TASSERT(ZFile::readBinary(jfile, jin));
         ZImage jimage(jin);
         LOG("Image Size: " << jimage.size());
         if(jimage.size()){
-            jimage.setFormat(ZImage::BMP);
+            TASSERT(jimage.setFormat(ZImage::BMP));
             ZBinary jout;
-            jimage.encodeFormat(jout);
+            TASSERT(jimage.encodeFormat(jout));
             jfile.last().append(".bmp");
-            ZFile::writeBinary(jfile, jout);
+            TASSERT(ZFile::writeBinary(jfile, jout) == jout.size());
         }
     }
 }
@@ -166,15 +166,15 @@ void decode_png(){
         ZPath pfile = list2[i];
         LOG(i+1 << ": Decode " << pfile);
         ZBinary pin;
-        ZFile::readBinary(pfile, pin);
+        TASSERT(ZFile::readBinary(pfile, pin));
         ZImage pimage(pin);
         LOG("Image Size: " << pimage.size());
         if(pimage.size()){
-            pimage.setFormat(ZImage::BMP);
+            TASSERT(pimage.setFormat(ZImage::BMP));
             ZBinary pout;
-            pimage.encodeFormat(pout);
+            TASSERT(pimage.encodeFormat(pout));
             pfile.last().append(".bmp");
-            ZFile::writeBinary(pfile, pout);
+            TASSERT(ZFile::writeBinary(pfile, pout) == pout.size());
         }
     }
 }
@@ -191,11 +191,11 @@ ZArray<Test> image_tests(){
 //        { "encode-webp",        encode_webp,        ZImage::isFormatSupported(ZImage::WEBP), {} },
 //        { "encode-16bit",       encode_16bit,       true, {} },
 #if defined(LIBCHAOS_HAS_PNG) && defined(LIBCHAOS_HAS_WEBP)
-        { "convert-webp-png",   convert_webp_png,   ZImage::isFormatSupported(ZImage::WEBP) && ZImage::isFormatSupported(ZImage::PNG), {} },
-        { "convert-jpeg-png",   convert_jpeg_png,   ZImage::isFormatSupported(ZImage::JPEG) && ZImage::isFormatSupported(ZImage::PNG), {} },
+        { "convert-webp-png",   convert_webp_png,   false, {} },
+        { "convert-jpeg-png",   convert_jpeg_png,   false, {} },
 #endif
 #ifdef LIBCHAOS_HAS_JPEG
-        { "decode-jpeg",        decode_jpeg,        ZImage::isFormatSupported(ZImage::JPEG), {} },
+        { "decode-jpeg",        decode_jpeg,        false, {} },
 #endif
 #ifdef LIBCHAOS_HAS_PNG
         { "decode-png",         decode_png,         false, {} },
