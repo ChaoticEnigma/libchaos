@@ -30,19 +30,20 @@ addons:
     - libjpeg-dev
     - libwebp-dev
 
-install:
+before_install:
 - cmake --version
 - if [ "$CXX" == "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
 - $CC --version
 - $CXX --version
 
-script:
+install:
 - mkdir libchaos-build
 - cd libchaos-build
 - cmake ..
 
 - make testchaos
 
+script:
 - cd libchaos-build/tests
 - ./testchaos
 
