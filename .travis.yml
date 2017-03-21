@@ -21,10 +21,14 @@ addons:
     packages:
     - cmake
     - cmake-data
-    - libssl-dev
     - gcc-5
     - g++-5
     - clang
+    - libssl-dev
+    - libsqlite3-dev
+    - libpng-dev
+    - libjpeg-dev
+    - libwebp-dev
 
 install:
 - cmake --version
