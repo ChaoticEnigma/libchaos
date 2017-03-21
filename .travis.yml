@@ -1,5 +1,9 @@
 language: cpp
 
+branches:
+  only:
+  - travis
+
 os:
 - linux
 - osx
@@ -9,18 +13,18 @@ compiler:
 - clang
 
 addons:
-    apt:
-        sources:
-        - george-edison55-precise-backport
-        - ubuntu-toolchain-r-test
+  apt:
+    sources:
+    - george-edison55-precise-backport
+    - ubuntu-toolchain-r-test
 
-        packages:
-        - cmake
-        - cmake-data
-        - libssl-dev
-        - gcc-4.9
-        - g++-4.9
-        - clang
+    packages:
+    - cmake
+    - cmake-data
+    - libssl-dev
+    - gcc-4.9
+    - g++-4.9
+    - clang
 
 before_install:
 
