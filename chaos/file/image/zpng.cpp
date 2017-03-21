@@ -88,7 +88,11 @@ ZPNG::ZPNG(ZImage *image) : _image(image){
 }
 
 bool ZPNG::isPNG(const ZBinary &data){
+#if PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 5
     return (png_sig_cmp(data.raw(), 0, 1) == 0);
+#else
+    return (png_sig_cmp((unsigned char *)data.raw(), 0, 1) == 0);
+#endif
 }
 
 bool ZPNG::decode(ZReader *input){
