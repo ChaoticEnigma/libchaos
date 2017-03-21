@@ -34,7 +34,11 @@ addons:
 
 before_install:
 - cmake --version
-- if [ "$CXX" == "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install openssl; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" && "$CC" == "gcc" ]; then export CC="gcc-5" CXX="g++-5"; fi
+- echo $CC
+- echo $CXX
 - mkdir libchaos-build
 
 install:
