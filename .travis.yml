@@ -8,6 +8,9 @@ os:
 - linux
 - osx
 
+dist: trusty
+sudo: false
+
 compiler:
 - gcc
 - clang
@@ -44,6 +47,6 @@ install:
 - make testchaos
 
 script:
-- cd libchaos-build/tests
+- cd tests
 - ./testchaos
 
