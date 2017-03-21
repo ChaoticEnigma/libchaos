@@ -19,7 +19,6 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    - george-edison55-precise-backports
 
     packages:
     - cmake
@@ -36,14 +35,11 @@ addons:
 before_install:
 - cmake --version
 - if [ "$CXX" == "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-- $CC --version
-- $CXX --version
+- mkdir libchaos-build
 
 install:
-- mkdir libchaos-build
 - cd libchaos-build
 - cmake ..
-
 - make testchaos
 
 script:

@@ -38,6 +38,7 @@ ENDIF()
 
 # Readme Files
 SET(LibChaos_OTHER_FILES
+    .travis.yml
     doc/README.md
     doc/COPYRIGHT
     doc/LICENSE
