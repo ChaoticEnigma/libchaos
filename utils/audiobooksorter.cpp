@@ -1,6 +1,7 @@
 #include "zlog.h"
 #include "zfile.h"
 #include "zbinary.h"
+#include "zmap.h"
 using namespace LibChaos;
 
 zu64 getIntPrefix(ZString str){
@@ -72,7 +73,7 @@ int main(int argc, char **argv){
     // /////////////////////////
 
     ArZ param_args;
-    AsArZ param_flags;
+    ZMap<ZString, ZString> param_flags;
 
     for(int i = 0; i < argc; ++i){
         if(argv[i][0] == '-'){
