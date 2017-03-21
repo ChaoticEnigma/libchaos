@@ -27,9 +27,10 @@ addons:
     - clang
 
 install:
-    if [ "$CXX" == "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
-    $CC --version
-    $CXX --version
+- cmake --version
+- if [ "$CXX" == "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+- $CC --version
+- $CXX --version
 
 script:
 - mkdir libchaos-build
