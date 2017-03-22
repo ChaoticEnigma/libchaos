@@ -2,7 +2,8 @@ language: cpp
 
 branches:
   only:
-  - travis
+  - master
+  - staging
 
 os:
 - linux

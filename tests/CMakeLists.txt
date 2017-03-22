@@ -12,7 +12,6 @@ SET(LibChaos_Test_SOURCES
 
     test_pointer.cpp
     test_allocator.cpp
-    test_storage.cpp
     test_binary.cpp
 
     test_array.cpp

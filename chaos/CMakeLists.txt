@@ -40,8 +40,6 @@ SET(LibChaos_SOURCES
     data/zbinary.h
     data/zbinary.cpp
     data/zdata.h
-    data/zdefaultstorage.h
-    data/zfilestorage.h
     data/zgraph.h
     data/zlist.h
     data/zmap.h
