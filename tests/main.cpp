@@ -39,7 +39,6 @@ int main(int argc, char **argv){
         // Test registration functions
         ZArray<reg_func> regtests = {
             allocator_tests,
-            storage_tests,
             pointer_tests,
 
             binary_tests,

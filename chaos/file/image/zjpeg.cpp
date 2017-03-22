@@ -37,11 +37,14 @@ bool ZJPEG::isJPEG(const ZBinary &data){
         cinfo.err = jpeg_std_error(&jerr);
         jerr.error_exit = error_exit;
         jpeg_create_decompress(&cinfo);
-#if PLATFORM == MACOSX
-        jpeg_mem_src(&cinfo, (zbyte *)data.raw(), data.size());
+
+        // some versions of libjepg / libjpeg-turbo have a const on the second argument
+#if JPEG_LIB_VERSION >= 91 || LIBJPEG_TURBO_VERSION_NUMBER >= 1005001
+        jpeg_mem_src(&cinfo, data.raw(), data.size());
 #else
-        jpeg_mem_src(&cinfo, (const zbyte *)data.raw(), data.size());
+        jpeg_mem_src(&cinfo, (zbyte *)data.raw(), data.size());
 #endif
+
         int status = jpeg_read_header(&cinfo, TRUE);
         jpeg_destroy_decompress(&cinfo);
         return (status == JPEG_HEADER_OK);

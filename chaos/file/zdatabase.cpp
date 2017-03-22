@@ -18,14 +18,22 @@ ZDatabase::~ZDatabase(){
 bool ZDatabase::open(ZPath file){
     if(ok())
         close();
+#if SQLITE_VERSION_NUMBER >= 3005000
     int rc = sqlite3_open_v2(file.str().cc(), &_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+#else
+    int rc = sqlite3_open(file.str().cc(), &_db);
+#endif
     if(rc != SQLITE_OK)
         return false;
     return true;
 }
 
 void ZDatabase::close(){
+#if SQLITE_VERSION_NUMBER >= 3007014
     sqlite3_close_v2(_db);
+#else
+    sqlite3_close(_db);
+#endif
     _db = NULL;
 }
 
