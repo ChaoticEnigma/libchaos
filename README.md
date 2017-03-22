@@ -1,4 +1,4 @@
-# LibChaos ![Travis-CI Badge](https://api.travis-ci.org/ChaoticConundrum/libchaos.svg?branch=master "Travis-CI Badge")
+# LibChaos [![Travis-CI Badge](https://api.travis-ci.org/ChaoticConundrum/libchaos.svg?branch=master "Travis-CI Badge")](https://travis-ci.org/ChaoticConundrum/libchaos)
 
 LibChaos is a general-purpose C++ utilities library.
 
