@@ -141,9 +141,11 @@
         iloopvar##A##C##__LINE__ < A.size(); \
         ++iloopvar##A##C##__LINE__, C = A[iloopvar##A##C##__LINE__]\
     )
-#define MIN(A, B) ((A < B) ? A : B)
-#define MAX(A, B) ((A > B) ? A : B)
-#define ABS(A) (A < 0 ? -A : A)
+
+// Common template functions
+template <typename T> static inline T MIN(T a, T b){ return (a < b) ? a : b; }
+template <typename T> static inline T MAX(T a, T b){ return (a > b) ? a : b; }
+template <typename T> static inline T ABS(T a){ return (a < 0) ? -a : a; }
 
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2

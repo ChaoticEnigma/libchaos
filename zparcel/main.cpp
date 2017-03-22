@@ -161,7 +161,7 @@ int cmd_fetch(ZPath file, ZArray<ZString> args){
             zu64 len = 0;
             while(len < size){
                 buff.clear();
-                size = size - pfile.read(buff, MIN(1 << 15, size));
+                size = size - pfile.read(buff, MIN((zu64)(1 << 15), size));
                 ZASSERT(ofile.write(buff), "write failed");
             }
             break;
