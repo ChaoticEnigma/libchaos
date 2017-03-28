@@ -1,6 +1,6 @@
 #include "zlog.h"
 #include "zfile.h"
-#include "zassoc.h"
+#include "zmap.h"
 #include "zbinary.h"
 #include "zhash.h"
 using namespace LibChaos;
@@ -26,7 +26,7 @@ int main(int argc, char **argv){
     ZArray<ZPath> files = ZFile::listFiles(search);
     LOG("Testing " << files.size() << " files");
 
-    ZAssoc<zu64, ZArray<ZPath>> hashtable;
+    ZMap<zu64, ZArray<ZPath>> hashtable;
     for(zu64 i = 0; i < files.size(); ++i){
         ZPath path = files[i];
         ZBinary bin;

@@ -23,7 +23,6 @@ struct Test {
 typedef ZArray<Test> (*reg_func)(void);
 
 ZArray<Test> allocator_tests();
-ZArray<Test> storage_tests();
 ZArray<Test> pointer_tests();
 
 ZArray<Test> binary_tests();

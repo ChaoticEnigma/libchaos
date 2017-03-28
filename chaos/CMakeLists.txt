@@ -39,12 +39,9 @@ SET(LibChaos_SOURCES
     base/ztime.cpp
 
     data/zarray.h
-    data/zassoc.h
     data/zbinary.h
     data/zbinary.cpp
     data/zdata.h
-    data/zdefaultstorage.h
-    data/zfilestorage.h
     data/zgraph.h
     data/zlist.h
     data/zmap.h
@@ -269,6 +266,12 @@ IF(LIBCHAOS_PLATFORM_WINDOWS OR LIBCHAOS_PLATFORM_CYGWIN)
         TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
     ENDIF()
 ELSE()
+    IF(NOT LIBCHAOS_PLATFORM_MACOSX)
+        # For zclock
+        TARGET_LINK_LIBRARIES(chaos rt)
+    ENDIF()
+
+    # For pthreads
     TARGET_LINK_LIBRARIES(chaos pthread)
     IF(IBERTY_DEMANGLE)
         TARGET_LINK_LIBRARIES(chaos iberty)

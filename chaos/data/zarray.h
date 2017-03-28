@@ -202,15 +202,19 @@ public:
     //
 
     inline T &at(zu64 index){
+#if LIBCHAOS_BUILD != LIBCHAOS_RELEASE
         if(index >= size())
-            throw zexception("Index out of range");
+            throw zexception("ZArray: Index out of range");
+#endif
         return _data[index];
     }
     inline T &operator[](zu64 index){ return at(index); }
 
     inline const T &at(zu64 index) const {
+#if LIBCHAOS_BUILD != LIBCHAOS_RELEASE
         if(index >= size())
-            throw zexception("Index out of range");
+            throw zexception("ZArray: Index out of range");
+#endif
         return _data[index];
     }
     inline const T &operator[](zu64 index) const { return at(index); }
