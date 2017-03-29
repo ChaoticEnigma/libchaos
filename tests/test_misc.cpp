@@ -15,8 +15,8 @@ void random(){
 }
 
 void randomdist(){
-    const zu64 range = 100;
-    const zu64 samples = 1000000;
+    const zu64 range = 50;
+    const zu64 samples = 10000000;
 
     ZArray<zu64> values(range);
     for(zu64 i = 0; i < values.size(); ++i){
@@ -31,7 +31,8 @@ void randomdist(){
     }
 
     for(zu64 i = 0; i < values.size(); ++i){
-        LOG(i << ": " << values[i]);
+//        LOG(i << ": " << values[i]);
+        RLOG(values[i] << ZLog::NEWLN);
     }
 }
 
@@ -80,7 +81,7 @@ void uid(){
 ZArray<Test> misc_tests(){
     return {
         { "random",     random, true, {} },
-        { "randodist",  randomdist, true, { "random" } },
+        { "randomdist", randomdist, true, { "random" } },
         { "uid",        uid,    true, {} },
     };
 }

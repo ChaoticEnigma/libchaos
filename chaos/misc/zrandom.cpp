@@ -57,7 +57,7 @@ ZRandom::~ZRandom(){
 #endif
 }
 
-#define RAND_INV_RANGE(r) ((zu64) (ZU64_MAX) / (r))
+#define RANDRANGE 0
 
 zu64 ZRandom::genzu(zu64 min, zu64 max){
     if(min > max)
@@ -69,13 +69,17 @@ zu64 ZRandom::genzu(zu64 min, zu64 max){
     ZBinary buff = generate(8);
 
     zu64 rand;
+#if RANDRANGE == 1
+    #define RAND_INV_RANGE(r) ((zu64) (ZU64_MAX) / (r))
     do {
         rand = ZBinary::deczu64(buff.raw());
     } while(rand >= range * RAND_INV_RANGE(range));
     rand /= RAND_INV_RANGE(range);
-
+#else
     // TODO: Imperfect random distribution
-//    rand = rand % (max - min) + min;
+    rand = ZBinary::deczu64(buff.raw());
+    rand = rand % (max - min) + min;
+#endif
     return rand;
 }
 
