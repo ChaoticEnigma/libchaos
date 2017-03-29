@@ -13,7 +13,6 @@ public:
     }
 
     ZWrapAllocator(const ZWrapAllocator &) = delete;
-    virtual ~ZWrapAllocator(){}
 
     T *alloc(zu64 count = 1){
         return (T *)_alloc->alloc(count * sizeof(T));

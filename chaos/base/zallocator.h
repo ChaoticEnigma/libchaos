@@ -23,7 +23,9 @@ struct zallocator_exception {
 template <typename T> class ZAllocator {
 public:
     ZAllocator(){}
+    //! Noncopyable by convention.
     ZAllocator(const ZAllocator &) = delete;
+    //! Default virtual destructor.
     virtual ~ZAllocator(){}
 
     /*! Allocates memory to hold \p count T's.
