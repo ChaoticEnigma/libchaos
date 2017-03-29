@@ -41,9 +41,10 @@ public:
     //! Return the clock stop time.
     timespec getClockStop() const { return clock_b; }
 
-    //! Get time string from clock value.
+    //! Get time string for clock value.
     static ZString clockStr(timespec clock);
 
+    //! Get time string for difference between clock values.
     static ZString diffStr(timespec a, timespec b);
 
 private:
