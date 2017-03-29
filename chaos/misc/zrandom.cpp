@@ -57,11 +57,25 @@ ZRandom::~ZRandom(){
 #endif
 }
 
+#define RAND_INV_RANGE(r) ((zu64) (ZU64_MAX) / (r))
+
 zu64 ZRandom::genzu(zu64 min, zu64 max){
+    if(min > max)
+        throw ZException("Unusable random range");
+    const zu64 range = max - min;
+    if(range == 0)
+        return min;
+
     ZBinary buff = generate(8);
-    zu64 rand = (zu64)buff[0] | (zu64)buff[1] << 8 | (zu64)buff[2] << 16 | (zu64)buff[3] << 24 | (zu64)buff[4] << 32 | (zu64)buff[5] << 40 | (zu64)buff[6] << 48 | (zu64)buff[7] << 56;
+
+    zu64 rand;
+    do {
+        rand = ZBinary::deczu64(buff.raw());
+    } while(rand >= range * RAND_INV_RANGE(range));
+    rand /= RAND_INV_RANGE(range);
+
     // TODO: Imperfect random distribution
-    rand = rand % (max - min) + min;
+//    rand = rand % (max - min) + min;
     return rand;
 }
 

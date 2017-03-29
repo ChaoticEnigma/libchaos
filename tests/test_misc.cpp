@@ -14,6 +14,27 @@ void random(){
     LOG(random.genzu());
 }
 
+void randomdist(){
+    const zu64 range = 100;
+    const zu64 samples = 1000000;
+
+    ZArray<zu64> values(range);
+    for(zu64 i = 0; i < values.size(); ++i){
+        values[i] = 0;
+    }
+
+    ZRandom random;
+
+    for(zu64 i = 0; i < samples; ++i){
+        zu64 val = random.genzu(0, range);
+        values[val]++;
+    }
+
+    for(zu64 i = 0; i < values.size(); ++i){
+        LOG(i << ": " << values[i]);
+    }
+}
+
 void uid(){
     ZUID uid1;
 
@@ -58,8 +79,9 @@ void uid(){
 
 ZArray<Test> misc_tests(){
     return {
-        { "random", random, true, {} },
-        { "uid",    uid,    true, {} },
+        { "random",     random, true, {} },
+        { "randodist",  randomdist, true, { "random" } },
+        { "uid",        uid,    true, {} },
     };
 }
 
