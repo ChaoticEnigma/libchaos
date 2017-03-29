@@ -23,7 +23,9 @@ namespace LibChaos {
 //ZMutex::ZMutex(int options) : owner_tid(0){
 ZMutex::ZMutex(mutexoption options){
     pthread_mutexattr_init(&_attr);
-    pthread_mutexattr_settype(&_attr, PTHREAD_MUTEX_RECURSIVE);
+    if(options & RECURSIVE){
+        pthread_mutexattr_settype(&_attr, PTHREAD_MUTEX_RECURSIVE);
+    }
     if(options & PSHARE){
         pthread_mutexattr_setpshared(&_attr, PTHREAD_PROCESS_SHARED);
     }
@@ -75,7 +77,7 @@ bool ZMutex::timelock(zu32 timeout_microsec){
 
 void ZMutex::unlock(){
 //    if(locked()){
-        lock(); // Make sure we own the mutex first
+//        lock(); // Make sure we own the mutex first
 //        owner_tid = 0;
         pthread_mutex_unlock(&_mutex);
 //    }

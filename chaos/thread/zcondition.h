@@ -23,7 +23,7 @@ class ZCondition {
 public:
     enum condoption {
         NONE    = 0,
-        PSHARE  = 1,
+        PSHARE  = 1,    //!< Process-shared condition variable.
     };
 
 public:

@@ -41,8 +41,9 @@ typedef zu64 ztid;
 class ZMutex {
 public:
     enum mutexoption {
-        NONE    = 0,
-        PSHARE  = 1,
+        NONE        = 0,
+        PSHARE      = 1,    //!< Process-shared mutex.
+        RECURSIVE   = 2,    //!< Recursive locking behavior.
     };
 
 public:
