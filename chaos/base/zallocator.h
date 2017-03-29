@@ -52,7 +52,11 @@ public:
      *  Does not directly allocate memory, but constructors may.
      *  \p ptr must point to memory large enough to hold \p count T's.
      */
+#if COMPILER == CLANG
+    template <typename ... Args> static T *construct(T *ptr, zu64 count, Args&& ... args){
+#else
     template <typename ... Args> static T *construct(T *ptr, zu64 count = 1, Args&& ... args){
+#endif
         for(zu64 i = 0; i < count; ++i){
             new (ptr + i) T(args...);
         }
