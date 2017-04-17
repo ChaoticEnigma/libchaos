@@ -11,8 +11,6 @@
 #include "zallocator.h"
 #include "zarray.h"
 #include "zlist.h"
-#include "zassoc.h"
-//#include "zhash.h"
 
 // Needed for std::ostream overload
 #include <iosfwd>
@@ -27,7 +25,6 @@ namespace LibChaos {
 
 class ZString;
 typedef ZArray<ZString> ArZ;
-typedef ZAssoc<ZString, ZString> AsArZ;
 
 /*! UTF-8 contiguous string container.
  *  \ingroup String
@@ -296,9 +293,6 @@ public:
     ZString findFirstXmlTagCont(ZString tag);
     ZString replaceXmlTagCont(ZString tag, ZString after);
 
-    ZString &label(const ZString &label, const ZString &value);
-    ZString &label(const AsArZ &values);
-
     //! Pad left of string to minimum \a length with \a ch.
     ZString &lpad(char ch, zu64 length);
     //! Pad right of string to minimum \a length with \a ch.
@@ -406,9 +400,21 @@ public:
 
     // ZAccessor interface
     //! Get reference to character at \a i.
-    inline char &at(zu64 i){ return c()[i]; }
+    inline char &at(zu64 i){
+#if LIBCHAOS_BUILD != LIBCHAOS_RELEASE
+        if(i >= size())
+            throw zexception("ZString: Index out of range");
+#endif
+        return c()[i];
+    }
     //! Get constant reference to character at \a i.
-    inline const char &at(zu64 i) const { return cc()[i]; }
+    inline const char &at(zu64 i) const {
+#if LIBCHAOS_BUILD != LIBCHAOS_RELEASE
+        if(i >= size())
+            throw zexception("ZString: Index out of range");
+#endif
+        return cc()[i];
+    }
 
     char *raw(){ return c(); }
     const char *raw() const { return cc(); }

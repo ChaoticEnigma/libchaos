@@ -212,7 +212,11 @@ ZSocket::socketerror ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
 
     if(ret < 0){
         int err = ZError::getSocketErrorCode();
+#if EAGAIN == EWOULDBLOCK
+        if(err == EAGAIN){
+#else
         if(err == EAGAIN || err == EWOULDBLOCK){
+#endif
             return AGAIN;
         }
         ELOG("ZSocket:accept failed: " + ZError::getSystemError());
@@ -247,7 +251,11 @@ ZSocket::socketerror ZSocket::read(ZBinary &data){
         return DONE;
     } else if(ret < 0){
         int err = ZError::getSocketErrorCode();
+#if EAGAIN == EWOULDBLOCK
+        if(err == EAGAIN){
+#else
         if(err == EAGAIN || err == EWOULDBLOCK){
+#endif
             return AGAIN;
         }
         ELOG("ZSocket: read error: " + ZError::getSystemError());
@@ -279,7 +287,11 @@ ZSocket::socketerror ZSocket::write(const ZBinary &data){
         return DONE;
     } else if(ret < 0){
         int err = ZError::getSocketErrorCode();
+#if EAGAIN == EWOULDBLOCK
+        if(err == EAGAIN){
+#else
         if(err == EAGAIN || err == EWOULDBLOCK){
+#endif
             return AGAIN;
         }
         ELOG("ZSocket: write error: " + ZError::getSystemError());
@@ -312,7 +324,11 @@ ZSocket::socketerror ZSocket::send(ZAddress dest, const ZBinary &data){
 
     if(ret < 0){
         int err = ZError::getSocketErrorCode();
+#if EAGAIN == EWOULDBLOCK
+        if(err == EAGAIN){
+#else
         if(err == EAGAIN || err == EWOULDBLOCK){
+#endif
             return AGAIN;
         }
         ELOG("ZSocket::send sendto error " + ZError::getSystemError());
@@ -343,7 +359,11 @@ ZSocket::socketerror ZSocket::receive(ZAddress &sender, ZBinary &data){
         return DONE;
     } else if(ret < 0){
         int err = ZError::getSocketErrorCode();
+#if EAGAIN == EWOULDBLOCK
+        if(err == EAGAIN){
+#else
         if(err == EAGAIN || err == EWOULDBLOCK){
+#endif
             return AGAIN;
         }
         ELOG("ZSocket:receive error - " + ZError::getSystemError());

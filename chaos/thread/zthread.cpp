@@ -196,9 +196,9 @@ void *ZThread::_entry_common(zthreadparam *param){
 #ifdef ZTHREAD_WINTHREADS
 
 #if COMPILER == MSVC
-DWORD _stdcall ZThread::_entry_win(LPVOID ptr){
+ZThread::DWORD _stdcall ZThread::_entry_win(LPVOID ptr){
 #else
-DWORD __attribute__((__stdcall__)) ZThread::_entry_win(LPVOID ptr){
+ZThread::DWORD __attribute__((__stdcall__)) ZThread::_entry_win(LPVOID ptr){
 #endif
     // Now running on executing thread
     zthreadparam *param = (zthreadparam *)ptr;

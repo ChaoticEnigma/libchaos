@@ -5,8 +5,6 @@
 
 using namespace LibChaosTest;
 
-int runTests(ZAssoc<ZString, Test> tests);
-
 //! Add a test to testout and testmapout, resolving and adding recursive dependencies first.
 void addTest(Test &test, ZMap<ZString, Test*> &testmap, ZArray<Test> &testout, ZMap<ZString, Test> &testmapout){
     // Check for dependencies
@@ -41,7 +39,6 @@ int main(int argc, char **argv){
         // Test registration functions
         ZArray<reg_func> regtests = {
             allocator_tests,
-            storage_tests,
             pointer_tests,
 
             binary_tests,

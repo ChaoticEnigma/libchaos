@@ -72,7 +72,7 @@ void readpng_cleanup(PngReadData *data);
 void readpng_warning_handler(png_struct *png_ptr, png_const_charp msg);
 void readpng_error_handler(png_struct *png_ptr, png_const_charp msg);
 
-int writepng_init(PngWriteData *mainprog_ptr, const AsArZ &text);
+int writepng_init(PngWriteData *mainprog_ptr, const ZMap<ZString, ZString> &text);
 void writepng_write_fn(png_struct *png_ptr, png_byte *inbytes, png_size_t length);
 int writepng_encode_image(PngWriteData *mainprog_ptr);
 int writepng_encode_row(PngWriteData *mainprog_ptr, unsigned char *row);
@@ -88,7 +88,11 @@ ZPNG::ZPNG(ZImage *image) : _image(image){
 }
 
 bool ZPNG::isPNG(const ZBinary &data){
+#if PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 5
     return (png_sig_cmp(data.raw(), 0, 1) == 0);
+#else
+    return (png_sig_cmp((unsigned char *)data.raw(), 0, 1) == 0);
+#endif
 }
 
 bool ZPNG::decode(ZReader *input){
@@ -544,7 +548,7 @@ void readpng_error_handler(png_struct *png_ptr, png_const_charp msg){
 // // Write ////////////////////////////////////////////////////////////////////
 // /////////////////////////////////////////////////////////////////////////////
 
-int writepng_init(PngWriteData *data, const AsArZ &texts){
+int writepng_init(PngWriteData *data, const ZMap<ZString, ZString> &texts){
     // Create write struct
     data->png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, data, writepng_error_handler, writepng_warning_handler);
     if(!data->png_ptr){
@@ -623,12 +627,14 @@ int writepng_init(PngWriteData *data, const AsArZ &texts){
 
     // Add text to PNG
     png_text *pngtext = new png_text[texts.size()];
-    for(zu64 i = 0; i < texts.size(); ++i){
+    int i = 0;
+    for(auto it = texts.begin(); it.more(); ++it){
         pngtext[i].compression = PNG_TEXT_COMPRESSION_NONE;
-        pngtext[i].key = texts.key(i).c();
-        pngtext[i].text = texts.val(i).c();
+        pngtext[i].key = it.get().c();
+        pngtext[i].text = texts[it.get()].c();
+        ++i;
     }
-    png_set_text(data->png_ptr, data->info_ptr, pngtext, (int)texts.size());
+    png_set_text(data->png_ptr, data->info_ptr, pngtext, i);
     delete[] pngtext;
 
     // Write info chunks

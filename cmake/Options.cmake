@@ -4,6 +4,7 @@
 OPTION(RELEASE                              "Build with Release Optimizations"          OFF )
 OPTION(DEBUG                                "Build with Debugging Support"              OFF )
 OPTION(EXTRA_WARNINGS                       "Produce Extra Compiler Warnings"           OFF )
+OPTION(BUILD_DOCS                           "Documentation should be configured"        ON  )
 
 # General Options
 OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"        OFF )

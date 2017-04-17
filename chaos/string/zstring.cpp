@@ -686,18 +686,6 @@ ZString ZString::replaceXmlTagCont(ZString tag, ZString after){
     return replaceBetween(open, close, after);
 }
 
-ZString &ZString::label(const ZString &labeltxt, const ZString &value){
-    ZString txt = "<?" + labeltxt + "?>";
-    replace(txt, value);
-    return *this;
-}
-
-ZString &ZString::label(const AsArZ &values){
-    for(zu64 i = 0; i < values.size(); ++i)
-        label(values.key(i), values[i]);
-    return *this;
-}
-
 ZString &ZString::lpad(char ch, zu64 len){
     if(len > size())
         prepend(ZString(ch, len - size()));
