@@ -195,13 +195,6 @@ const ZMap<ZString, CmdEntry> cmds = {
     { "delete", { cmd_delete,   1, "zparcel <file> delete <id>" } },
 };
 
-int mainwrap(int argc, char **argv){
-
-
-
-    return EXIT_SUCCESS;
-}
-
 int main(int argc, char **argv){
     ZLog::logLevelStdOut(ZLog::INFO, "%log%");
     ZLog::logLevelStdOut(ZLog::DEBUG, "%time% (%file%:%line%) - %log%");
