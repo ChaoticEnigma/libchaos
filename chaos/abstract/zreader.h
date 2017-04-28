@@ -15,7 +15,7 @@ public:
     virtual ~ZReader(){}
 
     /*! Get number of available bytes.
-     *  Returns ZU64_MAX for infinity.
+     *  Returns ZU64_MAX for infinite.
      */
     virtual zu64 available() const = 0;
 

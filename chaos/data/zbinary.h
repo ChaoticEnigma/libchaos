@@ -9,9 +9,7 @@
 #include "ztypes.h"
 #include "zarray.h"
 #include "zaccessor.h"
-#include "zposition.h"
-#include "zreader.h"
-#include "zwriter.h"
+#include "zblockaccessor.h"
 #include "zstring.h"
 //#include "zerror.h"
 //#include "zhash.h"
@@ -24,7 +22,7 @@ typedef ZBinary ZBuffer;
 typedef zbyte zbinary_bytetype;
 
 //! Binary data buffer container.
-class ZBinary : public ZAccessor<zbinary_bytetype>, public ZPosition, public ZReader, public ZWriter {
+class ZBinary : public ZAccessor<zbinary_bytetype>, public ZBlockAccessor {
 public:
     typedef zbinary_bytetype bytetype;
     enum { NONE = ZU64_MAX };

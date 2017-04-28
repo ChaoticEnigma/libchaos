@@ -39,9 +39,10 @@ public:
         SINTOBJ,        //!< Signed integer object. 64-bit.
         FLOATOBJ,       //!< Floating point number object. Double precision.
         ZUIDOBJ,        //!< UUID object.
-        STRINGOBJ,      //!< String object.
         BLOBOBJ,        //!< Binary blob object.
+        STRINGOBJ,      //!< String object.
         FILEOBJ,        //!< File object. Includes embedded filename and file content.
+
         /*! User-defined object types can be created by subclassing ZParcel and defining new types starting with MAX_OBJTYPE.
          *  Example:
          *  \code
@@ -69,15 +70,22 @@ public:
         ERR_TRUNC,      //!< Payload is truncated by end of file.
         ERR_TREE,       //!< Bad tree structure.
         ERR_FREELIST,   //!< Bad freelist structure.
+        ERR_NOFREE,     //!< No free nodes.
         ERR_SIG,        //!< Bad file signature.
         ERR_VERSION,    //!< Bad file header version.
         ERR_MAX_DEPTH,  //!< Exceeded maximum tree depth.
     };
 
+private:
     struct ObjectInfo {
-        objtype type;
-        zu64 offset;
-        zu64 length;
+        zu64 tree;      // Tree node offset
+        zu64 parent;    // Parent tree node offset
+        zu64 lnode;     // Left child tree node offset
+        zu64 rnode;     // Right child tree node offset
+
+        objtype type;   // Payload type
+        zu64 offset;    // Payload offset
+        zu64 size;      // Payload size
     };
 
 public:
@@ -89,11 +97,13 @@ public:
      *  \exception ZException Failed to create file.
      */
     parcelerror create(ZPath file);
+    parcelerror create(ZBlockAccessor *file);
 
     /*! Open existing parcel.
      *  \exception ZException Failed to open file.
      */
     parcelerror open(ZPath file);
+    parcelerror open(ZBlockAccessor *file);
 
     //! Close file handles.
     void close();
@@ -192,6 +202,11 @@ public:
      */
     ZString fetchFile(ZUID id, zu64 *offset = nullptr, zu64 *size = nullptr);
 
+    /*! Remove an object from the parcel.
+     *  \exception ZException Parcel not open.
+      */
+    parcelerror removeObject(ZUID id);
+
     //! Get the ZFile handle for the parcel.
     ZFile getHandle() { return _file; }
 
@@ -210,7 +225,13 @@ protected:
      */
     parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize = 0);
     //! Get object info struct.
-    parcelerror _getObjectInfo(ZUID id, ObjectInfo &info);
+    parcelerror _getObjectInfo(ZUID id, ObjectInfo *info);
+
+    struct ParcelFreeNode;
+
+    parcelerror _freeNodeFind(zu64 size, ParcelFreeNode *fnode);
+    parcelerror _freeNodeAlloc(ParcelFreeNode *fnode, zu64 *size);
+    parcelerror _freeNodeAdd(zu64 offset, zu64 size);
 
 private:
     //! Write a copy of the file header at \a offset.
@@ -218,10 +239,14 @@ private:
 
 private:
     parcelstate _state;
+
     ZFile _file;
+    ZBlockAccessor *_backing;
+
     parceltype _version;
     zu64 _treehead;
-    zu64 _freelist;
+    zu64 _freehead;
+    zu64 _freetail;
     zu64 _tail;
     ZMap<ZUID, ObjectInfo> _cache;
 };

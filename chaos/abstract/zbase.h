@@ -12,7 +12,7 @@ namespace LibChaos {
 
 class ZBase {
 public:
-    enum { none = ZU64_MAX };
+    enum { NONE = ZU64_MAX };
 public:
 
 };
