@@ -88,7 +88,7 @@ void writeInfoHeader(ZWriter *out, const BitmapInfoHeader *infoh){
 }
 
 bool ZBMP::isBMP(const ZBinary &data){
-    return (ZBinary::decle16(data.raw()) == BITMAP_TYPE);
+    return (ZBinary::decleu16(data.raw()) == BITMAP_TYPE);
 }
 
 bool ZBMP::decode(ZReader *input){

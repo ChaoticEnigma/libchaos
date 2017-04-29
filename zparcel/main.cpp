@@ -37,8 +37,18 @@ int cmd_create(ZPath file, ZArray<ZString> args){
 }
 
 int cmd_list(ZPath file, ZArray<ZString> args){
+    ZParcel parcel;
+    ZParcel::parcelerror err;
 
-    return -1;
+    err = parcel.open(file);
+    if(err != ZParcel::OK){
+        ELOG("FAIL - " << ZParcel::errorStr(err));
+        return EXIT_FAILURE;
+    }
+
+    parcel.listObjects();
+
+    return EXIT_SUCCESS;
 }
 
 int cmd_store(ZPath file, ZArray<ZString> args){
@@ -194,6 +204,37 @@ int cmd_remove(ZPath file, ZArray<ZString> args){
     return EXIT_SUCCESS;
 }
 
+int cmd_test(ZPath file, ZArray<ZString> args){
+    ZParcel parcel;
+    auto err = parcel.create(file);
+    if(err != ZParcel::OK){
+        ELOG("Failed to open: " << ZParcel::errorStr(err));
+        return EXIT_FAILURE;
+    }
+
+    ZList<ZUID> ids;
+
+    for(zu64 i = 0; i < 100; ++i){
+        ZString tst = "test string ";
+        tst += i;
+        ZUID id(ZUID::RANDOM);
+        ids.push(id);
+        err = parcel.storeString(id, tst);
+        if(err != ZParcel::OK){
+            ELOG("FAIL " << ZParcel::errorStr(err));
+            return EXIT_FAILURE;
+        }
+    }
+
+    for(auto it = ids.begin(); it.more(); ++it){
+        LOG(it.get().str() << " " << parcel.fetchString(it.get()));
+    }
+
+//    parcel.listObjects();
+
+    return EXIT_SUCCESS;
+}
+
 const ZArray<ZOptions::OptDef> optdef = {};
 
 typedef int (*cmd_func)(ZPath file, ZArray<ZString> args);
@@ -209,6 +250,7 @@ const ZMap<ZString, CmdEntry> cmds = {
     { "store",  { cmd_store,    3, "zparcel <file> store <id> <type> <value>" } },
     { "fetch",  { cmd_fetch,    1, "zparcel <file> fetch <id>" } },
     { "remove", { cmd_remove,   1, "zparcel <file> remove <id>" } },
+    { "test",   { cmd_test,     0, "zparcel <file> test" } },
 };
 
 int main(int argc, char **argv){
@@ -233,7 +275,7 @@ int main(int argc, char **argv){
                 CmdEntry cmd = cmds[cmstr];
                 args.popFront();
                 if(args.size() == cmd.argn){
-                    cmd.func(file, args);
+                    return cmd.func(file, args);
                 } else {
                     LOG("Usage: " << cmd.usage);
                     return -4;

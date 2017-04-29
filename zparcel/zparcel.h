@@ -74,6 +74,7 @@ public:
         ERR_SIG,        //!< Bad file signature.
         ERR_VERSION,    //!< Bad file header version.
         ERR_MAX_DEPTH,  //!< Exceeded maximum tree depth.
+        ERR_MAGIC,      //!< Bad object magic number.
     };
 
 private:
@@ -84,8 +85,13 @@ private:
         zu64 rnode;     // Right child tree node offset
 
         objtype type;   // Payload type
-        zu64 offset;    // Payload offset
-        zu64 size;      // Payload size
+        union {
+            zbyte payload[16];
+            struct {
+                zu64 offset;    // Payload offset
+                zu64 size;      // Payload size
+            } data;
+        };
     };
 
 public:
@@ -207,6 +213,10 @@ public:
       */
     parcelerror removeObject(ZUID id);
 
+    void listObjects();
+
+    void _listStep(zu64 next, zu16 depth);
+
     //! Get the ZFile handle for the parcel.
     ZFile getHandle() { return _file; }
 
@@ -223,7 +233,7 @@ protected:
      *  If \a trailsize > 0, indicates the number of bytes that should be reserved in the payload,
      *  beyond the size of \a data.
      */
-    parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 trailsize = 0);
+    parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 reserve = 0);
     //! Get object info struct.
     parcelerror _getObjectInfo(ZUID id, ObjectInfo *info);
 

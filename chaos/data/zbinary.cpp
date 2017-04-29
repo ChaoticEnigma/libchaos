@@ -69,7 +69,7 @@ ZBinary ZBinary::getSub(zu64 start, zu64 len) const {
 
 ZBinary ZBinary::fromzu8(zu8 num){
     ZBinary bin(1);
-    enczu8(bin._data, num);
+    encu8(bin._data, num);
     return bin;
 }
 
@@ -93,7 +93,7 @@ ZBinary ZBinary::fromzu64(zu64 num){
 
 zu8 ZBinary::tozu8() const {
     zassert(_size == 1);
-    return deczu8(_data);
+    return decu8(_data);
 }
 
 zu16 ZBinary::tozu16() const {
@@ -205,24 +205,24 @@ zu64 ZBinary::write(const zbyte *data, zu64 size){
     return size;
 }
 
-zu8 ZBinary::deczu8(const zbyte *bin){
+zu8 ZBinary::decu8(const zbyte *bin){
     return (zu8)bin[0];
 }
-void ZBinary::enczu8(zbyte *bin, zu8 num){
+void ZBinary::encu8(zbyte *bin, zu8 num){
     bin[0] = (zbyte)num;
 }
 
-zu16 ZBinary::decbe16(const zbyte *bin){
+zu16 ZBinary::decbeu16(const zbyte *bin){
     return ((zu16)bin[0] << 8) |
            ((zu16)bin[1]);
 }
-zu32 ZBinary::decbe32(const zbyte *bin){
+zu32 ZBinary::decbeu32(const zbyte *bin){
     return ((zu32)bin[0] << 24) |
            ((zu32)bin[1] << 16) |
            ((zu32)bin[2] << 8)  |
            ((zu32)bin[3]);
 }
-zu64 ZBinary::decbe64(const zbyte *bin){
+zu64 ZBinary::decbeu64(const zbyte *bin){
     return ((zu64)bin[0] << 56) |
            ((zu64)bin[1] << 48) |
            ((zu64)bin[2] << 40) |
@@ -233,17 +233,17 @@ zu64 ZBinary::decbe64(const zbyte *bin){
            ((zu64)bin[7]);
 }
 
-void ZBinary::encbe16(zbyte *bin, zu16 num){
+void ZBinary::encbeu16(zbyte *bin, zu16 num){
     bin[0] = (zbyte)((num >> 8) & 0xFF);
     bin[1] = (zbyte)((num)      & 0xFF);
 }
-void ZBinary::encbe32(zbyte *bin, zu32 num){
+void ZBinary::encbeu32(zbyte *bin, zu32 num){
     bin[0] = (zbyte)((num >> 24) & 0xFF);
     bin[1] = (zbyte)((num >> 16) & 0xFF);
     bin[2] = (zbyte)((num >> 8)  & 0xFF);
     bin[3] = (zbyte)((num)       & 0xFF);
 }
-void ZBinary::encbe64(zbyte *bin, zu64 num){
+void ZBinary::encbeu64(zbyte *bin, zu64 num){
     bin[0] = (zbyte)((num >> 56) & 0xFF);
     bin[1] = (zbyte)((num >> 48) & 0xFF);
     bin[2] = (zbyte)((num >> 40) & 0xFF);
@@ -254,17 +254,17 @@ void ZBinary::encbe64(zbyte *bin, zu64 num){
     bin[7] = (zbyte)((num)       & 0xFF);
 }
 
-zu16 ZBinary::decle16(const zbyte *bin){
+zu16 ZBinary::decleu16(const zbyte *bin){
     return ((zu16)bin[1] << 8) |
            ((zu16)bin[0]);
 }
-zu32 ZBinary::decle32(const zbyte *bin){
+zu32 ZBinary::decleu32(const zbyte *bin){
     return ((zu32)bin[3] << 24) |
            ((zu32)bin[2] << 16) |
            ((zu32)bin[1] << 8)  |
            ((zu32)bin[0]);
 }
-zu64 ZBinary::decle64(const zbyte *bin){
+zu64 ZBinary::decleu64(const zbyte *bin){
     return ((zu64)bin[7] << 56) |
            ((zu64)bin[6] << 48) |
            ((zu64)bin[5] << 40) |
@@ -275,17 +275,17 @@ zu64 ZBinary::decle64(const zbyte *bin){
            ((zu64)bin[0]);
 }
 
-void ZBinary::encle16(zbyte *bin, zu16 num){
+void ZBinary::encleu16(zbyte *bin, zu16 num){
     bin[1] = (zbyte)((num >> 8) & 0xFF);
     bin[0] = (zbyte)((num)      & 0xFF);
 }
-void ZBinary::encle32(zbyte *bin, zu32 num){
+void ZBinary::encleu32(zbyte *bin, zu32 num){
     bin[3] = (zbyte)((num >> 24) & 0xFF);
     bin[2] = (zbyte)((num >> 16) & 0xFF);
     bin[1] = (zbyte)((num >> 8)  & 0xFF);
     bin[0] = (zbyte)((num)       & 0xFF);
 }
-void ZBinary::encle64(zbyte *bin, zu64 num){
+void ZBinary::encleu64(zbyte *bin, zu64 num){
     bin[7] = (zbyte)((num >> 56) & 0xFF);
     bin[6] = (zbyte)((num >> 48) & 0xFF);
     bin[5] = (zbyte)((num >> 40) & 0xFF);
