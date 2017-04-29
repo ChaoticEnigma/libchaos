@@ -20,6 +20,8 @@ namespace LibChaos {
  */
 class ZParcel {
 public:
+    class ParcelObjectAccessor;
+
     enum parceltype {
         UNKNOWN = 0,
         VERSION1,       //!< Type 1 parcel. No pages, payload in tree node.
@@ -92,6 +94,8 @@ private:
                 zu64 size;      // Payload size
             } data;
         };
+
+        ZPointer<ParcelObjectAccessor> accessor;
     };
 
 public:
@@ -225,6 +229,113 @@ public:
     //! Get string for error.
     static ZString errorStr(parcelerror err);
 
+public:
+    class ParcelObjectAccessor : public ZBlockAccessor {
+    public:
+        ParcelObjectAccessor(ZBlockAccessor *file, zu64 offset, zu64 size) :
+            _file(file), _base(offset), _pos(0), _size(size){
+
+        }
+
+        // ZReader interface
+        zu64 available() const {
+            return (_base + _size) - _pos;
+        }
+        zu64 read(zbyte *dest, zu64 size);
+
+        // ZWriter interface
+        zu64 write(const zbyte *src, zu64 size);
+
+        // ZPosition interface
+        zu64 tell() const {
+            return _pos;
+        }
+        zu64 seek(zu64 pos){
+            _pos = MIN(pos, _base + _size);
+            return _pos;
+        }
+        bool atEnd() const {
+            return (tell() == _base + _size);
+        }
+
+    private:
+        ZBlockAccessor *const _file;
+        const zu64 _base;
+        zu64 _pos;
+        const zu64 _size;
+    };
+
+private:
+    class ParcelHeader {
+    public:
+        ParcelHeader(ZParcel *parcel) : file(parcel->_backing){}
+
+        parcelerror read();
+        parcelerror write();
+
+        static zu64 getNodeSize(){ return 7 + 1 + 8 + 8 + 8 + 8; }
+
+    public:
+        //    zbyte sig[ZPARCEL_SIG_LEN];
+        zu8 version;
+        zu64 treehead;
+        zu64 freehead;
+        zu64 freetail;
+        zu64 tailptr;
+
+    private:
+        ZBlockAccessor *file;
+    };
+
+private:
+    class ParcelTreeNode {
+    public:
+        ParcelTreeNode(ZParcel *parcel, zu64 addr) : file(parcel->_backing), offset(addr){}
+
+        parcelerror read();
+        parcelerror write();
+
+        static zu64 getNodeSize(){ return 4 + ZUID_SIZE + 8 + 8 + 2 + 2 + 16; }
+
+    public:
+        ZUID uid;
+        zu64 lnode;
+        zu64 rnode;
+        zu8 type;
+        zu8 extra;
+        zu16 crc;
+        zbyte payload[16];
+
+        struct {
+            zu64 size;
+            zu64 offset;
+        } data;
+
+
+    private:
+        ZBlockAccessor *file;
+        zu64 offset;
+    };
+
+private:
+    class ParcelFreeNode {
+    public:
+        ParcelFreeNode(ZParcel *parcel, zu64 addr) : file(parcel->_backing), offset(addr){}
+
+        parcelerror read();
+        parcelerror write();
+
+        static zu64 getNodeSize(){ return 4 + 8 + 8; }
+
+    public:
+        zu64 next;
+        zu64 size;
+
+    private:
+        ZBlockAccessor *file;
+        zu64 offset;
+    };
+
 protected:
     //! Compute the size of an object node payload.
     zu64 _objectSize(objtype type, zu64 size);
@@ -237,11 +348,8 @@ protected:
     //! Get object info struct.
     parcelerror _getObjectInfo(ZUID id, ObjectInfo *info);
 
-    struct ParcelFreeNode;
-
-    parcelerror _freeNodeFind(zu64 size, ParcelFreeNode *fnode);
-    parcelerror _freeNodeAlloc(ParcelFreeNode *fnode, zu64 *size);
-    parcelerror _freeNodeAdd(zu64 offset, zu64 size);
+    parcelerror _nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize);
+    parcelerror _nodeFree(zu64 offset, zu64 size);
 
 private:
     //! Write a copy of the file header at \a offset.
