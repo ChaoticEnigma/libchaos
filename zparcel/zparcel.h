@@ -20,8 +20,6 @@ namespace LibChaos {
  */
 class ZParcel {
 public:
-    class ParcelObjectAccessor;
-
     enum parceltype {
         UNKNOWN = 0,
         VERSION1,       //!< Type 1 parcel. No pages, payload in tree node.
@@ -68,7 +66,7 @@ public:
         ERR_WRITE,      //!< Error writing file.
         ERR_EXISTS,     //!< Object exists.
         ERR_NOEXIST,    //!< Object does not exist.
-        ERR_BADCRC,     //!< CRC mismatch.
+        ERR_CRC,        //!< CRC mismatch.
         ERR_TRUNC,      //!< Payload is truncated by end of file.
         ERR_TREE,       //!< Bad tree structure.
         ERR_FREELIST,   //!< Bad freelist structure.
@@ -79,27 +77,13 @@ public:
         ERR_MAGIC,      //!< Bad object magic number.
     };
 
-private:
-    struct ObjectInfo {
-        zu64 tree;      // Tree node offset
-        zu64 parent;    // Parent tree node offset
-        zu64 lnode;     // Left child tree node offset
-        zu64 rnode;     // Right child tree node offset
-
-        objtype type;   // Payload type
-        union {
-            zbyte payload[16];
-            struct {
-                zu64 offset;    // Payload offset
-                zu64 size;      // Payload size
-            } data;
-        };
-
-        ZPointer<ParcelObjectAccessor> accessor;
-    };
+protected:
+    class ParcelObjectAccessor;
+    struct ObjectInfo;
 
 public:
     ZParcel();
+    ZParcel(const ZParcel &other) = delete;
     ~ZParcel();
 
     /*! Create new parcel file and open it.
@@ -205,12 +189,12 @@ public:
     /*! Fetch file object from parcel.
      *  If \a offset is not null, the offset of the file payload is written at \a offset.
      *  If \a size is not null, the size of the file payload is written at \a size.
-     *  \return The name of the file.
+     *  \return An accessor for the file contents.
      *  \exception ZException Parcel not open.
      *  \exception ZException Object does not exist.
      *  \exception ZException Object has wrong type.
      */
-    ZString fetchFile(ZUID id, zu64 *offset = nullptr, zu64 *size = nullptr);
+    ZPointer<ZBlockAccessor> fetchFile(ZUID id, ZString &name);
 
     /*! Remove an object from the parcel.
      *  \exception ZException Parcel not open.
@@ -221,15 +205,32 @@ public:
 
     void _listStep(zu64 next, zu16 depth);
 
-    //! Get the ZFile handle for the parcel.
-    ZFile getHandle() { return _file; }
-
     //! Get string name of object type.
     static ZString typeName(objtype type);
     //! Get string for error.
     static ZString errorStr(parcelerror err);
 
-public:
+protected:
+    //! Compute the size of an object node payload.
+    zu64 _objectSize(objtype type, zu64 size);
+    /*! Store a new object with \a id and \a type.
+     *  The contents of \a data are written into the payload of the new object.
+     *  If \a trailsize > 0, indicates the number of bytes that should be reserved in the payload,
+     *  beyond the size of \a data.
+     */
+    parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 reserve = 0);
+    //! Get object info struct.
+    parcelerror _getObjectInfo(ZUID id, ObjectInfo *info);
+
+private:
+    /*! Allocate node of at least \a size.
+     *  Offset and actual size of the node are returned in \a offset and \a nsize.
+     */
+    parcelerror _nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize);
+    //! Add node at \a offset with \a size to the freelist.
+    parcelerror _nodeFree(zu64 offset, zu64 size);
+
+protected:
     class ParcelObjectAccessor : public ZBlockAccessor {
     public:
         ParcelObjectAccessor(ZBlockAccessor *file, zu64 offset, zu64 size) :
@@ -265,37 +266,57 @@ public:
         const zu64 _size;
     };
 
+    struct ObjectInfo {
+        zu64 tree;      // Tree node offset
+        zu64 parent;    // Parent tree node offset
+        zu64 lnode;     // Left child tree node offset
+        zu64 rnode;     // Right child tree node offset
+
+        objtype type;   // Payload type
+        union {
+            zbyte payload[16];
+            struct {
+                zu64 offset;    // Payload offset
+                zu64 size;      // Payload size
+            } data;
+        };
+
+        ZPointer<ParcelObjectAccessor> accessor;
+    };
+
 private:
     class ParcelHeader {
     public:
-        ParcelHeader(ZParcel *parcel) : file(parcel->_backing){}
+        ParcelHeader(ZParcel *parcel, zu64 addr) : file(parcel->_file), offset(addr){}
 
         parcelerror read();
         parcelerror write();
 
-        static zu64 getNodeSize(){ return 7 + 1 + 8 + 8 + 8 + 8; }
+        static const zu64 NODE_SIZE = (7 + 1 + 4 + 8 + 8 + 8 + 8 + ZUID_SIZE + 4);
 
     public:
-        //    zbyte sig[ZPARCEL_SIG_LEN];
         zu8 version;
+        zu32 flags;
         zu64 treehead;
         zu64 freehead;
         zu64 freetail;
         zu64 tailptr;
+        ZUID root;
 
     private:
-        ZBlockAccessor *file;
+        ZBlockAccessor *const file;
+        const zu64 offset;
     };
 
 private:
     class ParcelTreeNode {
     public:
-        ParcelTreeNode(ZParcel *parcel, zu64 addr) : file(parcel->_backing), offset(addr){}
+        ParcelTreeNode(ZParcel *parcel, zu64 addr) : file(parcel->_file), offset(addr){}
 
         parcelerror read();
         parcelerror write();
 
-        static zu64 getNodeSize(){ return 4 + ZUID_SIZE + 8 + 8 + 2 + 2 + 16; }
+        static const zu64 NODE_SIZE = (4 + ZUID_SIZE + 8 + 8 + 2 + 4 + 16);
 
     public:
         ZUID uid;
@@ -303,7 +324,6 @@ private:
         zu64 rnode;
         zu8 type;
         zu8 extra;
-        zu16 crc;
         zbyte payload[16];
 
         struct {
@@ -313,59 +333,33 @@ private:
 
 
     private:
-        ZBlockAccessor *file;
-        zu64 offset;
+        ZBlockAccessor *const file;
+        const zu64 offset;
     };
 
 private:
     class ParcelFreeNode {
     public:
-        ParcelFreeNode(ZParcel *parcel, zu64 addr) : file(parcel->_backing), offset(addr){}
+        ParcelFreeNode(ZParcel *parcel, zu64 addr) : file(parcel->_file), offset(addr){}
 
         parcelerror read();
         parcelerror write();
 
-        static zu64 getNodeSize(){ return 4 + 8 + 8; }
+        static const zu64 NODE_SIZE = (4 + 8 + 8 + 4);
 
     public:
         zu64 next;
         zu64 size;
 
     private:
-        ZBlockAccessor *file;
-        zu64 offset;
+        ZBlockAccessor *const file;
+        const zu64 offset;
     };
-
-protected:
-    //! Compute the size of an object node payload.
-    zu64 _objectSize(objtype type, zu64 size);
-    /*! Store a new object with \a id and \a type.
-     *  The contents of \a data are written into the payload of the new object.
-     *  If \a trailsize > 0, indicates the number of bytes that should be reserved in the payload,
-     *  beyond the size of \a data.
-     */
-    parcelerror _storeObject(ZUID id, objtype type, const ZBinary &data, zu64 reserve = 0);
-    //! Get object info struct.
-    parcelerror _getObjectInfo(ZUID id, ObjectInfo *info);
-
-    parcelerror _nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize);
-    parcelerror _nodeFree(zu64 offset, zu64 size);
-
-private:
-    //! Write a copy of the file header at \a offset.
-    bool _writeHeader(zu64 offset);
 
 private:
     parcelstate _state;
-
-    ZFile _file;
-    ZBlockAccessor *_backing;
-
-    parceltype _version;
-    zu64 _treehead;
-    zu64 _freehead;
-    zu64 _freetail;
-    zu64 _tail;
+    ZBlockAccessor *_file;
+    ParcelHeader *_header;
     ZMap<ZUID, ObjectInfo> _cache;
 };
 

@@ -24,25 +24,23 @@ static const ZMap<ZString, ZParcel::objtype> nametotype = {
     { "binary", ZParcel::BLOBOBJ },
 };
 
-int cmd_create(ZPath file, ZArray<ZString> args){
+int cmd_create(ZFile *file, ZArray<ZString> args){
     ZParcel parcel;
-    ZParcel::parcelerror err = parcel.create(file);
-    if(err == ZParcel::OK){
-        LOG("OK - Create " << file);
-        return EXIT_SUCCESS;
-    } else {
+    auto err = parcel.create(file);
+    if(err != ZParcel::OK){
         LOG("FAIL - " << ZParcel::errorStr(err));
         return EXIT_FAILURE;
     }
+
+    LOG("OK - Create " << file);
+    return EXIT_SUCCESS;
 }
 
-int cmd_list(ZPath file, ZArray<ZString> args){
+int cmd_list(ZFile *file, ZArray<ZString> args){
     ZParcel parcel;
-    ZParcel::parcelerror err;
-
-    err = parcel.open(file);
+    auto err = parcel.open(file);
     if(err != ZParcel::OK){
-        ELOG("FAIL - " << ZParcel::errorStr(err));
+        LOG("FAIL - " << ZParcel::errorStr(err));
         return EXIT_FAILURE;
     }
 
@@ -51,7 +49,7 @@ int cmd_list(ZPath file, ZArray<ZString> args){
     return EXIT_SUCCESS;
 }
 
-int cmd_store(ZPath file, ZArray<ZString> args){
+int cmd_store(ZFile *file, ZArray<ZString> args){
     ZUID uid = args[0];
     ZString type = args[1];
     ZString value = args[2];
@@ -62,11 +60,9 @@ int cmd_store(ZPath file, ZArray<ZString> args){
     }
 
     ZParcel parcel;
-    ZParcel::parcelerror err;
-
-    err = parcel.open(file);
+    auto err = parcel.open(file);
     if(err != ZParcel::OK){
-        ELOG("FAIL - " << ZParcel::errorStr(err));
+        LOG("FAIL - " << ZParcel::errorStr(err));
         return EXIT_FAILURE;
     }
 
@@ -120,16 +116,21 @@ int cmd_store(ZPath file, ZArray<ZString> args){
     return EXIT_SUCCESS;
 }
 
-int cmd_fetch(ZPath file, ZArray<ZString> args){
-    ZParcel parcel;
-    ZParcel::parcelerror err = parcel.open(file);
-    if(err != ZParcel::OK){
-        ELOG("Failed to open: " << ZParcel::errorStr(err));
+int cmd_fetch(ZFile *file, ZArray<ZString> args){
+    ZUID uid = args[0];
+    if(uid == ZUID_NIL){
+        ELOG("FAIL - Invalid UUID");
         return EXIT_FAILURE;
     }
 
-    ZUID uid = args[0];
-    ZParcel::objtype type = parcel.getType(uid);
+    ZParcel parcel;
+    auto err = parcel.open(file);
+    if(err != ZParcel::OK){
+        LOG("FAIL - " << ZParcel::errorStr(err));
+        return EXIT_FAILURE;
+    }
+
+    auto type = parcel.getType(uid);
     if(type == ZParcel::UNKNOWNOBJ){
         ELOG("FAIL - Bad object type");
         return EXIT_FAILURE;
@@ -161,18 +162,15 @@ int cmd_fetch(ZPath file, ZArray<ZString> args){
             LOG(parcel.fetchBlob(uid));
             break;
         case ZParcel::FILEOBJ: {
-            zu64 offset;
-            zu64 size;
-            ZString name = parcel.fetchFile(uid, &offset, &size);
-            ZFile pfile = parcel.getHandle();
-            pfile.seek(offset);
+            ZString name;
+            auto accessor = parcel.fetchFile(uid, name);
 
             ZFile ofile(ZFile::STDOUT);
             ZBinary buff;
-            zu64 len = 0;
-            while(len < size){
-                buff.clear();
-                size = size - pfile.read(buff, MIN(1 << 15, size));
+            while(!accessor->atEnd()){
+                buff.resize(1 << 15);
+                zu64 len = accessor->read(buff.raw(), buff.size());
+                buff.resize(len);
                 ZASSERT(ofile.write(buff), "write failed");
             }
             break;
@@ -185,15 +183,20 @@ int cmd_fetch(ZPath file, ZArray<ZString> args){
     return EXIT_SUCCESS;
 }
 
-int cmd_remove(ZPath file, ZArray<ZString> args){
-    ZParcel parcel;
-    auto err = parcel.open(file);
-    if(err != ZParcel::OK){
-        ELOG("Failed to open: " << ZParcel::errorStr(err));
+int cmd_remove(ZFile *file, ZArray<ZString> args){
+    ZUID uid = args[0];
+    if(uid == ZUID_NIL){
+        ELOG("FAIL - Invalid UUID");
         return EXIT_FAILURE;
     }
 
-    ZUID uid = args[0];
+    ZParcel parcel;
+    auto err = parcel.open(file);
+    if(err != ZParcel::OK){
+        LOG("FAIL - " << ZParcel::errorStr(err));
+        return EXIT_FAILURE;
+    }
+
     err = parcel.removeObject(uid);
     if(err != ZParcel::OK){
         ELOG("Failed to open: " << ZParcel::errorStr(err));
@@ -204,7 +207,7 @@ int cmd_remove(ZPath file, ZArray<ZString> args){
     return EXIT_SUCCESS;
 }
 
-int cmd_test(ZPath file, ZArray<ZString> args){
+int cmd_test(ZFile *file, ZArray<ZString> args){
     ZParcel parcel;
     auto err = parcel.create(file);
     if(err != ZParcel::OK){
@@ -237,7 +240,8 @@ int cmd_test(ZPath file, ZArray<ZString> args){
 
 const ZArray<ZOptions::OptDef> optdef = {};
 
-typedef int (*cmd_func)(ZPath file, ZArray<ZString> args);
+typedef int (*cmd_func)(ZFile *file, ZArray<ZString> args);
+
 struct CmdEntry {
     cmd_func func;
     unsigned argn;
@@ -267,7 +271,7 @@ int main(int argc, char **argv){
 
         auto args = options.getArgs();
         if(args.size()){
-            ZPath file = args[0];
+            ZPath path = args[0];
             args.popFront();
 
             ZString cmstr = args[0];
@@ -275,7 +279,13 @@ int main(int argc, char **argv){
                 CmdEntry cmd = cmds[cmstr];
                 args.popFront();
                 if(args.size() == cmd.argn){
-                    return cmd.func(file, args);
+                    ZFile file;
+                    if(!file.open(path, ZFile::READWRITE)){
+                        LOG("Failed to open " << path);
+                        return -5;
+                    }
+
+                    return cmd.func(&file, args);
                 } else {
                     LOG("Usage: " << cmd.usage);
                     return -4;

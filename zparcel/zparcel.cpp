@@ -16,10 +16,6 @@ static LibChaos::zu32 ZPARCEL_OBJT_MAGIC    = 0x4f424a54;
 #define ZPARCEL_SIG "ZPARCEL"
 #define ZPARCEL_SIG_LEN 7
 
-#define ZPARCEL_HEADER_LEN ParcelHeader::getNodeSize()
-#define ZPARCEL_NODE_LEN ParcelTreeNode::getNodeSize()
-
-#define ZPARCEL_FREE_NODE_COUNT 4
 #define ZPARCEL_MAX_DEPTH 128
 
 #define CHECK_COMMON(STR) if(_state != OPEN){ \
@@ -56,7 +52,7 @@ static const ZMap<ZParcel::parcelerror, ZString> errtostr = {
     { ZParcel::ERR_WRITE,       "Error writing file" },
     { ZParcel::ERR_EXISTS,      "Object exists" },
     { ZParcel::ERR_NOEXIST,     "Object does not exist" },
-    { ZParcel::ERR_BADCRC,      "CRC mismatch" },
+    { ZParcel::ERR_CRC,         "CRC mismatch" },
     { ZParcel::ERR_TRUNC,       "Payload is truncated by end of file" },
     { ZParcel::ERR_TREE,        "Bad tree structure" },
     { ZParcel::ERR_FREELIST,    "Bad freelist structure" },
@@ -67,10 +63,9 @@ static const ZMap<ZParcel::parcelerror, ZString> errtostr = {
     { ZParcel::ERR_MAGIC,       "Bad object magic number" },
 };
 
-
 // /////////////////////////////////////////////////////////////////////////////
 
-ZParcel::ZParcel() : _state(CLOSED), _backing(nullptr), _version(UNKNOWN){
+ZParcel::ZParcel() : _state(CLOSED), _file(nullptr), _header(nullptr){
 
 }
 
@@ -78,59 +73,43 @@ ZParcel::~ZParcel(){
     close();
 }
 
-ZParcel::parcelerror ZParcel::create(ZPath file){
-    _version = VERSION1;
-    _file.open(file, ZFile::READWRITE);
-    if(!_file.isOpen())
-        return ERR_OPEN;
-    return create(&_file);
-}
-
 ZParcel::parcelerror ZParcel::create(ZBlockAccessor *file){
-    _backing = file;
+    close();
+    _file = file;
+    _header = new ParcelHeader(this, 0);
 
-    _treehead = ZU64_MAX;
-    _freehead = ZPARCEL_HEADER_LEN;
-    _freetail = ZPARCEL_HEADER_LEN;
-    _tail = ZPARCEL_HEADER_LEN;
+    _header->treehead = ZU64_MAX;
+    _header->freehead = ParcelHeader::NODE_SIZE;
+    _header->freetail = ParcelHeader::NODE_SIZE;
+    _header->tailptr = ParcelHeader::NODE_SIZE;
 
-    if(!_writeHeader(0))
-        return ERR_WRITE;
+    RETERR(_header->write());
 
-    _nodeFree(_tail, file->available());
+    if(file->seek(_header->tailptr) != _header->tailptr)
+        return ERR_SEEK;
+    RETERR(_nodeFree(_header->tailptr, file->available()));
 
     _state = OPEN;
     return OK;
 }
 
-ZParcel::parcelerror ZParcel::open(ZPath file){
-    _file.open(file, ZFile::READWRITE);
-    if(!_file.isOpen())
-        return ERR_OPEN;
-    return open(&_file);
-}
-
 ZParcel::parcelerror ZParcel::open(ZBlockAccessor *file){
-    _backing = file;
+    close();
+    _file = file;
+    _header = new ParcelHeader(this, 0);
 
-    ParcelHeader header(this);
-    RETERR(header.read());
+    RETERR(_header->read());
 
-    if(header.version >= MAX_PARCELTYPE)
+    if(_header->version >= MAX_PARCELTYPE)
         return ERR_VERSION;
-
-    _version = (parceltype)header.version;
-    _treehead = header.treehead;
-    _freehead = header.freehead;
-    _freetail = header.freetail;
-    _tail = header.tailptr;
 
     _state = OPEN;
     return OK;
 }
 
 void ZParcel::close(){
-    _file.close();
+    delete _header;
+    _state = CLOSED;
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -249,7 +228,7 @@ ZParcel::parcelerror ZParcel::storeFile(ZUID id, ZPath path){
 
     // Write file data
     zu64 poff = info.data.offset + 8;
-    if(_backing->seek(poff) != poff)
+    if(_file->seek(poff) != poff)
         return ERR_SEEK;
     ZBinary buff;
     while(!infile.atEnd()){
@@ -257,7 +236,7 @@ ZParcel::parcelerror ZParcel::storeFile(ZUID id, ZPath path){
         // Read 2^15 block
         if(infile.read(buff, 1 << 15) == 0)
             return ERR_READ;
-        if(_backing->write(buff.raw(), buff.size()) == 0)
+        if(_file->write(buff.raw(), buff.size()) == 0)
             return ERR_WRITE;
     }
     return OK;
@@ -321,12 +300,12 @@ ZString ZParcel::fetchString(ZUID id){
     if(info.type != STRINGOBJ)
         throw ZException("fetchString called for wrong Object type");
 
-    if(_backing->seek(info.data.offset) != info.data.offset)
+    if(_file->seek(info.data.offset) != info.data.offset)
         throw ZException("seek error");
 
-    zu64 len = _backing->readbeu64();
+    zu64 len = _file->readbeu64();
     ZBinary bin(len);
-    _backing->read(bin.raw(), bin.size());
+    _file->read(bin.raw(), bin.size());
     return ZString(bin.raw(), len);
 }
 
@@ -337,64 +316,42 @@ ZBinary ZParcel::fetchBlob(ZUID id){
     if(info.type != ZUIDOBJ)
         throw ZException("fetchBlob called for wrong Object type");
 
-    if(_backing->seek(info.data.offset) != info.data.offset)
+    if(_file->seek(info.data.offset) != info.data.offset)
         throw ZException("seek error");
 
-    zu64 len = _backing->readbeu64();
+    zu64 len = _file->readbeu64();
     ZBinary bin(len);
-    _backing->read(bin.raw(), bin.size());
+    _file->read(bin.raw(), bin.size());
     return bin;
 }
 
-ZString ZParcel::fetchFile(ZUID id, zu64 *offset, zu64 *size){
+ZPointer<ZBlockAccessor> ZParcel::fetchFile(ZUID id, ZString &name){
     CHECK_COMMON(__FUNCTION__);
     ObjectInfo info;
     _getObjectInfo(id, &info);
     if(info.type != FILEOBJ)
         throw ZException("fetchFile called for wrong Object type");
 
-    if(_backing->seek(info.data.offset) != info.data.offset)
+    if(_file->seek(info.data.offset) != info.data.offset)
         throw ZException("seek error");
 
     ZBinary nibin(16);
-    _backing->read(nibin.raw(), nibin.size());
+    _file->read(nibin.raw(), nibin.size());
     ZBinary dibin(16);
-    _backing->read(dibin.raw(), dibin.size());
+    _file->read(dibin.raw(), dibin.size());
 
     ZUID nid;
     nid.fromRaw(nibin.raw());
     ZUID did;
     did.fromRaw(dibin.raw());
 
-    ZString name = fetchString(nid);
+    name = fetchString(nid);
 
     ObjectInfo dinfo;
     if(_getObjectInfo(did, &dinfo) != OK)
         throw ZException("data object error");
 
-    if(_backing->seek(dinfo.data.offset) != dinfo.data.offset)
-        throw ZException("seek error");
-
-    zu64 fsize = _backing->readbeu64();
-
-//    ZFile file(name, ZFile::WRITE);
-
-    // Dump payload
-//    ZBinary buff;
-//    zu64 len = 0;
-//    _file.seek(info.offset + 8 + 2 + strlen);
-//    while(len < size){
-//        buff.clear();
-//        size = size - _file.read(buff, MIN(1 << 15, size));
-//        ZASSERT(file.write(buff), "write failed");
-//    }
-
-    if(offset != nullptr)
-        *offset = info.data.offset + 8;
-    if(size != nullptr)
-        *size = fsize;
-
-    return name;
+    return new ParcelObjectAccessor(_file, dinfo.data.offset + 8, dinfo.accessor->readbeu64());
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -419,7 +376,7 @@ ZParcel::parcelerror ZParcel::removeObject(ZUID id){
 // /////////////////////////////////////////////////////////////////////////////
 
 void ZParcel::listObjects(){
-    _listStep(_treehead, 0);
+    _listStep(_header->treehead, 0);
 }
 
 void ZParcel::_listStep(zu64 next, zu16 depth){
@@ -484,7 +441,7 @@ zu64 ZParcel::_objectSize(objtype type, zu64 size){
 
 ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary &data, zu64 reserve){
     // Tree node size
-    zu64 tsize = ZPARCEL_NODE_LEN;
+    zu64 tsize = ParcelTreeNode::NODE_SIZE;
 
     // Allocate tree node
     zu64 offset;
@@ -499,7 +456,6 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
     newnode.rnode = ZU64_MAX;
     newnode.type = type;
     newnode.extra = nsize - tsize;
-    newnode.crc = 0;
 
     // Write data
     if(newnode.type >= BLOBOBJ){
@@ -518,13 +474,11 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
     RETERR(newnode.write());
 
     // Find where to insert into tree
-    zu64 next = _treehead;
+    zu64 next = _header->treehead;
     if(next == ZU64_MAX){
         // Tree head is uninitialzied
-        _treehead = offset;
-        // Rewrite header with new tree head
-        if(!_writeHeader(0))
-            return ERR_WRITE;
+        _header->treehead = offset;
+        RETERR(_header->write());
 
     } else {
 
@@ -593,7 +547,7 @@ ZParcel::parcelerror ZParcel::_getObjectInfo(ZUID id, ObjectInfo *info){
     }
 
     // Search the tree
-    zu64 next = _treehead;
+    zu64 next = _header->treehead;
     zu64 prev = 0;
 
     for(zu64 d = 0; d < ZPARCEL_MAX_DEPTH; ++d){
@@ -625,7 +579,7 @@ ZParcel::parcelerror ZParcel::_getObjectInfo(ZUID id, ObjectInfo *info){
             if(node.type >= BLOBOBJ){
                 info->data.offset = node.data.offset;
                 info->data.size = node.data.size;
-                info->accessor = new ParcelObjectAccessor(_backing, info->data.offset, info->data.size);
+                info->accessor = new ParcelObjectAccessor(_file, info->data.offset, info->data.size);
             } else {
                 memcpy(info->payload, node.payload, 16);
                 info->accessor = nullptr;
@@ -646,7 +600,7 @@ ZParcel::parcelerror ZParcel::_nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize){
 //    ERR(_freeNodeAlloc(&fnode, nsize));
 //    return OK;
 
-    zu64 next = _freehead;
+    zu64 next = _header->freehead;
     zu64 fsize;
     zu64 fnext;
     zu64 prev = 0;
@@ -684,7 +638,7 @@ ZParcel::parcelerror ZParcel::_nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize){
 
 //    DLOG("Alloc free node " << *size << " " << HEX(fnode->offset) << " " << fnode->size);
 
-    if((fsize - size) >= ParcelFreeNode::getNodeSize()){
+    if((fsize - size) >= ParcelFreeNode::NODE_SIZE){
         *nsize = size;
         nextoff = next + size;
 
@@ -696,10 +650,8 @@ ZParcel::parcelerror ZParcel::_nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize){
 
         // If moving the tail, update head
         if(fnode.next == ZU64_MAX){
-            _freetail = next;
-
-            if(!_writeHeader(0))
-                return ERR_WRITE;
+            _header->freetail = next;
+            RETERR(_header->write());
         }
 
 //        DLOG("Split free node " << HEX(fnode->offset) << " " << fnode->size);
@@ -717,10 +669,8 @@ ZParcel::parcelerror ZParcel::_nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize){
     // Update parent freelist
     if(prev == 0){
         // Rewrite superblock
-        _freehead = nextoff;
-
-        if(!_writeHeader(0))
-            return ERR_WRITE;
+        _header->freehead = nextoff;
+        RETERR(_header->write());
 
     } else {
         // Rewrite parent
@@ -740,28 +690,12 @@ ZParcel::parcelerror ZParcel::_nodeFree(zu64 offset, zu64 size){
 
     RETERR(fnode.write());
 
-    ParcelFreeNode pnode(this, _freetail);
+    ParcelFreeNode pnode(this, _header->freetail);
     RETERR(pnode.read());
     pnode.next = offset;
     RETERR(pnode.write());
 
     return OK;
-}
-
-bool ZParcel::_writeHeader(zu64 offset){
-    ParcelHeader header(this);
-//    ::memcpy(header.sig, ZPARCEL_SIG, ZPARCEL_SIG_LEN);
-    header.version = _version;
-    header.treehead = _treehead;
-    header.freehead = _freehead;
-    header.freetail = _freetail;
-    header.tailptr = _tail;
-
-//    if(_backing->seek(offset) != offset)
-//        return false;
-    if(header.write() != OK)
-        return false;
-    return true;
 }
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -803,41 +737,68 @@ zu64 ZParcel::ParcelObjectAccessor::write(const zbyte *src, zu64 size){
 ZParcel::parcelerror ZParcel::ParcelHeader::read(){
     DLOG("Header read " << HEX(0));
 
-    if(file->seek(0) != 0)
+    ZBinary buff(NODE_SIZE);
+
+    // I/O
+    if(file->seek(offset) != offset)
         return ERR_SEEK;
-
-    if(file->available() < getNodeSize())
+    if(file->read(buff.raw(), buff.size()) != buff.size())
         return ERR_READ;
 
+    // Magic
     zbyte sig[ZPARCEL_SIG_LEN];
-    if(file->read(sig, ZPARCEL_SIG_LEN) != ZPARCEL_SIG_LEN)
-        return ERR_READ;
+    buff.read(sig, ZPARCEL_SIG_LEN);
     if(::memcmp(sig, ZPARCEL_SIG, ZPARCEL_SIG_LEN) != 0)
         return ERR_SIG;
 
-    version = file->readu8();
-    treehead = file->readbeu64();
-    freehead = file->readbeu64();
-    freetail = file->readbeu64();
-    tailptr = file->readbeu64();
+    // Fields
+    version = buff.readu8();
+    flags = buff.readbeu32();
+    treehead = buff.readbeu64();
+    freehead = buff.readbeu64();
+    freetail = buff.readbeu64();
+    tailptr = buff.readbeu64();
+    zbyte rootid[16];
+    buff.read(rootid, 16);
 
+    // CRC
+    zu32 crc1 = buff.readbeu32();
+    buff.seek(buff.tell() - 4);
+    buff.writebeu32(0);
+    zu32 crc2 = ZHash<ZBinary, ZHashBase::CRC32>(buff).hash();
+    if(crc2 != crc1)
+        return ERR_CRC;
+
+    root.fromRaw(rootid);
     return OK;
 }
 
 ZParcel::parcelerror ZParcel::ParcelHeader::write(){
-    if(file->seek(0) != 0)
-        return ERR_SEEK;
+    ZBinary buff(NODE_SIZE);
 
-    if(file->write((const zbyte *)ZPARCEL_SIG, ZPARCEL_SIG_LEN) != ZPARCEL_SIG_LEN)
+    // Fields
+    buff.write((const zbyte *)ZPARCEL_SIG, ZPARCEL_SIG_LEN);
+    buff.writeu8(version);
+    buff.writebeu32(flags);
+    buff.writebeu64(treehead);
+    buff.writebeu64(freehead);
+    buff.writebeu64(freetail);
+    buff.writebeu64(tailptr);
+    buff.write(root.raw(), 16);
+    buff.writebeu32(0);
+
+    // CRC
+    zu32 crc = ZHash<ZBinary, ZHashBase::CRC32>(buff).hash();
+    buff.seek(buff.tell() - 4);
+    buff.writebeu32(crc);
+
+    // I/O
+    if(file->seek(offset) != offset)
+        return ERR_SEEK;
+    if(file->write(buff.raw(), buff.size()) != buff.size())
         return ERR_WRITE;
 
-    file->writeu8(version);
-    file->writebeu64(treehead);
-    file->writebeu64(freehead);
-    file->writebeu64(freetail);
-    file->writebeu64(tailptr);
-
-    DLOG("Header write OK " << HEX(0) << " " << HEX(0 + getNodeSize()));
+    DLOG("Header write OK " << HEX(offset) << " " << HEX(offset + NODE_SIZE));
 
     return OK;
 }
@@ -849,53 +810,75 @@ ZParcel::parcelerror ZParcel::ParcelHeader::write(){
 ZParcel::parcelerror ZParcel::ParcelTreeNode::read(){
     DLOG("TreeNode read " << HEX(offset));
 
+    ZBinary buff(NODE_SIZE);
+
+    // I/O
     if(file->seek(offset) != offset)
         return ERR_SEEK;
+    if(file->read(buff.raw(), buff.size()) != buff.size())
+        return ERR_READ;
 
-//    if(file->available() < getNodeSize())
-//        return ERR_READ;
-
-    zu32 magic = file->readbeu32();
+    // Magic
+    zu32 magic = buff.readbeu32();
     if(magic != ZPARCEL_TREE_MAGIC)
         return ERR_MAGIC;
 
+    // Fields
     zbyte id[16];
-    file->read(id, 16);
-    uid.fromRaw(id);
-    lnode = file->readbeu64();
-    rnode = file->readbeu64();
-    type = file->readu8();
-    extra = file->readu8();
-    crc = file->readbeu16();
+    buff.read(id, 16);
+    lnode = buff.readbeu64();
+    rnode = buff.readbeu64();
+    type = buff.readu8();
+    extra = buff.readu8();
 
-    file->read(payload, 16);
+    // CRC
+    zu32 crc1 = buff.readbeu32();
+    buff.seek(buff.tell() - 4);
+    buff.writebeu32(0);
+    zu32 crc2 = ZHash<ZBinary, ZHashBase::CRC32>(buff).hash();
+    if(crc2 != crc1)
+        return ERR_CRC;
+
+    // Payload
+    buff.read(payload, 16);
+
+    uid.fromRaw(id);
     if(type >= ZParcel::BLOBOBJ){
         data.size = ZBinary::decbeu64(payload);
         data.offset= ZBinary::decbeu64(payload + 8);
     }
-
     return OK;
 }
 
 ZParcel::parcelerror ZParcel::ParcelTreeNode::write(){
-    if(file->seek(offset) != offset)
-        return ERR_SEEK;
+    ZBinary buff(NODE_SIZE);
 
-    file->writebeu32(ZPARCEL_TREE_MAGIC);
-    file->write(uid.raw(), 16);
-    file->writebeu64(lnode);
-    file->writebeu64(rnode);
-    file->writeu8(type);
-    file->writeu8(extra);
-    file->writebeu16(crc);
-
+    // Fields
+    buff.writebeu32(ZPARCEL_TREE_MAGIC);
+    buff.write(uid.raw(), 16);
+    buff.writebeu64(lnode);
+    buff.writebeu64(rnode);
+    buff.writeu8(type);
+    buff.writeu8(extra);
+    buff.writebeu32(0);
     if(type >= ZParcel::BLOBOBJ){
         ZBinary::encbeu64(payload, data.size);
         ZBinary::encbeu64(payload + 8, data.offset);
     }
-    file->write(payload, 16);
+    buff.write(payload, 16);
 
-    DLOG("TreeNode write OK " << HEX(offset) << " " << HEX(offset + getNodeSize()));
+    // CRC
+    zu32 crc = ZHash<ZBinary, ZHashBase::CRC32>(buff).hash();
+    buff.seek(buff.tell() - 20);
+    buff.writebeu32(crc);
+
+    // I/O
+    if(file->seek(offset) != offset)
+        return ERR_SEEK;
+    if(file->write(buff.raw(), buff.size()) != buff.size())
+        return ERR_WRITE;
+
+    DLOG("TreeNode write OK " << HEX(offset) << " " << HEX(offset + NODE_SIZE));
 
     return OK;
 }
@@ -907,30 +890,54 @@ ZParcel::parcelerror ZParcel::ParcelTreeNode::write(){
 ZParcel::parcelerror ZParcel::ParcelFreeNode::read(){
     DLOG("FreeNode read " << HEX(offset));
 
+    ZBinary buff(NODE_SIZE);
+
     if(file->seek(offset) != offset)
         return ERR_SEEK;
+    if(file->read(buff.raw(), buff.size()) != buff.size())
+        return ERR_READ;
 
-//    if(file->available() < getNodeSize())
-//        return ERR_READ;
-
-    zu32 magic = file->readbeu32();
+    // Magic
+    zu32 magic = buff.readbeu32();
     if(magic != ZPARCEL_FREE_MAGIC)
         return ERR_MAGIC;
 
-    next = file->readbeu64();
-    size = file->readbeu64();
+    // Fields
+    next = buff.readbeu64();
+    size = buff.readbeu64();
+
+    // CRC
+    zu32 crc1 = buff.readbeu32();
+    buff.seek(buff.tell() - 4);
+    buff.writebeu32(0);
+    zu32 crc2 = ZHash<ZBinary, ZHashBase::CRC32>(buff).hash();
+    if(crc2 != crc1)
+        return ERR_CRC;
+
     return OK;
 }
 
 ZParcel::parcelerror ZParcel::ParcelFreeNode::write(){
+    ZBinary buff(NODE_SIZE);
+
+    // Fields
+    buff.writebeu32(ZPARCEL_FREE_MAGIC);
+    buff.writebeu64(next);
+    buff.writebeu64(size);
+    buff.writebeu32(0);
+
+    // CRC
+    zu32 crc = ZHash<ZBinary, ZHashBase::CRC32>(buff).hash();
+    buff.seek(buff.tell() - 4);
+    buff.writebeu32(crc);
+
+    // I/O
     if(file->seek(offset) != offset)
         return ERR_SEEK;
+    if(file->write(buff.raw(), buff.size()) != buff.size())
+        return ERR_WRITE;
 
-    file->writebeu32(ZPARCEL_FREE_MAGIC);
-    file->writebeu64(next);
-    file->writebeu64(size);
-
-    DLOG("FreeNode write OK " << HEX(offset) << " " << HEX(offset + getNodeSize()));
+    DLOG("FreeNode write OK " << HEX(offset) << " " << HEX(offset + NODE_SIZE));
 
     return OK;
 }
