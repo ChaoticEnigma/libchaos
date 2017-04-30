@@ -24,9 +24,17 @@ static const ZMap<ZString, ZParcel::objtype> nametotype = {
     { "binary", ZParcel::BLOBOBJ },
 };
 
+ZUID argNewUID(ZString str){
+    if(str == "time")
+        return ZUID(ZUID::TIME);
+    else if(str == "random")
+        return ZUID(ZUID::RANDOM);
+    return ZUID(str);
+}
+
 int cmd_create(ZFile *file, ZArray<ZString> args){
     ZParcel parcel;
-    auto err = parcel.create(file);
+    auto err = parcel.create(file, ZParcel::OPT_TAIL_EXTEND);
     if(err != ZParcel::OK){
         LOG("FAIL - " << ZParcel::errorStr(err));
         return EXIT_FAILURE;
@@ -50,7 +58,7 @@ int cmd_list(ZFile *file, ZArray<ZString> args){
 }
 
 int cmd_store(ZFile *file, ZArray<ZString> args){
-    ZUID uid = args[0];
+    ZUID uid = argNewUID(args[0]);
     ZString type = args[1];
     ZString value = args[2];
 
@@ -209,7 +217,7 @@ int cmd_remove(ZFile *file, ZArray<ZString> args){
 
 int cmd_test(ZFile *file, ZArray<ZString> args){
     ZParcel parcel;
-    auto err = parcel.create(file);
+    auto err = parcel.create(file, ZParcel::OPT_TAIL_EXTEND);
     if(err != ZParcel::OK){
         ELOG("Failed to open: " << ZParcel::errorStr(err));
         return EXIT_FAILURE;
@@ -227,6 +235,7 @@ int cmd_test(ZFile *file, ZArray<ZString> args){
             ELOG("FAIL " << ZParcel::errorStr(err));
             return EXIT_FAILURE;
         }
+        LOG(id.str() << " OK " << tst);
     }
 
     for(auto it = ids.begin(); it.more(); ++it){
@@ -260,6 +269,7 @@ const ZMap<ZString, CmdEntry> cmds = {
 int main(int argc, char **argv){
     ZLog::logLevelStdOut(ZLog::INFO, "%log%");
     ZLog::logLevelStdOut(ZLog::DEBUG, "%time% (%file%:%line%) - %log%");
+//    ZLog::logLevelStdOut(ZLog::DEBUG, "");
     ZLog::logLevelStdErr(ZLog::ERRORS, "%time% (%file%:%line%) - %log%");
 
     try {

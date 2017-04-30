@@ -23,13 +23,18 @@ public:
     enum parceltype {
         UNKNOWN = 0,
         VERSION1,       //!< Type 1 parcel. No pages, payload in tree node.
-        MAX_PARCELTYPE,
+        MAX_PARCELTYPE = VERSION1,
     };
 
     enum parcelstate {
         OPEN,
         CLOSED,
         LOCKED,
+    };
+
+    enum parcelopt {
+        OPT_NONE        = 0,
+        OPT_TAIL_EXTEND = 1,    //! Extend parcel file on tail when full.
     };
 
     enum {
@@ -78,7 +83,6 @@ public:
     };
 
 protected:
-    class ParcelObjectAccessor;
     struct ObjectInfo;
 
 public:
@@ -90,13 +94,11 @@ public:
      *  This will overwrite an existing file.
      *  \exception ZException Failed to create file.
      */
-    parcelerror create(ZPath file);
-    parcelerror create(ZBlockAccessor *file);
+    parcelerror create(ZBlockAccessor *file, parcelopt opt);
 
     /*! Open existing parcel.
      *  \exception ZException Failed to open file.
      */
-    parcelerror open(ZPath file);
     parcelerror open(ZBlockAccessor *file);
 
     //! Close file handles.

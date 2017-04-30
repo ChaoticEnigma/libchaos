@@ -17,6 +17,7 @@ static LibChaos::zu32 ZPARCEL_OBJT_MAGIC    = 0x4f424a54;
 #define ZPARCEL_SIG_LEN 7
 
 #define ZPARCEL_MAX_DEPTH 128
+#define ZPARCEL_INIT_PAD 4096
 
 #define CHECK_COMMON(STR) if(_state != OPEN){ \
     throw ZException(ZString(STR) + ": parcel not open"); \
@@ -73,21 +74,36 @@ ZParcel::~ZParcel(){
     close();
 }
 
-ZParcel::parcelerror ZParcel::create(ZBlockAccessor *file){
+ZParcel::parcelerror ZParcel::create(ZBlockAccessor *file, parcelopt opt){
     close();
     _file = file;
     _header = new ParcelHeader(this, 0);
 
+    _header->version = VERSION1;
+    _header->flags = opt;
     _header->treehead = ZU64_MAX;
     _header->freehead = ParcelHeader::NODE_SIZE;
     _header->freetail = ParcelHeader::NODE_SIZE;
-    _header->tailptr = ParcelHeader::NODE_SIZE;
+    _header->tailptr = ZPARCEL_INIT_PAD;
+    _header->root = ZUID_NIL;
+
+    _file->seek(0);
+    ZBinary pad;
+    pad.fill(0, ZPARCEL_INIT_PAD);
+    _file->write(pad.raw(), pad.size());
+    _file->seek(0);
+    zu64 flsz = _file->available();
+    _file->seek(0);
 
     RETERR(_header->write());
 
-    if(file->seek(_header->tailptr) != _header->tailptr)
-        return ERR_SEEK;
-    RETERR(_nodeFree(_header->tailptr, file->available()));
+    const zu64 fsize = flsz - ParcelHeader::NODE_SIZE - ParcelFreeNode::NODE_SIZE;
+    DLOG("Base free node " << fsize);
+
+    ParcelFreeNode fnode(this, ParcelHeader::NODE_SIZE);
+    fnode.size = fsize;
+    fnode.next = ZU64_MAX;
+    RETERR(fnode.write());
 
     _state = OPEN;
     return OK;
@@ -100,7 +116,7 @@ ZParcel::parcelerror ZParcel::open(ZBlockAccessor *file){
 
     RETERR(_header->read());
 
-    if(_header->version >= MAX_PARCELTYPE)
+    if(_header->version > MAX_PARCELTYPE)
         return ERR_VERSION;
 
     _state = OPEN;
@@ -514,8 +530,8 @@ ZParcel::parcelerror ZParcel::_storeObject(ZUID id, objtype type, const ZBinary 
             } else {
                 // Object already exists
                 if(node.type == NULLOBJ){
-                    //
-                    break;
+                    // TODO: Fill in new node
+                    return ERR_EXISTS;
                 } else {
                     return ERR_EXISTS;
                 }
@@ -611,7 +627,33 @@ ZParcel::parcelerror ZParcel::_nodeAlloc(zu64 size, zu64 *offset, zu64 *nsize){
     while(true){
         if(next == ZU64_MAX){
             // No free nodes found
-            return ERR_NOFREE;
+            if(_header->flags & OPT_TAIL_EXTEND){
+                if(_file->seek(_header->tailptr) != _header->tailptr)
+                    return ERR_SEEK;
+
+                // Pad new space
+                ZBinary pad;
+                pad.fill(0, 4096);
+                for(zu64 sz = size; sz > 0; ){
+                    zu32 s = MIN(sz, 4096);
+                    if(_file->write(pad.raw(), s) != s)
+                        return ERR_WRITE;
+                    sz -= s;
+                }
+
+                *offset = _header->tailptr;
+                *nsize = size;
+
+                DLOG("Tail extend " << HEX(offset) << " " << nsize);
+
+                // Move tail
+                _header->tailptr += size;
+                RETERR(_header->write());
+
+                return OK;
+            } else {
+                return ERR_NOFREE;
+            }
         }
 
         // Read free list node
