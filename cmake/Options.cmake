@@ -25,9 +25,6 @@ OPTION(REQUIRE_ZPNG                         "Require PNG support"               
 OPTION(REQUIRE_ZWEBP                        "Require WebP support"                      OFF )
 OPTION(REQUIRE_ZDATABASE                    "Require SQLite3 support"                   OFF )
 
-# ZParcel Tool
-OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
-
 # Util Executables
 OPTION(LIBCHAOS_UTIL_EXTENSION_FIXER        "Build LibChaos Extension Fixer"            OFF )
 OPTION(LIBCHAOS_UTIL_AUDIOBOOK_SORTER       "Build LibChaos Audiobook Sorter"           OFF )
