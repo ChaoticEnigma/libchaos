@@ -45,7 +45,8 @@ public:
         FLOATOBJ,       //!< Floating point number object. Double precision.
         ZUIDOBJ,        //!< UUID object.
         BLOBOBJ,        //!< Binary blob object.
-        STRINGOBJ,      //!< String object.
+        STRINGOBJ,      //!< String object. UTF-8 string.
+        LISTOBJ,        //!< List object. Ordered list of UUIDs.
         FILEOBJ,        //!< File object. Includes embedded filename and file content.
 
         /*! User-defined object types can be created by subclassing ZParcel and defining new types starting with MAX_OBJTYPE.
@@ -133,14 +134,18 @@ public:
      *  \exception ZException Parcel not open.
      */
     parcelerror storeZUID(ZUID id, ZUID uid);
-    /*! Store string in parcel.
-     *  \exception ZException Parcel not open.
-     */
-    parcelerror storeString(ZUID id, ZString str);
     /*! Store blob in parcel.
      *  \exception ZException Parcel not open.
      */
     parcelerror storeBlob(ZUID id, ZBinary blob);
+    /*! Store string in parcel.
+     *  \exception ZException Parcel not open.
+     */
+    parcelerror storeString(ZUID id, ZString str);
+    /*! Store list in parcel.
+     *  \exception ZException Parcel not open.
+     */
+    parcelerror storeList(ZUID id, ZList<ZUID> list);
     /*! Store file reference in parcel.
      *  \exception ZException Parcel not open.
      */
@@ -176,18 +181,30 @@ public:
      *  \exception ZException Object has wrong type.
      */
     ZUID fetchZUID(ZUID id);
-    /*! Fetch string from parcel.
-     *  \exception ZException Parcel not open.
-     *  \exception ZException Object does not exist.
-     *  \exception ZException Object has wrong type.
-     */
-    ZString fetchString(ZUID id);
     /*! Fetch blob from parcel.
      *  \exception ZException Parcel not open.
      *  \exception ZException Object does not exist.
      *  \exception ZException Object has wrong type.
      */
     ZBinary fetchBlob(ZUID id);
+    /*! Fetch reader for blob from parcel.
+     *  \exception ZException Parcel not open.
+     *  \exception ZException Object does not exist.
+     *  \exception ZException Object has wrong type.
+     */
+    ZPointer<ZBlockAccessor> fetchBlobReader(ZUID id);
+    /*! Fetch string from parcel.
+     *  \exception ZException Parcel not open.
+     *  \exception ZException Object does not exist.
+     *  \exception ZException Object has wrong type.
+     */
+    ZString fetchString(ZUID id);
+    /*! Fetch list from parcel.
+     *  \exception ZException Parcel not open.
+     *  \exception ZException Object does not exist.
+     *  \exception ZException Object has wrong type.
+     */
+    ZList<ZUID> fetchList(ZUID id);
     /*! Fetch file object from parcel.
      *  If \a offset is not null, the offset of the file payload is written at \a offset.
      *  If \a size is not null, the size of the file payload is written at \a size.
@@ -196,12 +213,15 @@ public:
      *  \exception ZException Object does not exist.
      *  \exception ZException Object has wrong type.
      */
-    ZPointer<ZBlockAccessor> fetchFile(ZUID id, ZString &name);
+    parcelerror fetchFile(ZUID id, ZUID &nameid, ZUID &dataid);
 
     /*! Remove an object from the parcel.
      *  \exception ZException Parcel not open.
       */
     parcelerror removeObject(ZUID id);
+
+    ZUID getRoot();
+    parcelerror setRoot(ZUID id);
 
     void listObjects();
 
@@ -297,6 +317,7 @@ private:
         static const zu64 NODE_SIZE = (7 + 1 + 4 + 8 + 8 + 8 + 8 + ZUID_SIZE + 4);
 
     public:
+        // 7 byte signature
         zu8 version;
         zu32 flags;
         zu64 treehead;
@@ -304,6 +325,7 @@ private:
         zu64 freetail;
         zu64 tailptr;
         ZUID root;
+        // 4 byte crc
 
     private:
         ZBlockAccessor *const file;
@@ -318,14 +340,16 @@ private:
         parcelerror read();
         parcelerror write();
 
-        static const zu64 NODE_SIZE = (4 + ZUID_SIZE + 8 + 8 + 2 + 4 + 16);
+        static const zu64 NODE_SIZE = (4 + ZUID_SIZE + 8 + 8 + 1 + 1 + 4 + 16);
 
     public:
+        // 4 byte magic
         ZUID uid;
         zu64 lnode;
         zu64 rnode;
         zu8 type;
         zu8 extra;
+        // 4 byte crc
         zbyte payload[16];
 
         struct {
