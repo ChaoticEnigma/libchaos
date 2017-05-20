@@ -23,6 +23,8 @@ public:
 public:
     ZDatabase();
     ZDatabase(ZPath file);
+    ZDatabase(const ZDatabase &other) = delete;
+
     ~ZDatabase();
 
     //! Open database \p file.
