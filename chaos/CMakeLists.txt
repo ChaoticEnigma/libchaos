@@ -13,6 +13,7 @@ SET(LibChaos_SOURCES
     abstract/yindexedaccess.h
     abstract/ypushpopaccess.h
     abstract/zaccessor.h
+    abstract/zblockaccessor.h
     abstract/zbase.h
     abstract/zhashable.h
     abstract/ziterator.h

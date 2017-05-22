@@ -12,7 +12,7 @@
 namespace LibChaos {
 
 bool ZPPM::isPPM(const ZBinary &data){
-    return (ZBinary::decle16(data.raw()) == PPM_SIG);
+    return (ZBinary::decleu16(data.raw()) == PPM_SIG);
 }
 
 bool ZPPM::decode(ZReader *input){
