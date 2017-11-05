@@ -74,6 +74,10 @@ ZDatabase::Prepared::~Prepared(){
     sqlite3_finalize(_stmt);
 }
 
+bool ZDatabase::Prepared::ok(){
+    return (_stmt != NULL);
+}
+
 int ZDatabase::Prepared::bind(ZString name, ZString value){
     int index = sqlite3_bind_parameter_index(_stmt, name.cc());
     int ret = sqlite3_bind_text(_stmt, index, value.cc(), value.size(), SQLITE_TRANSIENT);

@@ -45,11 +45,17 @@ public:
     //! Prepared statement wrapper.
     class Prepared {
         friend class ZDatabase;
+    public:
+        Prepared() : _stmt(NULL){}
     private:
         Prepared(sqlite3_stmt *stmt);
 
     public:
         ~Prepared();
+
+        //! Check if prepared statement is valid.
+        bool ok();
+
         //! Bind a value to a named SQL parameter.
         int bind(ZString name, ZString value);
         //! Execute the prepared statement.
