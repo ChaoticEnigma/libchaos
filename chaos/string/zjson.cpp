@@ -4,6 +4,7 @@
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zjson.h"
+//#include "zlog.h"
 
 #include <string>
 #include <assert.h>
@@ -298,9 +299,11 @@ bool ZJSON::decode(ZString s, zu64 *position){
             }
             //--i;
             if(_type == OBJECT){
+//                DLOG("add to object: " << json.encode());
                 _data.object.add(kbuff, json);
                 kbuff.clear();
             } else if(_type == ARRAY){
+//                DLOG("add to array: " << json.encode());
                 _data.array.push(json);
             } else {
                 assert(false);
@@ -325,7 +328,7 @@ bool ZJSON::decode(ZString s, zu64 *position){
 
         // Number
         case num:
-            if(isWhitespace(c) || c == ',' || c == '}'){
+            if(isWhitespace(c) || c == ',' || c == '}' || c == ']'){
                 _data.number = std::stod(vbuff.str());
                 if(position != nullptr){
                     *position = i-1;

@@ -48,13 +48,19 @@ void json(){
     TASSERT(json1.decode(str1));
     checkType(json1, "");
 
+    ZString str2 = "{\"func\":\"test\",\"arg\":[0,1,2,3]}";
+    LOG(str2);
     ZJSON json2;
-    json2["string"] = "test1";
-    json2["number"] = 12345;
-    json2["object"]["str"] = "test2";
-    json2["array"] << "test\"3\"";
-    json2["array"] << 54321;
-    LOG(json2.encode());
+    TASSERT(json2.decode(str2));
+    checkType(json2, "");
+
+    ZJSON json3;
+    json3["string"] = "test1";
+    json3["number"] = 12345;
+    json3["object"]["str"] = "test2";
+    json3["array"] << "test\"3\"";
+    json3["array"] << 54321;
+    LOG(json3.encode());
 }
 
 ZArray<Test> json_tests(){
