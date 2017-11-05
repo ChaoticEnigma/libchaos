@@ -31,6 +31,8 @@ public:
     //! Get a map of column names to fields in \a row.
     ZMap<ZString, ZString> getRecord(zu64 row);
 
+    void clear();
+
     //! Number of columns.
     zu64 colCount();
     //! Number of rows.

@@ -60,6 +60,11 @@ ZMap<ZString, ZString> ZTable::getRecord(zu64 row){
     return map;
 }
 
+void ZTable::clear(){
+    _columns = ZMap<ZString, zu64>();
+    _records.clear();
+}
+
 zu64 ZTable::colCount(){
     return _columns.size();
 }

@@ -37,6 +37,7 @@ public:
     Prepared prepare(ZString sql);
 
     //! Execute an SQL query.
+    int execute(ZString sql);
     int execute(ZString sql, ZTable &result);
 
     sqlite3 *handle(){ return _db; }
@@ -61,6 +62,8 @@ public:
         //! Bind a value to a named SQL parameter.
         int bind(ZString name, ZString value);
         //! Execute the prepared statement.
+        int execute();
+        //! Execute the prepared statement and get result rows.
         int execute(ZTable &result);
 
     private:

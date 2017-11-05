@@ -55,6 +55,14 @@ ZDatabase::Prepared ZDatabase::prepare(ZString sql){
     return Prepared(stmt);
 }
 
+int ZDatabase::execute(ZString sql){
+    if(!ok())
+        return -1;
+
+    Prepared prep = prepare(sql);
+    return prep.execute();
+}
+
 int ZDatabase::execute(ZString sql, ZTable &result){
     if(!ok())
         return -1;
@@ -93,24 +101,39 @@ int ZDatabase::Prepared::bind(ZString name, ZString value){
     return ret;
 }
 
-int ZDatabase::Prepared::execute(ZTable &result){
+int ZDatabase::Prepared::execute(){
+    // Step until done
+    while(sqlite3_step(_stmt) != SQLITE_DONE);
+    return 0;
+}
 
+int ZDatabase::Prepared::execute(ZTable &result){
     // Step rows and get column values
     int rc;
+    bool col = false;
+    int count;
     while(true){
         rc = sqlite3_step(_stmt);
         if(rc != SQLITE_ROW)
             break;
-        int count = sqlite3_column_count(_stmt);
+
+        if(!col){
+            count = sqlite3_column_count(_stmt);
+            for(int i = 0; i < count; ++i){
+                const char *name = sqlite3_column_name(_stmt, i);
+                result.addColumn(name);
+            }
+            col = true;
+        }
+
         ZArray<ZString> record;
         for(int i = 0; i < count; ++i){
-            const char *name = sqlite3_column_name(_stmt, i);
-            result.addColumn(name);
             const unsigned char *text = sqlite3_column_text(_stmt, i);
             record.push(text);
         }
         result.addRecord(record);
     }
+
     if(rc != SQLITE_DONE)
         return -3;
 
