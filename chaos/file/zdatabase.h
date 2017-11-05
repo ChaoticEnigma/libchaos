@@ -56,6 +56,8 @@ public:
         //! Check if prepared statement is valid.
         bool ok();
 
+        //! Bind a value to an indexed SQL parameter.
+        int bind(int index, ZString value);
         //! Bind a value to a named SQL parameter.
         int bind(ZString name, ZString value);
         //! Execute the prepared statement.
