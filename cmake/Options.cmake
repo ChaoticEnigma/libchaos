@@ -7,7 +7,8 @@ OPTION(EXTRA_WARNINGS                       "Produce Extra Compiler Warnings"   
 OPTION(BUILD_DOCS                           "Documentation should be configured"        ON  )
 
 # General Options
-OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library"        OFF )
+OPTION(LIBCHAOS_SHARED                      "Build LibChaos as a shared library, link with shared libraries"    OFF )
+OPTION(LIBCHAOS_STATIC                      "Link LibChaos with static libraries"       OFF )
 #OPTION(IBERTY_DEMANGLE                      "Use libiberty to demangle symbols"         OFF )
 
 # Library Components
@@ -15,18 +16,17 @@ OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"         
 OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         OFF )
 
 # Third-Party Library Support
+OPTION(DISABLE_CRYPTO                       "Disable Crypto support"                    OFF )
 OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )
 OPTION(DISABLE_ZJPEG                        "Disable JPEG support"                      OFF )
 OPTION(DISABLE_ZWEBP                        "Disable WebP support"                      OFF )
 OPTION(DISABLE_ZDATABASE                    "Disable SQLite3 support"                   OFF )
 
+OPTION(REQUIRE_CRYPTO                       "Rwquire Crypto support"                    ON )
 OPTION(REQUIRE_ZJPEG                        "Require JPEG support"                      OFF )
 OPTION(REQUIRE_ZPNG                         "Require PNG support"                       OFF )
 OPTION(REQUIRE_ZWEBP                        "Require WebP support"                      OFF )
 OPTION(REQUIRE_ZDATABASE                    "Require SQLite3 support"                   OFF )
-
-# ZParcel Tool
-OPTION(LIBCHAOS_ZPARCEL                     "Build ZParcel tool"                        OFF )
 
 # Util Executables
 OPTION(LIBCHAOS_UTIL_EXTENSION_FIXER        "Build LibChaos Extension Fixer"            OFF )

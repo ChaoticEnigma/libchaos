@@ -14,7 +14,7 @@ void random(){
     LOG(random.genzu());
 }
 
-void uid(){
+void uid_str(){
     ZUID uid1;
 
     ZString uidstr2 = "abcdef00-1234-5678-9012-fedcbaabcdef";
@@ -27,24 +27,19 @@ void uid(){
     TASSERT(uid3 == ZUID_NIL);
 
     ZUID uid4(ZUID::NIL);
-    ZUID uid5(ZUID::TIME);
-    ZUID uid6(ZUID::RANDOM);
-
-    ZUID ndns("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
-    ZString name = "www.znnxs.com";
-    ZUID uid7(ZUID::NAME_MD5, ndns, name);
-    ZUID uid8(ZUID::NAME_SHA, ndns, name);
-
-    TASSERT(ZUID(ZUID::NAME_MD5, ndns, "www.widgets.com").str() == "e902893a-9d22-3c7e-a7b8-d6e313b71d9f");
-
-    LOG(PAD("Default (nil):") << uid1.str());
+    
+    LOG(PAD("Default (nil):")  << uid1.str());
     LOG(PAD("String:")         << uid2.str());
     LOG(PAD("String (fail):")  << uid3.str() << " " << uidstr3);
     LOG(PAD("Nil:")            << uid4.str());
+}
+
+void uid_time(){
+    ZUID uid5(ZUID::TIME);
+    ZUID uid6(ZUID::RANDOM);
+    
     LOG(PAD("Time:")           << uid5.str());
     LOG(PAD("Random:")         << uid6.str());
-    LOG(PAD("Name MD5:")       << uid7.str());
-    LOG(PAD("Name SHA1:")      << uid8.str());
 
     ZBinary mac = ZUID::getMACAddress();
     ZString macstr;
@@ -53,13 +48,31 @@ void uid(){
     macstr.substr(0, macstr.size()-1);
     LOG(ZString("MAC:").pad(' ', PADLEN) << macstr << " " << mac.size() << " " << mac);
 
-    ZList<ZBinary> maclist = ZUID::getMACAddresses();
+    //ZList<ZBinary> maclist = ZUID::getMACAddresses();
 }
+
+#ifdef LIBCHAOS_HAS_CRYPTO
+void uid_name(){
+    ZUID ndns("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+    ZString name = "www.znnxs.com";
+    ZUID uid7(ZUID::NAME_MD5, ndns, name);
+    ZUID uid8(ZUID::NAME_SHA, ndns, name);
+    
+    TASSERT(ZUID(ZUID::NAME_MD5, ndns, "www.widgets.com").str() == "e902893a-9d22-3c7e-a7b8-d6e313b71d9f");
+    
+    LOG(PAD("Name MD5:")       << uid7.str());
+    LOG(PAD("Name SHA1:")      << uid8.str());
+}
+#endif
 
 ZArray<Test> misc_tests(){
     return {
-        { "random", random, true, {} },
-        { "uid",    uid,    true, {} },
+        { "random",     random,     true, {} },
+        { "uid_str",    uid_str,    true, {} },
+        { "uid_time",   uid_time,   true, {} },
+#ifdef LIBCHAOS_HAS_CRYPTO
+        { "uid_name",   uid_name,   true, {} },
+#endif
     };
 }
 

@@ -38,6 +38,10 @@ bool ZJPEG::isJPEG(const ZBinary &data){
         jerr.error_exit = error_exit;
         jpeg_create_decompress(&cinfo);
 
+#ifndef LIBJPEG_TURBO_VERSION_NUMBER
+    #define LIBJPEG_TURBO_VERSION_NUMBER 0
+#endif
+
         // some versions of libjepg / libjpeg-turbo have a const on the second argument
 #if JPEG_LIB_VERSION >= 91 || LIBJPEG_TURBO_VERSION_NUMBER >= 1005001
         jpeg_mem_src(&cinfo, data.raw(), data.size());

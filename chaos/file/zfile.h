@@ -10,9 +10,7 @@
 #include "zpath.h"
 #include "zpointer.h"
 #include "zbinary.h"
-#include "zposition.h"
-#include "zreader.h"
-#include "zwriter.h"
+#include "zblockaccessor.h"
 
 #if PLATFORM == WINDOWS || PLATFORM == CYGWIN
     //#define ZFILE_WINAPI
@@ -27,7 +25,7 @@ namespace LibChaos {
 /*! Reference counted cross-platform file handle abstraction.
  *  Intentionally does not support an append mode.
  */
-class ZFile : public ZPosition, public ZReader, public ZWriter {
+class ZFile : public ZBlockAccessor {
 public:
     enum zfile_special {
         REGULAR,

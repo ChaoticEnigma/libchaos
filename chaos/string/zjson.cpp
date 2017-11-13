@@ -4,6 +4,7 @@
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zjson.h"
+//#include "zlog.h"
 
 #include <string>
 #include <assert.h>
@@ -84,7 +85,7 @@ ZString ZJSON::encode(){
         return _data.number;
         break;
     case BOOLEAN:
-        return _data.boolean;
+        return (_data.boolean ? "true" : "false");
         break;
     default:
         break;
@@ -296,11 +297,13 @@ bool ZJSON::decode(ZString s, zu64 *position){
             if(!json.decode(s, &i)){
                 return false;
             }
-            --i;
+            //--i;
             if(_type == OBJECT){
+//                DLOG("add to object: " << json.encode());
                 _data.object.add(kbuff, json);
                 kbuff.clear();
             } else if(_type == ARRAY){
+//                DLOG("add to array: " << json.encode());
                 _data.array.push(json);
             } else {
                 assert(false);
@@ -315,7 +318,7 @@ bool ZJSON::decode(ZString s, zu64 *position){
                 _data.string = vbuff;
                 ++i;
                 if(position != nullptr){
-                    *position = i;
+                    *position = i-1;
                 }
                 return true;
             } else {
@@ -325,10 +328,10 @@ bool ZJSON::decode(ZString s, zu64 *position){
 
         // Number
         case num:
-            if(isWhitespace(c) || c == ',' || c == '}'){
+            if(isWhitespace(c) || c == ',' || c == '}' || c == ']'){
                 _data.number = std::stod(vbuff.str());
                 if(position != nullptr){
-                    *position = i;
+                    *position = i-1;
                 }
                 return true;
             } else {
@@ -338,15 +341,28 @@ bool ZJSON::decode(ZString s, zu64 *position){
 
         // After Value
         case aval:
-            if(c == ','){
-                loc = bkey;
-            } else if(c == '}'){
-                if(position != nullptr){
-                    *position = i;
+            if(_type == ARRAY){
+                if(c == ','){
+                    loc = bval;
+                } else if(c == ']'){
+                    if(position != nullptr){
+                        *position = i;
+                    }
+                    return true;
+                } else if(!isWhitespace(c)){
+                    return false;
                 }
-                return true;
-            } else if(!isWhitespace(c)){
-                return false;
+            } else {
+                if(c == ','){
+                    loc = bkey;
+                } else if(c == '}'){
+                    if(position != nullptr){
+                        *position = i;
+                    }
+                    return true;
+                } else if(!isWhitespace(c)){
+                    return false;
+                }
             }
             break;
 

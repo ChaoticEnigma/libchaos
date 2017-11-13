@@ -31,8 +31,10 @@ public:
         XXHASH64,   //!< xxHash - fast non-cryptographic hash.
         FNV64,      //!< FNV Hash - simple non-cryptographic hash.
         CRC32,      //!< CRC-32 - classic CRC.
+#ifdef LIBCHAOS_HAS_CRYPTO
         MD5,        //!< MD5 - old cryptographic hash.
         SHA1,       //!< SHA-1 - old cryptographic hash.
+#endif
         DEFAULT = FNV64,
     };
 

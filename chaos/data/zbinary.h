@@ -9,9 +9,7 @@
 #include "ztypes.h"
 #include "zarray.h"
 #include "zaccessor.h"
-#include "zposition.h"
-#include "zreader.h"
-#include "zwriter.h"
+#include "zblockaccessor.h"
 #include "zstring.h"
 //#include "zerror.h"
 //#include "zhash.h"
@@ -24,7 +22,7 @@ typedef ZBinary ZBuffer;
 typedef zbyte zbinary_bytetype;
 
 //! Binary data buffer container.
-class ZBinary : public ZAccessor<zbinary_bytetype>, public ZPosition, public ZReader, public ZWriter {
+class ZBinary : public ZAccessor<zbinary_bytetype>, public ZBlockAccessor {
 public:
     typedef zbinary_bytetype bytetype;
     enum { NONE = ZU64_MAX };
@@ -221,37 +219,37 @@ public:
     zu64 write(const ZBinary &data){ return write(data.raw(), data.size()); }
 
     //! Decode 1 byte into unsigned 8-bit integer
-    static zu8 deczu8(const zbyte *bin);
+    static zu8 decu8(const zbyte *bin);
     //! Encode unsigned 8-bit integer into 1 byte
-    static void enczu8(zbyte *bin, zu8 num);
+    static void encu8(zbyte *bin, zu8 num);
 
     //! Decode 2 big-endian bytes into unsigned 16-bit integer.
-    static zu16 decbe16(const zbyte *bin);
+    static zu16 decbeu16(const zbyte *bin);
     //! Decode 4 big-endian bytes into unsigned 32-bit integer.
-    static zu32 decbe32(const zbyte *bin);
+    static zu32 decbeu32(const zbyte *bin);
     //! Decode 8 big-endian bytes into unsigned 64-bit integer.
-    static zu64 decbe64(const zbyte *bin);
+    static zu64 decbeu64(const zbyte *bin);
 
     //! Encode unsigned 16-bit integer into 2 big-endian bytes.
-    static void encbe16(zbyte *bin, zu16 num);
+    static void encbeu16(zbyte *bin, zu16 num);
     //! Encode unsigned 32-bit integer into 4 big-endian bytes.
-    static void encbe32(zbyte *bin, zu32 num);
+    static void encbeu32(zbyte *bin, zu32 num);
     //! Encode unsigned 64-bit integer into 8 big-endian bytes.
-    static void encbe64(zbyte *bin, zu64 num);
+    static void encbeu64(zbyte *bin, zu64 num);
 
     //! Decode 2 little-endian bytes into unsigned 16-bit integer.
-    static zu16 decle16(const zbyte *bin);
+    static zu16 decleu16(const zbyte *bin);
     //! Decode 4 little-endian bytes into unsigned 32-bit integer.
-    static zu32 decle32(const zbyte *bin);
+    static zu32 decleu32(const zbyte *bin);
     //! Decode 8 little-endian bytes into unsigned 64-bit integer.
-    static zu64 decle64(const zbyte *bin);
+    static zu64 decleu64(const zbyte *bin);
 
     //! Encode unsigned 16-bit integer into 2 little-endian bytes.
-    static void encle16(zbyte *bin, zu16 num);
+    static void encleu16(zbyte *bin, zu16 num);
     //! Encode unsigned 32-bit integer into 4 little-endian bytes.
-    static void encle32(zbyte *bin, zu32 num);
+    static void encleu32(zbyte *bin, zu32 num);
     //! Encode unsigned 64-bit integer into 8 little-endian bytes.
-    static void encle64(zbyte *bin, zu64 num);
+    static void encleu64(zbyte *bin, zu64 num);
 
     //! Decode 4 big-endian bytes into a 32-bit double.
     static float decfloat(const zbyte *bin);
@@ -264,14 +262,14 @@ public:
     static void encdouble(zbyte *bin, double dbl);
 
     // Aliases for decoding multi-byte integers from bytes
-    static zu16 deczu16(const zbyte *bin){ return decbe16(bin); }
-    static zu32 deczu32(const zbyte *bin){ return decbe32(bin); }
-    static zu64 deczu64(const zbyte *bin){ return decbe64(bin); }
+    static zu16 deczu16(const zbyte *bin){ return decbeu16(bin); }
+    static zu32 deczu32(const zbyte *bin){ return decbeu32(bin); }
+    static zu64 deczu64(const zbyte *bin){ return decbeu64(bin); }
 
     // Aliases for encoding multi-byte integers into bytes
-    static void enczu16(zbyte *bin, zu16 num){ encbe16(bin, num); }
-    static void enczu32(zbyte *bin, zu32 num){ encbe32(bin, num); }
-    static void enczu64(zbyte *bin, zu64 num){ encbe64(bin, num); }
+    static void enczu16(zbyte *bin, zu16 num){ encbeu16(bin, num); }
+    static void enczu32(zbyte *bin, zu32 num){ encbeu32(bin, num); }
+    static void enczu64(zbyte *bin, zu64 num){ encbeu64(bin, num); }
 
 private:
     ZAllocator<bytetype> *_alloc;
