@@ -16,11 +16,13 @@ OPTION(LIBCHAOS_UI                          "Build LibChaos UI library"         
 OPTION(LIBCHAOS_TEST                        "Build and Run LibChaos Test suite"         OFF )
 
 # Third-Party Library Support
+OPTION(DISABLE_CRYPTO                       "Disable Crypto support"                    OFF )
 OPTION(DISABLE_ZPNG                         "Disable PNG support"                       OFF )
 OPTION(DISABLE_ZJPEG                        "Disable JPEG support"                      OFF )
 OPTION(DISABLE_ZWEBP                        "Disable WebP support"                      OFF )
 OPTION(DISABLE_ZDATABASE                    "Disable SQLite3 support"                   OFF )
 
+OPTION(REQUIRE_CRYPTO                       "Rwquire Crypto support"                    ON )
 OPTION(REQUIRE_ZJPEG                        "Require JPEG support"                      OFF )
 OPTION(REQUIRE_ZPNG                         "Require PNG support"                       OFF )
 OPTION(REQUIRE_ZWEBP                        "Require WebP support"                      OFF )

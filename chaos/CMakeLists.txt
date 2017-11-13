@@ -59,8 +59,6 @@ SET(LibChaos_SOURCES
     file/zimage.cpp
     file/zpdf.h
     file/zpdf.cpp
-    file/zsettings.h
-    file/zsettings.cpp
 
     file/image/zbmp.h
     file/image/zbmp.cpp
@@ -124,6 +122,11 @@ SET(LibChaos_SOURCES
     thread/zworkqueue.h
 )
 
+SET(LibChaos_SETTINGS_SOURCES
+    file/zsettings.h
+    file/zsettings.cpp
+)
+
 SET(LibChaos_PNG_SOURCES
     file/image/zpng.h
     file/image/zpng.cpp
@@ -146,6 +149,10 @@ SET(LibChaos_WIN32_SOURCES
     lib/StackWalker.h
     lib/StackWalker.cpp
 )
+
+IF(LIBCHAOS_WITH_CRYPTO)
+    SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_SETTINGS_SOURCES})
+ENDIF()
 
 IF(LIBCHAOS_WITH_PNG)
     SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_PNG_SOURCES})

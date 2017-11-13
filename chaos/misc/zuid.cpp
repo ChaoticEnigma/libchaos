@@ -124,6 +124,7 @@ ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
             break;
         }
 
+#ifdef LIBCHAOS_HAS_CRYPTO
         case NAME_MD5: {
             // Version 3 UUID: Namespace-Name-MD5
             nameHashSet(ZHash<ZBinary, ZHashBase::MD5>(nameHashData(namespce, name)).hash());
@@ -135,6 +136,7 @@ ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
             nameHashSet(ZHash<ZBinary, ZHashBase::SHA1>(nameHashData(namespce, name)).hash());
             break;
         }
+#endif
 
         case NIL:
         default:
@@ -196,12 +198,14 @@ ZUID::uuidtype ZUID::getType() const {
     switch(type){
         case 1:
             return TIME;
+#ifdef LIBCHAOS_HAS_CRYPTO
         case 3:
             return NAME_MD5;
-        case 4:
-            return RANDOM;
         case 5:
             return NAME_SHA;
+#endif
+        case 4:
+            return RANDOM;
         default:
             return UNKNOWN;
     }

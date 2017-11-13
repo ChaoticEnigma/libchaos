@@ -39,6 +39,7 @@ void hash(){
             TASSERT(hasha == hashb)
         }
 
+#ifdef LIBCHAOS_HAS_CRYPTO
         {
             ZBinary hasha = ZHash<ZString, ZHashBase::MD5>(data).hash();
             ZBinary hashb = ZHash<ZString, ZHashBase::MD5>(data).hash();
@@ -52,6 +53,7 @@ void hash(){
             LOG("SHA-1: " << data << " " << hasha << " " << hashb);
             TASSERT(hasha == hashb)
         }
+#endif
     };
 
     ZString data2 = "LibChaos";
