@@ -23,7 +23,11 @@ OPTION(DISABLE_ZJPEG            "Disable JPEG support"                      OFF 
 OPTION(DISABLE_ZWEBP            "Disable WebP support"                      OFF )
 OPTION(DISABLE_ZDATABASE        "Disable SQLite3 support"                   OFF )
 
-OPTION(REQUIRE_CRYPTO           "Require Crypto support"                    ON )
+IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                OFF )
+ELSE()
+    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                ON  )
+ENDIF()
 OPTION(REQUIRE_ZJPEG            "Require JPEG support"                      OFF )
 OPTION(REQUIRE_ZPNG             "Require PNG support"                       OFF )
 OPTION(REQUIRE_ZWEBP            "Require WebP support"                      OFF )
