@@ -12,6 +12,9 @@
 
 #include <type_traits>
 
+#define ZHASH_HAS_MD5   (defined(LIBCHAOS_HAS_CRYPTO) || PLATFORM == WINDOWS)
+#define ZHASH_HAS_SHA1  (defined(LIBCHAOS_HAS_CRYPTO) || PLATFORM == WINDOWS)
+
 // Simple Hash initial base
 #define ZHASH_SIMPLEHASH_INIT ((zu64)5381)
 
@@ -31,8 +34,10 @@ public:
         XXHASH64,   //!< xxHash - fast non-cryptographic hash.
         FNV64,      //!< FNV Hash - simple non-cryptographic hash.
         CRC32,      //!< CRC-32 - classic CRC.
-#ifdef LIBCHAOS_HAS_CRYPTO
+#if ZHASH_HAS_MD5
         MD5,        //!< MD5 - old cryptographic hash.
+#endif
+#if ZHASH_HAS_SHA1
         SHA1,       //!< SHA-1 - old cryptographic hash.
 #endif
         DEFAULT = FNV64,
@@ -100,17 +105,21 @@ public:
     virtual ZBinary hash() const { return _hash; }
 
 public:
+#if ZHASH_HAS_MD5
     // MD5
     static ZBinary md5_hash(const zbyte *data, zu64 size);
     static void *md5_init();
     static void md5_feed(void *context, const zbyte *data, zu64 size);
     static ZBinary md5_finish(void *context);
+#endif
 
+#if ZHASH_HAS_SHA1
     // SHA
     static ZBinary sha1_hash(const zbyte *data, zu64 size);
     static void *sha1_init();
     static void sha1_feed(void *context, const zbyte *data, zu64 size);
     static ZBinary sha1_finish(void *context);
+#endif
 
 protected:
     hashtype _hash;
@@ -176,7 +185,7 @@ protected:
     void *_state;
 };
 
-#ifdef LIBCHAOS_HAS_CRYPTO
+#if ZHASH_HAS_MD5
 
 // MD5 (128-bit)
 //! Hash method provider for 128-bit MD5 hash.
@@ -197,6 +206,10 @@ protected:
 protected:
     void *_context;
 };
+
+#endif
+
+#if ZHASH_HAS_SHA1
 
 // SHA-1 (160-bit)
 //! Hash method provider for 160-bit SHA-1 hash.

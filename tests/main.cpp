@@ -130,7 +130,7 @@ int main(int argc, char **argv){
 
         // Run tests
         ZMap<ZString, int> teststatus;
-        int failed = 0;
+        zu64 failed = 0;
         for(zu64 i = 0; i < tests.size(); ++i){
             Test test = tests[i];
             ZString status = " PASS";
@@ -202,8 +202,10 @@ int main(int argc, char **argv){
 
         }
 
+        LOG("Result: " << tests.size() - failed << "/" << tests.size() << " passed, " << failed << " failed");
+
         // Return number of tests failed
-        return failed;
+        return (int)failed;
 
     } catch(ZException e){
         printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());

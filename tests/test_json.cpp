@@ -15,7 +15,7 @@ void checkType(ZJSON &json, ZString pre){
     }
     case ZJSON::ARRAY:
         LOG(pre << "Array");
-        for(int i = 0; i < json.array().size(); ++i){
+        for(zu64 i = 0; i < json.array().size(); ++i){
             LOG(pre << "  " << i << ":");
             checkType(json.array()[i], pre + "  | ");
         }

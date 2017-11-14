@@ -1,23 +1,53 @@
 ## Utility Functions and Macros
 
-# Configure TARGET with LibChaos compile options
-MACRO(LibChaos_Configure_Target TARGET)
-    # Require C++11
-    SET_PROPERTY(TARGET ${TARGET} PROPERTY CXX_STANDARD_REQUIRED 11)
-    # Try to get C++14
-    SET_PROPERTY(TARGET ${TARGET} PROPERTY CXX_STANDARD 14)
+# Build Type
+IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+    SET(TYPE_STR "Debug")
+ELSEIF(CMAKE_BUILD_TYPE MATCHES "Release")
+    SET(TYPE_STR "Release")
+ELSE()
+    SET(TYPE_STR "Other")
+ENDIF()
 
-    # Set compile flags
-    GET_PROPERTY(LibChaosCXXFlags GLOBAL PROPERTY LibChaosCXXFlags)
-    SET_PROPERTY(TARGET ${TARGET} PROPERTY COMPILE_FLAGS ${LibChaosCXXFlags})
+# Linkage
+IF(LIBCHAOS_BUILD_SHARED)
+    SET(LINK_TYPE "Shared")
+ELSE()
+    SET(LINK_TYPE "Static")
+ENDIF()
 
-    # Set include directories
-    GET_PROPERTY(LibChaosInclude GLOBAL PROPERTY LibChaosInclude)
-    TARGET_INCLUDE_DIRECTORIES(${TARGET} PUBLIC ${LibChaosInclude})
+# Libraries
+IF(LIBCHAOS_WITH_CRYPTO)
+    SET(CRYPTO_STR "Crypto,")
+ENDIF()
+IF(LIBCHAOS_WITH_PNG)
+    SET(PNG_STR "PNG,")
+ENDIF()
+IF(LIBCHAOS_WITH_JPEG)
+    SET(JPEG_STR "JPEG,")
+ENDIF()
+IF(LIBCHAOS_WITH_WEBP)
+    SET(WEBP_STR "WebP,")
+ENDIF()
+IF(LIBCHAOS_WITH_SQLITE3)
+    SET(SQLITE3_STR "SQlite3,")
+ENDIF()
 
-    # Link LibChaos
-    TARGET_LINK_LIBRARIES(${TARGET} chaos)
-ENDMACRO()
+SET(LIBS_STR "Core,${CRYPTO_STR}${PNG_STR}${JPEG_STR}${WEBP_STR}${SQLITE3_STR}")
+STRING(LENGTH ${LIBS_STR} LEN0)
+MATH(EXPR LEN "${LEN0} - 1")
+STRING(SUBSTRING ${LIBS_STR} 0 ${LEN} LIBS_STR)
+
+# Git Describe
+EXECUTE_PROCESS(
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND git describe --all --long --always --dirty=*
+    OUTPUT_VARIABLE LIBCHAOS_DESCRIBE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Build Status Line
+MESSAGE(STATUS "LibChaos: ${TYPE_STR} (${LINK_TYPE}) - ${LIBS_STR} - ${LIBCHAOS_DESCRIBE}")
 
 # Add each argument to the global source list
 FUNCTION(CollectSources)
@@ -26,16 +56,6 @@ FUNCTION(CollectSources)
         SET(LibChaosAllSources ${LibChaosAllSources} ${CMAKE_CURRENT_SOURCE_DIR}/${SRC})
     ENDFOREACH()
     SET_PROPERTY(GLOBAL PROPERTY LibChaosAllSources ${LibChaosAllSources})
-ENDFUNCTION()
-
-# Add each argument to the global include list
-FUNCTION(CollectIncludes)
-    SET(IncludeProp ${PROJECT_NAME}Include)
-    GET_PROPERTY(Include GLOBAL PROPERTY ${IncludeProp})
-    FOREACH(DIR ${ARGN})
-        SET(Include ${Include} ${CMAKE_CURRENT_SOURCE_DIR}/${DIR})
-    ENDFOREACH()
-    SET_PROPERTY(GLOBAL PROPERTY ${IncludeProp} ${Include})
 ENDFUNCTION()
 
 # Download a file at URL to FILE in build dir
