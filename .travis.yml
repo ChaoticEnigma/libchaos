@@ -20,10 +20,10 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - sourceline: 'ppa:george-edison55/cmake-3.x'
 
     packages:
     - cmake
-    - cmake-data
     - gcc-5
     - g++-5
     - clang
