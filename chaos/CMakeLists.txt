@@ -248,18 +248,20 @@ IF(MSVC)
 ENDIF()
 
 # GCC / Clang Options
-IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
-   "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+   CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     TARGET_COMPILE_OPTIONS(chaos PRIVATE
         # Warning groups
         -Wall -Wextra -Wpedantic
         # Casting
-        -Wcast-qual -Wsign-conversion -Wsign-promo
+        -Wcast-qual -Wsign-conversion
         # Formatting
         -Wformat=2 -Wstrict-overflow=5 -Wswitch-default
         # Declarations
-        -Winit-self  -Wredundant-decls -Wundef -Woverloaded-virtual
-        -Wmissing-include-dirs -Wctor-dtor-privacy -Wdisabled-optimization
+        -Winit-self  -Wredundant-decls -Wundef
+        -Wmissing-include-dirs -Wdisabled-optimization
+
+        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy>
 
         # Disabled warnings
         -Wno-unused -Wno-unused-parameter
@@ -268,7 +270,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
         -Werror=return-type -Werror=delete-incomplete
 
         # GCC-only
-        $<$<C_COMPILER_ID:GNU>:-Wlogical-op -Wnoexcept -Wstrict-null-sentinel>
+        $<$<C_COMPILER_ID:GNU>:-Wlogical-op $<$<COMPILE_LANGUAGE:CXX>:-Wnoexcept -Wstrict-null-sentinel>>
         # Clang-only
         $<$<C_COMPILER_ID:Clang>:-Wno-nested-anon-types>
     )
@@ -313,7 +315,7 @@ IF(WIN32)
         TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
     ENDIF()
 ELSE()
-    IF(NOT APPLE)
+    IF(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
         # For zclock
         TARGET_LINK_LIBRARIES(chaos rt)
     ENDIF()

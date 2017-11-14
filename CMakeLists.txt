@@ -49,7 +49,6 @@ SET(LibChaos_OTHER_FILES
     doc/LibChaos_Todo_Ideas.txt
     doc/Doxyfile.in
     doc/Doxyfile-help.in
-    doc/ZParcel.txt
 )
 
 # LibChaos
