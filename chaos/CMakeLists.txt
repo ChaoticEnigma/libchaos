@@ -181,18 +181,20 @@ CollectSources(
 
 ### =================== CONFIG =================== ###
 
-# Visual Studio Project Filters
+# Visual Studio project filters
 SOURCE_GROUP(""         FILES ztypes.h)
 SOURCE_GROUP(abstract   REGULAR_EXPRESSION "abstract/.*")
 SOURCE_GROUP(base       REGULAR_EXPRESSION "base/.*")
 SOURCE_GROUP(data       REGULAR_EXPRESSION "data/.*")
 SOURCE_GROUP(file       REGULAR_EXPRESSION "file/.*")
-#SOURCE_GROUP(lib        REGULAR_EXPRESSION "lib/.*")
 SOURCE_GROUP(math       REGULAR_EXPRESSION "math/.*")
 SOURCE_GROUP(misc       REGULAR_EXPRESSION "misc/.*")
 SOURCE_GROUP(net        REGULAR_EXPRESSION "net/.*")
 SOURCE_GROUP(string     REGULAR_EXPRESSION "string/.*")
 SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
+
+# Disable warnings on lib files
+SET_SOURCE_FILES_PROPERTIES(lib/xxhash.c PROPERTIES COMPILE_FLAGS -w)
 
 IF(LIBCHAOS_BUILD_SHARED)
     SET(LIBCHAOS_LINK SHARED)
@@ -258,19 +260,21 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
         # Formatting
         -Wformat=2 -Wstrict-overflow=5 -Wswitch-default
         # Declarations
-        -Winit-self  -Wredundant-decls -Wundef
+        -Winit-self -Wredundant-decls -Wundef
         -Wmissing-include-dirs -Wdisabled-optimization
 
+        # C++ warnings
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy>
 
         # Disabled warnings
-        -Wno-unused -Wno-unused-parameter
+        -Wno-unused -Wno-unused-parameter -Wno-expansion-to-defined
 
         # Forced errors
         -Werror=return-type -Werror=delete-incomplete
 
         # GCC-only
-        $<$<C_COMPILER_ID:GNU>:-Wlogical-op $<$<COMPILE_LANGUAGE:CXX>:-Wnoexcept -Wstrict-null-sentinel>>
+        $<$<C_COMPILER_ID:GNU>:-Wlogical-op>
+        $<$<C_COMPILER_ID:GNU>:$<$<COMPILE_LANGUAGE:CXX>:-Wnoexcept -Wstrict-null-sentinel>>
         # Clang-only
         $<$<C_COMPILER_ID:Clang>:-Wno-nested-anon-types>
     )
