@@ -35,6 +35,7 @@ addons:
 
 before_install:
 - uname -a
+- apt-cache policy cmake
 - cmake --version
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CC" == "gcc" ]; then brew update; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CC" == "gcc" ]; then brew install gcc5; fi
