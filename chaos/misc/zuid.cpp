@@ -124,13 +124,15 @@ ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
             break;
         }
 
-#ifdef LIBCHAOS_HAS_CRYPTO
+#if ZHASH_HAS_MD5
         case NAME_MD5: {
             // Version 3 UUID: Namespace-Name-MD5
             nameHashSet(ZHash<ZBinary, ZHashBase::MD5>(nameHashData(namespce, name)).hash());
             break;
         }
+#endif
 
+#if ZHASH_HAS_SHA1
         case NAME_SHA: {
             // Version 5 UUID: Namespace-Name-SHA
             nameHashSet(ZHash<ZBinary, ZHashBase::SHA1>(nameHashData(namespce, name)).hash());

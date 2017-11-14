@@ -40,7 +40,6 @@
 #define MSVC        0x13
 #define CLANG       0x14
 
-/*
 // Detection
 #if defined(__MINGW32__)
     #define COMPILER MINGW
@@ -53,14 +52,6 @@
 #else
     #warning Unknown Compiler!
 #endif
-
-// Warn if detected and specified compilers are different
-#if COMPILER != _LIBCHAOS_COMPILER
-    #warning Different detected and specified compilers!
-#endif
-*/
-
-#define COMPILER _LIBCHAOS_COMPILER
 
 // Disable some MSVC warnings
 #if COMPILER == MSVC
@@ -80,7 +71,6 @@
 #define MACOSX      0x24
 #define CYGWIN      0x25
 
-/*
 // Detection
 #if defined(__linux__)
     #define PLATFORM LINUX
@@ -93,14 +83,6 @@
 #else
     #warning Unknown Platform!
 #endif
-
-// Warn if detected and specified platforms are different
-#if PLATFORM != _LIBCHAOS_PLATFORM
-    #warning Different detected and specified platforms!
-#endif
-*/
-
-#define PLATFORM _LIBCHAOS_PLATFORM
 
 //
 // Build
