@@ -267,16 +267,20 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
         $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy>
 
         # Disabled warnings
-        -Wno-unused -Wno-unused-parameter -Wno-expansion-to-defined
+        -Wno-unused -Wno-unused-parameter
 
         # Forced errors
         -Werror=return-type -Werror=delete-incomplete
 
         # GCC-only
-        $<$<C_COMPILER_ID:GNU>:-Wlogical-op>
-        $<$<C_COMPILER_ID:GNU>:$<$<COMPILE_LANGUAGE:CXX>:-Wnoexcept -Wstrict-null-sentinel>>
+        $<$<CXX_COMPILER_ID:GNU>:
+            -Wlogical-op -Wno-expansion-to-defined
+            $<$<COMPILE_LANGUAGE:CXX>:
+                -Wnoexcept -Wstrict-null-sentinel
+            >
+        >
         # Clang-only
-        $<$<C_COMPILER_ID:Clang>:-Wno-nested-anon-types>
+        $<$<CXX_COMPILER_ID:Clang>:-Wno-nested-anon-types>
     )
 ENDIF()
 
