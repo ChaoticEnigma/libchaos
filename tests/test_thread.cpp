@@ -4,7 +4,7 @@
 #include "zmutex.h"
 #include "zlock.h"
 
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     #include <windows.h>
     #include <stdio.h>
     #include <stdlib.h>
@@ -62,7 +62,7 @@ void thread(){
     TASSERT((zu64)ret == RET_MAGIC);
 }
 
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
 
 ZMutex gmutex;
 CRITICAL_SECTION gCS; // shared structure

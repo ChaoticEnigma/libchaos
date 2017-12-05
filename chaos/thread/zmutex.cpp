@@ -33,7 +33,7 @@ ZMutex::~ZMutex(){
 void ZMutex::lock(){
     if(!iOwn()){
         pthread_mutex_lock(&_mutex);
-#if PLATFORM == MACOSX
+#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
         pthread_threadid_np(pthread_self(), &owner_tid);
 #else
         owner_tid = pthread_self();
@@ -45,7 +45,7 @@ void ZMutex::lock(){
 bool ZMutex::trylock(){
     if(!iOwn()){
         if(pthread_mutex_trylock(&_mutex) == 0){
-#if PLATFORM == MACOSX
+#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
             pthread_threadid_np(pthread_self(), &owner_tid);
 #else
             owner_tid = pthread_self();
@@ -78,7 +78,7 @@ void ZMutex::unlock(){
 }
 
 bool ZMutex::iOwn(){
-#if PLATFORM == MACOSX
+#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
     ztid tid;
     pthread_threadid_np(pthread_self(), &tid);
     return (locker() == tid);

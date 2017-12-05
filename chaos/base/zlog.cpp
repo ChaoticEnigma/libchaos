@@ -7,7 +7,7 @@
 #include <ctime>
 #include <cstdio>
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     #include <windows.h>
 #endif
 

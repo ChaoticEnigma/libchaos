@@ -11,7 +11,7 @@
 
 #include <time.h>
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
     #define ZUID_WINAPI
 #endif
 
@@ -28,7 +28,7 @@
     #include <ifaddrs.h>
     #include <net/if.h>
     #include <netinet/in.h>
-#if PLATFORM == MACOSX
+#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
     #include <net/if_dl.h>
 #endif
 #endif
@@ -284,7 +284,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
     }
     delete[] addrs;
 
-#elif PLATFORM == MACOSX
+#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
 
     ifaddrs *iflist = NULL;
     // Get list of interfaces and addresses
@@ -301,6 +301,27 @@ ZList<ZBinary> ZUID::getMACAddresses(){
             }
             current = current->ifa_next;
         }
+    }
+
+#elif LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+
+    struct ifaddrs *ifap, *ifaptr;
+    unsigned char mac_address[6];
+
+    if(getifaddrs(&ifap) == 0) {
+        for(ifaptr = ifap; ifaptr != NULL; ifaptr = (ifaptr)->ifa_next){
+            if(((ifaptr)->ifa_addr)->sa_family == AF_LINK) {
+                memcpy(mac_address, LLADDR((struct sockaddr_dl *)(ifaptr)->ifa_addr), 6);
+                if(validMAC(mac_address)){
+                    maclist.push(ZBinary(mac_address, 6));
+                } else {
+                    DLOG("invalid mac");
+                }
+            }
+        }
+        freeifaddrs(ifap);
+    } else {
+        DLOG("failed getifaddrs");
     }
 
 #else
@@ -325,14 +346,8 @@ ZList<ZBinary> ZUID::getMACAddresses(){
                     // Skip loopback interface
                     if(!(ifr.ifr_flags & IFF_LOOPBACK)){
                         // Get hardware address
-                        // TODO: FreeBSD MAC Address
-#if PLATFORM == FREEBSD
-                        if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
-                            memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
-#else
                         if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
                             memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
-#endif
                             if(validMAC(mac_address)){
                                 maclist.push(ZBinary(mac_address, 6));
                             } else {
@@ -403,7 +418,7 @@ ZBinary ZUID::getMACAddress(bool cache){
     }
     delete[] adapterInfo;
 
-#elif PLATFORM == MACOSX
+#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
     // getifaddrs API
     ifaddrs *iflist = NULL;
     // Get list of interfaces and addresses
@@ -451,7 +466,7 @@ ZBinary ZUID::getMACAddress(bool cache){
                     // Skip loopback interface
                     if(!(ifr.ifr_flags & IFF_LOOPBACK)){
                         // Get hardware address
-#if PLATFORM == FREEBSD
+#if LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
                         // TODO: FreeBSD MAC Address
                         if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
                             memcpy(mac_address, ifr.ifr_mac.sa_data, 6);

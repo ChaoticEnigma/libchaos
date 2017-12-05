@@ -8,7 +8,7 @@
 
 #include "ztypes.h"
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     #define ZMUTEX_WINTHREADS
 #endif
 

@@ -12,7 +12,7 @@
 #include "zbinary.h"
 #include "zblockaccessor.h"
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
     //#define ZFILE_WINAPI
 #endif
 

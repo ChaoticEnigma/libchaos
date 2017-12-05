@@ -9,7 +9,7 @@
 #include "ztypes.h"
 #include "zstring.h"
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
     #define ZSOCKET_WINAPI
 #endif
 
@@ -19,7 +19,7 @@
     #define IPV6_MAX 46
     typedef int socklen_t;
 #else
-    #if PLATFORM == MACOSX
+    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
         #include <sys/types.h>
         #include <arpa/inet.h>
         //#include <netdb.h>

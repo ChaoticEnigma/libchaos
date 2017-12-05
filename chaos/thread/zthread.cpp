@@ -8,7 +8,7 @@
 #ifdef ZTHREAD_WINTHREADS
     #include <windows.h>
 #else
-    #if PLATFORM == MACOSX
+    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
         #include <sched.h>
     #endif
     #include <signal.h>
@@ -142,9 +142,9 @@ ztid ZThread::thisTid(){
 void ZThread::yield(){
 #ifdef ZTHREAD_WINTHREADS
     SwitchToThread();
-#elif PLATFORM == WINDOWS
+#elif LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     std::this_thread::yield();
-#elif PLATFORM == MACOSX
+#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
     sched_yield();
 #else
     ::pthread_yield();
@@ -195,7 +195,7 @@ void *ZThread::_entry_common(zthreadparam *param){
 
 #ifdef ZTHREAD_WINTHREADS
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
 ZThread::DWORD _stdcall ZThread::_entry_win(LPVOID ptr){
 #else
 ZThread::DWORD __attribute__((__stdcall__)) ZThread::_entry_win(LPVOID ptr){
