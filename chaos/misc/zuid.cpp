@@ -22,15 +22,16 @@
     #include <iphlpapi.h>
 #else
     #include <unistd.h>
+    #include <sys/types.h>
     #include <sys/time.h>
     #include <sys/ioctl.h>
     #include <sys/socket.h>
     #include <ifaddrs.h>
     #include <net/if.h>
     #include <netinet/in.h>
-#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
-    #include <net/if_dl.h>
-#endif
+    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX || LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+        #include <net/if_dl.h>
+    #endif
 #endif
 
 namespace LibChaos {
