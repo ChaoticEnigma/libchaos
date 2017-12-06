@@ -7,9 +7,20 @@ ZOptions::ZOptions(ZArray<OptDef> optdef){
     define = optdef;
 }
 
-bool ZOptions::parse(int argc, char **argv){
+bool ZOptions::parse(int argc, const char *const *argv){
     bool nextarg = false;
-    ZString nextname;
+    OptDef nextdef;
+
+    auto parseArg = [&](OptDef def, ZString arg){
+        if(def.type == LIST){
+            if(opts[def.name].size())
+                opts[def.name] += ("," + arg);
+            else
+                opts[def.name] = arg;
+        } else {
+            opts[def.name] = arg;
+        }
+    };
 
     for(int i = 1; i < argc; ++i){
         ZString arg = argv[i];
@@ -23,24 +34,25 @@ bool ZOptions::parse(int argc, char **argv){
                     if(define[j].type == NONE){
                         opts[define[j].name] = "";
                     } else {
-                        nextname = define[j].name;
+                        nextdef = define[j];
                         nextarg = true;
                     }
                     ok = true;
                     break;
                 } else if(arg.beginsWith(pref)){
                     arg.substr(pref.size());
-                    opts[define[j].name] = arg;
+                    parseArg(define[j], arg);
                     ok = true;
+                    break;
                 }
             }
             if(!ok){
-                LOG("error: unknown long option: " << arg);
+                DLOG("error: unknown long option: " << arg);
                 return false;
             }
 
         } else if(arg.beginsWith("-") && arg.size() > 1){
-            // Flag option
+            // Short option
             arg.substr(1);
             bool ok = false;
             bool noarg = true;
@@ -55,10 +67,10 @@ bool ZOptions::parse(int argc, char **argv){
                             noarg = false;
                             arg.substr(k+1);
                             if(arg.isEmpty()){
-                                nextname = define[j].name;
+                                nextdef = define[j];
                                 nextarg = true;
                             } else {
-                                opts[define[j].name] = arg;
+                                parseArg(define[j], arg);
                             }
                         }
                         ok = true;
@@ -66,14 +78,14 @@ bool ZOptions::parse(int argc, char **argv){
                     }
                 }
                 if(!ok){
-                    LOG("error: unknown flag option: " << arg);
+                    DLOG("error: unknown short option: " << arg);
                     return false;
                 }
             }
 
         } else if(nextarg){
             // Option argument
-            opts[nextname] = arg;
+            parseArg(nextdef, arg);
             nextarg = false;
 
         } else {
@@ -83,7 +95,7 @@ bool ZOptions::parse(int argc, char **argv){
     }
 
     if(nextarg){
-        LOG("error: no value for option: " << nextname);
+        DLOG("error: no value for option: " << nextdef.name);
         return false;
     }
     return true;
