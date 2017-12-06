@@ -12,18 +12,6 @@
     #define ZMUTEX_WINTHREADS
 #endif
 
-#if ZMUTEX_VERSION == 0 || ZMUTEX_VERSION == 1
-    #include <pthread.h>
-#elif ZMUTEX_VERSION == 3
-    #include <mutex>
-    #include <thread>
-#endif
-
-#ifdef ZMUTEX_WINTHREADS
-    struct _RTL_CRITICAL_SECTION;
-    typedef _RTL_CRITICAL_SECTION CRITICAL_SECTION;
-#endif
-
 namespace LibChaos {
 
 typedef zu64 ztid;
@@ -58,37 +46,9 @@ public:
     //! If mutex is unlocked, returns true. If mutex is locked by calling thread, mutex is unlocked. If mutex is locked by other thread, blocks until mutex is unlocked by other thread.
     void unlock();
 
-#if ZMUTEX_VERSION == 1
-    //! Return true if this thread owns the mutex, else returns false
-    bool iOwn();
-    //! Returns true if mutex is locked, else returns false.
-    inline bool locked(){
-        return (locker() != 0);
-    }
-    //! Returns locking thread's id, or 0 if unlocked.
-    inline ztid locker(){
-        return owner_tid;
-    }
-#elif ZMUTEX_VERSION == 3
-    bool iOwn();
-    bool locked();
-    ztid locker();
-#endif
-
 private:
-#if ZMUTEX_VERSION == 0 || ZMUTEX_VERSION == 1
-    pthread_mutex_t _mutex;
-    pthread_mutexattr_t _attr;
-#elif ZMUTEX_VERSION == 1
-    ztid owner_tid;
-//    zu32 lock_depth;
-#elif ZMUTEX_VERSION == 2 || ZMUTEX_VERSION == 4
     struct MutexData;
     MutexData *_data;
-#elif ZMUTEX_VERSION == 3
-    std::mutex _mutex;
-    std::thread::id _owner;
-#endif
 };
 
 // //////////////////////////////////////////////////////////////////////////////

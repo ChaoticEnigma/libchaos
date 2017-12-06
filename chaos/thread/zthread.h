@@ -70,9 +70,7 @@ public:
     //! Create thread and run \a func with \a user data.
     ZThread(funcType func);
 
-    // Delete copy constructor
     ZThread(const ZThread &other) = delete;
-    // Delete assignment operator
     ZThread &operator=(const ZThread &other) = delete;
 
     //! Destroying thread container detaches the thread first.

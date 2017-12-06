@@ -10,6 +10,8 @@
 #else
     #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
         #include <sched.h>
+    #elif LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+        #include <thread.h>
     #endif
     #include <signal.h>
     #include <unistd.h>
@@ -134,6 +136,11 @@ ztid ZThread::tid(){
 ztid ZThread::thisTid(){
 #ifdef ZTHREAD_WINTHREADS
     return (ztid)GetCurrentThreadId();
+#elif LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+    return (ztid)thr_self();
+#elif defined(SYS_gettid)
+    // gettid syscall if available
+    return (ztid)syscall(SYS_gettid);
 #else
     return (ztid)pthread_self();
 #endif

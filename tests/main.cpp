@@ -198,7 +198,7 @@ int main(int argc, char **argv){
             if(hideout)
                 RLOG(result << ZLog::NEWLN);
             else
-                LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << status);
+                LOG("* " << ZString(i).lpad(' ', 2) << " " << ZString(test.name).pad(' ', 30) << result);
 
         }
 
