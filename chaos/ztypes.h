@@ -44,11 +44,11 @@
 #if defined(__GNUC__)
     #define LIBCHAOS_COMPILER _COMPILER_GCC
 #elif defined(__MINGW32__)
-    #define LIBCHAOS_COMPILER MINGW
+    #define LIBCHAOS_COMPILER _COMPILER_MINGW
 #elif defined(__clang__)
-    #define LIBCHAOS_COMPILER CLANG
+    #define LIBCHAOS_COMPILER _COMPILER_CLANG
 #elif defined(_MSC_VER)
-    #define LIBCHAOS_COMPILER MSVC
+    #define LIBCHAOS_COMPILER _COMPILER_MSVC
 #else
     #warning Unknown Compiler!
 #endif
@@ -75,13 +75,13 @@
 #if defined(__linux__)
     #define LIBCHAOS_PLATFORM _PLATFORM_LINUX
 #elif defined(__FreeBSD__)
-    #define LIBCHAOS_PLATFORM FREEBSD
+    #define LIBCHAOS_PLATFORM _PLATFORM_FREEBSD
 #elif defined(_WIN32)
-    #define LIBCHAOS_PLATFORM WINDOWS
+    #define LIBCHAOS_PLATFORM _PLATFORM_WINDOWS
 #elif defined(__APPLE__)
-    #define LIBCHAOS_PLATFORM MACOSX
+    #define LIBCHAOS_PLATFORM _PLATFORM_MACOSX
 #elif defined(__CYGWIN__)
-    #define LIBCHAOS_PLATFORM CYGWIN
+    #define LIBCHAOS_PLATFORM _PLATFORM_CYGWIN
 #else
     #warning Unknown Platform!
 #endif
