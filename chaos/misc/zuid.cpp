@@ -28,7 +28,7 @@
     #include <ifaddrs.h>
     #include <net/if.h>
     #include <netinet/in.h>
-    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX || LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
         #include <net/if_dl.h>
     #else
         #include <linux/if_packet.h>
