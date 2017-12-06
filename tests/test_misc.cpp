@@ -9,9 +9,27 @@
 
 namespace LibChaosTest {
 
-void random(){
+void test_random(){
     ZRandom random;
     LOG(random.genzu());
+}
+
+void test_mac(){
+    auto fmt = [](ZBinary mac){
+        ZString macstr;
+        for(zu64 i = 0 ; i < mac.size(); ++i)
+            macstr += ZString::ItoS(mac[i], 16, 2) += ":";
+        macstr.substr(0, macstr.size()-1);
+        return macstr;
+    };
+
+    ZBinary mac = ZUID::getMACAddress();
+    LOG("MAC: " << fmt(mac));
+
+    LOG("MAC List:");
+    ZList<ZBinary> maclist = ZUID::getMACAddresses();
+    for(auto it = maclist.begin(); it.more(); ++it)
+        LOG("  " << fmt(it.get()));
 }
 
 void uid_str(){
@@ -67,11 +85,12 @@ void uid_name(){
 
 ZArray<Test> misc_tests(){
     return {
-        { "random",     random,     true, {} },
-        { "uid_str",    uid_str,    true, {} },
-        { "uid_time",   uid_time,   true, {} },
+        { "random",     test_random,    true, {} },
+        { "mac",        test_mac,       true, {} },
+        { "uid_str",    uid_str,        true, {} },
+        { "uid_time",   uid_time,       true, {} },
 #if ZHASH_HAS_MD5 && ZHASH_HAS_SHA1
-        { "uid_name",   uid_name,   true, {} },
+        { "uid_name",   uid_name,       true, {} },
 #endif
     };
 }
