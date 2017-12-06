@@ -12,7 +12,7 @@
     #define ZMUTEX_WINTHREADS
 #endif
 
-#if ZMUTEX_VERSION == 1
+#if ZMUTEX_VERSION == 0 || ZMUTEX_VERSION == 1
     #include <pthread.h>
 #elif ZMUTEX_VERSION == 3
     #include <mutex>
@@ -76,9 +76,10 @@ public:
 #endif
 
 private:
-#if ZMUTEX_VERSION == 1
+#if ZMUTEX_VERSION == 0 || ZMUTEX_VERSION == 1
     pthread_mutex_t _mutex;
     pthread_mutexattr_t _attr;
+#elif ZMUTEX_VERSION == 1
     ztid owner_tid;
 //    zu32 lock_depth;
 #elif ZMUTEX_VERSION == 2 || ZMUTEX_VERSION == 4

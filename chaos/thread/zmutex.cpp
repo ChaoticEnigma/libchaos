@@ -6,7 +6,7 @@
 #include "zmutex.h"
 #include "zexception.h"
 
-#if ZMUTEX_VERSION == 1
+#if ZMUTEX_VERSION == 0 || ZMUTEX_VERSION == 1
     #include <pthread.h>
 #elif ZMUTEX_VERSION == 2 || ZMUTEX_VERSION == 4
     #include <windows.h>
@@ -18,7 +18,46 @@
 
 namespace LibChaos {
 
-#if ZMUTEX_VERSION == 1
+#if ZMUTEX_VERSION == 0
+
+ZMutex::ZMutex(){
+    pthread_mutexattr_init(&_attr);
+//    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&_mutex, &_attr);
+}
+
+ZMutex::~ZMutex(){
+    pthread_mutex_destroy(&_mutex);
+}
+
+void ZMutex::lock(){
+    pthread_mutex_lock(&_mutex);
+    // We own the mutex
+}
+
+bool ZMutex::trylock(){
+    if(pthread_mutex_trylock(&_mutex) == 0){
+        return true; // We now own the mutex
+    }
+    return false; // Another thread owns the mutex
+}
+
+bool ZMutex::timelock(zu32 timeout_microsec){
+    auto end = std::chrono::high_resolution_clock::now() + std::chrono::microseconds(timeout_microsec);
+    while(!trylock()){
+        // Loop until trylock() succeeds OR timeout is exceeded
+        if(std::chrono::high_resolution_clock::now() > end)
+            return false; // Timeout exceeded, mutex is locked by another thread
+    }
+    return true; // Locked, and this thread owns it
+}
+
+void ZMutex::unlock(){
+    pthread_mutex_unlock(&_mutex);
+    // Mutex is unlocked
+}
+
+#elif ZMUTEX_VERSION == 1
 
 ZMutex::ZMutex() : owner_tid(0){
     pthread_mutexattr_init(&_attr);
@@ -86,6 +125,7 @@ bool ZMutex::iOwn(){
     return (locker() == pthread_self());
 #endif
 }
+
 
 #elif ZMUTEX_VERSION == 2
 
