@@ -49,6 +49,7 @@ void *mutex_thread_func(ZThread::ZThreadArg zarg){
         ++test->count;
         test->mutex.unlock();
     }
+    return nullptr;
 }
 
 void mutex(){
