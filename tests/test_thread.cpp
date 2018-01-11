@@ -4,7 +4,7 @@
 #include "zmutex.h"
 #include "zlock.h"
 
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     #include <windows.h>
     #include <stdio.h>
     #include <stdlib.h>
@@ -12,128 +12,71 @@
     #include <iostream>
 #endif
 
-#define RET_MAGIC 0x5a5a5a5a
+#define RET_MAGIC 0x5a5b5c5d
 
 namespace LibChaosTest {
 
-void *thread_func(void * /*zarg*/){
-    //ZThreadArg *arg = (ZThreadArg*)zarg;
-    LOG("running " << ZThread::thisTid());
-    ZThread::sleep(2);
-    LOG("waited 2 " << ZThread::thisTid());
-    return NULL;
-}
-
 void *thread_func2(ZThread::ZThreadArg zarg){
-    void *arg = zarg.arg;
-    LOG("running " << ZThread::thisTid());
-    LOG((const char *)arg << ", " << zarg.stop());
-    int i = 0;
-    while(!zarg.stop()){
-        LOG("loop" << ++i << " in " << ZThread::thisTid());
-        ZThread::usleep(1000000);
-    }
-    LOG("broke loop " << ZThread::thisTid());
+    ztid *arg = (ztid *)zarg.arg;
+    *arg = ZThread::thisTid();
+    LOG("running " << *arg);
     return (void *)RET_MAGIC;
 }
 
 void thread(){
-    LOG("=== Thread Test...");
-    /*
-    LOG("this text " << ZThread::thisTid());
-    ZThread thr(thread_func);
-    LOG("thread " << thr.tid() << " created");
-    sleep(1);
-    LOG("waited 1 " << ZThread::thisTid());
-    thr.kill();
-    LOG("killed " << thr.tid());
-    */
-
-    ZString txt = "hello there from here";
+    ztid ttid = 0;
     ZThread thr2(thread_func2);
-    thr2.exec(txt.c());
-    LOG("thread " << thr2.tid() << " created");
-    ZThread::sleep(5);
-    LOG("waited 5 " << ZThread::thisTid());
-    thr2.stop();
-    LOG("stopped " << thr2.tid());
+    LOG("starting thread");
+    thr2.exec(&ttid);
     void *ret = thr2.join();
-    LOG("joined " << thr2.tid());
+    LOG("joined thread");
+    TASSERT(ttid != ZThread::thisTid());
     TASSERT((zu64)ret == RET_MAGIC);
 }
 
-#if PLATFORM == WINDOWS
+#define MUTEX_TEST_NTHREAD  1000
+#define MUTEX_TEST_NLOCK    1000
 
-ZMutex gmutex;
-CRITICAL_SECTION gCS; // shared structure
+struct MutexTest {
+    ZMutex mutex;
+    zu32 count;
+};
 
-const int gcMaxCount = 10;
-volatile int gCount = 0;
-
-DWORD __attribute__((__stdcall__)) threadLoop(void *name){
-    while(true){
-        TLOG((char *)name << " entering critical Section...");
-//        EnterCriticalSection(&gCS);
-//        mutex.lock();
-        ZLock lock(gmutex);
-        if(gCount < gcMaxCount){
-            TLOG((char *)name << " in critical Section");
-            gCount++;
-        } else {
-//            LeaveCriticalSection(&gCS);
-//            mutex.unlock();
-            break;
-        }
-//        LeaveCriticalSection(&gCS);
-//        mutex.unlock();
-        TLOG((char *)name << " left critical Section");
+void *mutex_thread_func(ZThread::ZThreadArg zarg){
+    MutexTest *test = (MutexTest *)zarg.arg;
+    for(int i = 0; i < MUTEX_TEST_NLOCK; ++i){
+        test->mutex.lock();
+        ++test->count;
+        test->mutex.unlock();
     }
-    return 0;
-}
-
-HANDLE CreateChild(const char *name){
-    HANDLE hThread; DWORD dwId;
-    hThread = CreateThread(NULL, 0, threadLoop, (LPVOID)const_cast<char*>(name), 0, &dwId);
-    assert(hThread != NULL);
-    return hThread;
+    return nullptr;
 }
 
 void mutex(){
-    HANDLE hT[4];
-    InitializeCriticalSection(&gCS);
+    MutexTest test;
+    test.count = 0;
 
-    TLOG("Starting...");
-//    Sleep(200);
+    ZList<ZPointer<ZThread>> threads;
+    for(int i = 0; i < MUTEX_TEST_NTHREAD; ++i){
+        threads.push(new ZThread(mutex_thread_func));
+    }
 
-    // Create multiple child threads
-    hT[0] = CreateChild("Evelyn");
-    hT[1] = CreateChild("Bodie");
-    hT[2] = CreateChild("Rebecca");
-    hT[3] = CreateChild("Jeff");
+    for(auto it = threads.begin(); it.more(); ++it){
+        it.get()->exec(&test);
+    }
 
-    WaitForMultipleObjects(4, hT, TRUE, INFINITE);
-    TLOG("Completed!");
+    for(auto it = threads.begin(); it.more(); ++it){
+        it.get()->join();
+    }
 
-    CloseHandle(hT[0]);
-    CloseHandle(hT[1]);
-    CloseHandle(hT[2]);
-    CloseHandle(hT[3]);
-
-    DeleteCriticalSection(&gCS);
+    LOG("Count: " << test.count);
+    TASSERT(test.count == MUTEX_TEST_NTHREAD * MUTEX_TEST_NLOCK);
 }
-
-#else
-
-void mutex(){
-
-}
-
-#endif
 
 ZArray<Test> thread_tests(){
     return {
-        { "thread", thread, false, {} },
-        { "mutex",  mutex,  false, {} },
+        { "thread", thread, true, {} },
+        { "mutex",  mutex,  true, {} },
     };
 }
 

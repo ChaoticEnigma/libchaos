@@ -20,10 +20,10 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - sourceline: 'ppa:adrozdoff/cmake'
 
     packages:
     - cmake
-    - cmake-data
     - gcc-5
     - g++-5
     - clang
@@ -35,6 +35,7 @@ addons:
 
 before_install:
 - uname -a
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then apt-cache policy cmake; fi
 - cmake --version
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CC" == "gcc" ]; then brew update; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CC" == "gcc" ]; then brew install gcc5; fi

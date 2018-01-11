@@ -9,7 +9,7 @@
 #include "zstring.h"
 #include "zclock.h"
 
-#if COMPILER != MSVC
+#if LIBCHAOS_COMPILER != _COMPILER_MSVC
     #include <ctime>
 #endif
 
@@ -18,7 +18,7 @@ namespace LibChaos {
 //! Represents an absolute date and time.
 class ZTime {
 public:
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     typedef zu64 timet;
 #else
     typedef time_t timet;

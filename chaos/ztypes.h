@@ -35,35 +35,26 @@
 // Compiler
 //
 
-#define GCC         0x11
-#define MINGW       0x12
-#define MSVC        0x13
-#define CLANG       0x14
+#define _COMPILER_GCC       0x11
+#define _COMPILER_MINGW     0x12
+#define _COMPILER_CLANG     0x13
+#define _COMPILER_MSVC      0x14
 
-/*
 // Detection
-#if defined(__MINGW32__)
-    #define COMPILER MINGW
+#if defined(__GNUC__)
+    #define LIBCHAOS_COMPILER _COMPILER_GCC
+#elif defined(__MINGW32__)
+    #define LIBCHAOS_COMPILER _COMPILER_MINGW
 #elif defined(__clang__)
-    #define COMPILER CLANG
-#elif defined(__GNUC__)
-    #define COMPILER GCC
+    #define LIBCHAOS_COMPILER _COMPILER_CLANG
 #elif defined(_MSC_VER)
-    #define COMPILER MSVC
+    #define LIBCHAOS_COMPILER _COMPILER_MSVC
 #else
     #warning Unknown Compiler!
 #endif
 
-// Warn if detected and specified compilers are different
-#if COMPILER != _LIBCHAOS_COMPILER
-    #warning Different detected and specified compilers!
-#endif
-*/
-
-#define COMPILER _LIBCHAOS_COMPILER
-
 // Disable some MSVC warnings
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     #pragma warning(disable : 4244) // C4244: conversion from 'x' to 'y', possible loss of data
     #pragma warning(disable : 4800) // C4800: forcing value to 'true' or 'false' (performance warning)
     #pragma warning(disable : 4996) // C4996: This function or variable may be unsafe.
@@ -74,33 +65,26 @@
 // Platform
 //
 
-#define LINUX       0x21
-#define FREEBSD     0x22
-#define WINDOWS     0x23
-#define MACOSX      0x24
-#define CYGWIN      0x25
+#define _PLATFORM_LINUX     0x21
+#define _PLATFORM_FREEBSD   0x22
+#define _PLATFORM_WINDOWS   0x23
+#define _PLATFORM_MACOSX    0x24
+#define _PLATFORM_CYGWIN    0x25
 
-/*
 // Detection
 #if defined(__linux__)
-    #define PLATFORM LINUX
+    #define LIBCHAOS_PLATFORM _PLATFORM_LINUX
 #elif defined(__FreeBSD__)
-    #define PLATFORM FREEBSD
+    #define LIBCHAOS_PLATFORM _PLATFORM_FREEBSD
 #elif defined(_WIN32)
-    #define PLATFORM WINDOWS
+    #define LIBCHAOS_PLATFORM _PLATFORM_WINDOWS
 #elif defined(__APPLE__)
-    #define PLATFORM MACOSX
+    #define LIBCHAOS_PLATFORM _PLATFORM_MACOSX
+#elif defined(__CYGWIN__)
+    #define LIBCHAOS_PLATFORM _PLATFORM_CYGWIN
 #else
     #warning Unknown Platform!
 #endif
-
-// Warn if detected and specified platforms are different
-#if PLATFORM != _LIBCHAOS_PLATFORM
-    #warning Different detected and specified platforms!
-#endif
-*/
-
-#define PLATFORM _LIBCHAOS_PLATFORM
 
 //
 // Build
@@ -148,12 +132,13 @@
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     //#define ZMUTEX_VERSION 2 // CRITICAL_SECTION
     //#define ZMUTEX_VERSION 3 // std::mutex
     #define ZMUTEX_VERSION 4 // Win32 Mutex
 #else
-    #define ZMUTEX_VERSION 1 // POSIX threads
+    #define ZMUTEX_VERSION 0 // POSIX threads
+    //#define ZMUTEX_VERSION 1 // POSIX threads
     //#define ZMUTEX_VERSION 3 // std::mutex
 #endif
 
@@ -256,6 +241,11 @@ struct zexception {
 //! Get a string describing this version of LibChaos.
 static const char *LibChaosDescribe(){
     return LIBCHAOS_DESCRIBE;
+}
+
+//! Get a word describing the build configuration of LibChaos.
+static zu32 LibChaosBuildConfig(){
+    return (LIBCHAOS_COMPILER << 24) | (LIBCHAOS_PLATFORM << 16) | (LIBCHAOS_BUILD);
 }
 
 } // namespace LibChaos

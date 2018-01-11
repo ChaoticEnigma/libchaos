@@ -11,7 +11,7 @@
 
 #include <atomic>
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
     #define ZTHREAD_WINTHREADS
 #endif
 
@@ -70,9 +70,7 @@ public:
     //! Create thread and run \a func with \a user data.
     ZThread(funcType func);
 
-    // Delete copy constructor
     ZThread(const ZThread &other) = delete;
-    // Delete assignment operator
     ZThread &operator=(const ZThread &other) = delete;
 
     //! Destroying thread container detaches the thread first.
@@ -128,7 +126,7 @@ private:
     static void *_entry_common(zthreadparam *param);
 
 #ifdef ZTHREAD_WINTHREADS
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     static DWORD _stdcall _entry_win(LPVOID ptr);
 #else
     static DWORD __attribute__((__stdcall__)) _entry_win(LPVOID ptr);

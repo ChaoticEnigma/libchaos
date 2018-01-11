@@ -6,13 +6,13 @@
 #include "ztime.h"
 #include <stdio.h>
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     #include <windows.h>
 #endif
 
 namespace LibChaos {
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
 
 ZTime::ZTime(){
     SYSTEMTIME systime;

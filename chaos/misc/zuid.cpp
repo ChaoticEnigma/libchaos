@@ -11,7 +11,7 @@
 
 #include <time.h>
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
     #define ZUID_WINAPI
 #endif
 
@@ -28,9 +28,12 @@
     #include <ifaddrs.h>
     #include <net/if.h>
     #include <netinet/in.h>
-#if PLATFORM == MACOSX
-    #include <net/if_dl.h>
-#endif
+    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX || LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+        #include <net/if_dl.h>
+    #else
+        #include <linux/if_packet.h>
+        #include <net/ethernet.h>
+    #endif
 #endif
 
 namespace LibChaos {
@@ -124,17 +127,21 @@ ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
             break;
         }
 
+#if ZHASH_HAS_MD5
         case NAME_MD5: {
             // Version 3 UUID: Namespace-Name-MD5
             nameHashSet(ZHash<ZBinary, ZHashBase::MD5>(nameHashData(namespce, name)).hash());
             break;
         }
+#endif
 
+#if ZHASH_HAS_SHA1
         case NAME_SHA: {
             // Version 5 UUID: Namespace-Name-SHA
             nameHashSet(ZHash<ZBinary, ZHashBase::SHA1>(nameHashData(namespce, name)).hash());
             break;
         }
+#endif
 
         case NIL:
         default:
@@ -196,12 +203,14 @@ ZUID::uuidtype ZUID::getType() const {
     switch(type){
         case 1:
             return TIME;
+#ifdef LIBCHAOS_HAS_CRYPTO
         case 3:
             return NAME_MD5;
-        case 4:
-            return RANDOM;
         case 5:
             return NAME_SHA;
+#endif
+        case 4:
+            return RANDOM;
         default:
             return UNKNOWN;
     }
@@ -254,31 +263,37 @@ ZList<ZBinary> ZUID::getMACAddresses(){
 
 #ifdef ZUID_WINAPI
 
-    ULONG addrslen = sizeof(IP_ADAPTER_ADDRESSES);
-    IP_ADAPTER_ADDRESSES *addrs = (IP_ADAPTER_ADDRESSES *)new zbyte[addrslen];
-    ULONG flags = GAA_FLAG_INCLUDE_ALL_INTERFACES;
-    ULONG ret = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addrs, &addrslen);
-    if(ret == ERROR_BUFFER_OVERFLOW){
-        delete[] addrs;
-        addrs = (IP_ADAPTER_ADDRESSES *)new zbyte[addrslen];
-        ret = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addrs, &addrslen);
+    // Win32 API
+
+    PIP_ADAPTER_INFO adapterInfo;
+    ULONG bufLen = sizeof(IP_ADAPTER_INFO);
+    adapterInfo = new IP_ADAPTER_INFO[1];
+
+    // Get number of adapters and list of adapter info
+    DWORD status = GetAdaptersInfo(adapterInfo, &bufLen);
+    if(status == ERROR_BUFFER_OVERFLOW){
+        // Make larger list for adapters
+        delete[] adapterInfo;
+        adapterInfo = new IP_ADAPTER_INFO[bufLen];
+        status = GetAdaptersInfo(adapterInfo, &bufLen);
     }
-    if(ret == NO_ERROR){
-        IP_ADAPTER_ADDRESSES *addr = addrs;
-        while(addr != NULL){
-            if(addr->PhysicalAddressLength == 6){
-                ZBinary mac(addr->PhysicalAddress, 6);
-                ZString macstr;
-                for(zu64 i = 0 ; i < mac.size(); ++i)
-                    macstr += ZString::ItoS(mac[i], 16, 2) += ":";
-                macstr.substr(0, macstr.size()-1);
+
+    if(status == NO_ERROR){
+        // Get first acceptable MAC from list
+        PIP_ADAPTER_INFO adapterInfoList = adapterInfo;
+        while(adapterInfoList != NULL){
+            if(validMAC(adapterInfoList->Address)){
+                maclist.push(ZBinary(adapterInfoList->Address, 6));
+                delete[] adapterInfo;
             }
-            addr = addr->Next;
+            adapterInfoList = adapterInfoList->Next;
         }
     }
-    delete[] addrs;
+    delete[] adapterInfo;
 
-#elif PLATFORM == MACOSX
+#else
+
+    // getifaddrs
 
     ifaddrs *iflist = NULL;
     // Get list of interfaces and addresses
@@ -288,68 +303,21 @@ ZList<ZBinary> ZUID::getMACAddresses(){
         // Walk linked list
         while(current != NULL){
             // Look for an interface with a hardware address
+#if LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
             if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_LINK)){
-                sockaddr_dl *sockdl = (sockaddr_dl *)current->ifa_addr;
-                uint8_t *mac = reinterpret_cast<uint8_t*>(LLADDR(sockdl));
-                maclist.push(ZBinary(mac, 6));
+                struct sockaddr_dl *sockdl = (struct sockaddr_dl *)current->ifa_addr;
+                const uint8_t *mac = reinterpret_cast<const uint8_t*>(LLADDR(sockdl));
+#else
+            if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_PACKET)){
+                struct sockaddr_ll *sockll = (struct sockaddr_ll *)current->ifa_addr;
+                const uint8_t *mac = sockll->sll_addr;
+#endif
+                if(validMAC(mac)){
+                    maclist.push(ZBinary(mac, 6));
+                }
             }
             current = current->ifa_next;
         }
-    }
-
-#else
-
-    struct ifreq ifr;
-    struct ifconf ifc;
-    char buf[1024];
-    unsigned char mac_address[6];
-
-    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if(sock != -1){
-        ifc.ifc_len = sizeof(buf);
-        ifc.ifc_buf = buf;
-        if(ioctl(sock, SIOCGIFCONF, &ifc) != -1){
-            struct ifreq *it = ifc.ifc_req;
-            const struct ifreq *end = it + ((unsigned long)ifc.ifc_len / sizeof(struct ifreq));
-            for(; it != end; ++it){
-                strcpy(ifr.ifr_name, it->ifr_name);
-                DLOG(ifr.ifr_name);
-                // Get interface flags
-                if(ioctl(sock, SIOCGIFFLAGS, &ifr) == 0){
-                    // Skip loopback interface
-                    if(!(ifr.ifr_flags & IFF_LOOPBACK)){
-                        // Get hardware address
-                        // TODO: FreeBSD MAC Address
-#if PLATFORM == FREEBSD
-                        if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
-                            memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
-#else
-                        if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
-                            memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
-#endif
-                            if(validMAC(mac_address)){
-                                maclist.push(ZBinary(mac_address, 6));
-                            } else {
-                                DLOG("in2valid mac");
-                            }
-                        } else {
-                            DLOG("failed to get mac");
-                        }
-                    } else {
-                        DLOG("skip loopback");
-                    }
-                } else {
-                    // Try next interface
-                    DLOG("failed to get if flags");
-                }
-            }
-        } else {
-            // ioctl failed
-            DLOG("failed to get if config");
-        }
-    } else {
-        // socket failed
-        DLOG("failed to open socket");
     }
 
 #endif
@@ -366,7 +334,9 @@ ZBinary ZUID::getMACAddress(bool cache){
     }
 
 #ifdef ZUID_WINAPI
+
     // Win32 API
+
     PIP_ADAPTER_INFO adapterInfo;
     ULONG bufLen = sizeof(IP_ADAPTER_INFO);
     adapterInfo = new IP_ADAPTER_INFO[1];
@@ -397,8 +367,10 @@ ZBinary ZUID::getMACAddress(bool cache){
     }
     delete[] adapterInfo;
 
-#elif PLATFORM == MACOSX
-    // getifaddrs API
+#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX || LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+
+    // getifaddrs
+
     ifaddrs *iflist = NULL;
     // Get list of interfaces and addresses
     int r = getifaddrs(&iflist);
@@ -424,7 +396,9 @@ ZBinary ZUID::getMACAddress(bool cache){
     }
 
 #else
-    // POSIX network inferface API
+
+    // POSIX socket/ioctl
+
     struct ifreq ifr;
     struct ifconf ifc;
     char buf[1024];
@@ -445,14 +419,8 @@ ZBinary ZUID::getMACAddress(bool cache){
                     // Skip loopback interface
                     if(!(ifr.ifr_flags & IFF_LOOPBACK)){
                         // Get hardware address
-#if PLATFORM == FREEBSD
-                        // TODO: FreeBSD MAC Address
-                        if(ioctl(sock, SIOCGIFMAC, &ifr) == 0){
-                            memcpy(mac_address, ifr.ifr_mac.sa_data, 6);
-#else
                         if(ioctl(sock, SIOCGIFHWADDR, &ifr) == 0){
                             memcpy(mac_address, ifr.ifr_hwaddr.sa_data, 6);
-#endif
                             if(validMAC(mac_address)){
                                 ZBinary bin(mac_address, 6);
                                 cachelock.lock();

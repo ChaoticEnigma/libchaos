@@ -39,19 +39,23 @@ void hash(){
             TASSERT(hasha == hashb)
         }
 
+#if ZHASH_HAS_MD5
         {
             ZBinary hasha = ZHash<ZString, ZHashBase::MD5>(data).hash();
             ZBinary hashb = ZHash<ZString, ZHashBase::MD5>(data).hash();
             LOG("MD5: " << data << " " << hasha << " " << hashb);
             TASSERT(hasha == hashb)
         }
+#endif
 
+#if ZHASH_HAS_SHA1
         {
             ZBinary hasha = ZHash<ZString, ZHashBase::SHA1>(data).hash();
             ZBinary hashb = ZHash<ZString, ZHashBase::SHA1>(data).hash();
             LOG("SHA-1: " << data << " " << hasha << " " << hashb);
             TASSERT(hasha == hashb)
         }
+#endif
     };
 
     ZString data2 = "LibChaos";
@@ -62,6 +66,64 @@ void hash(){
     hf(data3);
     hf(data4);
 }
+
+const ZBinary data1 = { 0x43, 0x66, 0x88, 0x09, 0x9c, 0x84, 0x93, 0xf0, 0x13, 0xc3, 0xd3, 0x56, 0x84, 0x9e, 0xfb, 0xf7 };
+const ZBinary data2 = { 0x70, 0xf4, 0x26, 0xe8, 0xe3, 0xd6, 0xcb, 0x2f, 0xb7, 0x8c, 0xfd, 0x9a, 0x6b, 0x04, 0xf7, 0x6a };
+
+void hash_crc32(){
+    zu32 hash1 = 0xc3ee16eb;
+    {
+        zu32 hasha = ZHash<ZBinary, ZHashBase::CRC32>(data1).hash();
+        TASSERT(hasha == hash1); // correct
+        zu32 hashb = ZHash<ZBinary, ZHashBase::CRC32>(data1).hash();
+        TASSERT(hashb == hash1); // repeated
+    }
+    zu32 hash2 = 0x893bae1a;
+    {
+        zu32 hasha = ZHash<ZBinary, ZHashBase::CRC32>(data2).hash();
+        TASSERT(hasha == hash2); // correct
+        zu32 hashb = ZHash<ZBinary, ZHashBase::CRC32>(data2).hash();
+        TASSERT(hashb == hash2); // repeated
+    }
+}
+
+#if ZHASH_HAS_MD5
+void hash_md5(){
+    ZBinary hash1 = { 0xd8, 0x27, 0x81, 0xda, 0x14, 0x42, 0x7b, 0xd2, 0x4b, 0xed, 0x2c, 0x3b, 0x8b, 0x8c, 0x9a, 0x93 };
+    {
+        ZBinary hasha = ZHash<ZBinary, ZHashBase::MD5>(data1).hash();
+        TASSERT(hasha == hash1); // correct
+        ZBinary hashb = ZHash<ZBinary, ZHashBase::MD5>(data1).hash();
+        TASSERT(hashb == hash1); // repeated
+    }
+    ZBinary hash2 = { 0x65, 0xf8, 0xb6, 0xe7, 0x69, 0xdb, 0xa0, 0x5f, 0xd8, 0xe3, 0x44, 0x33, 0xdb, 0x15, 0x67, 0x16 };
+    {
+        ZBinary hasha = ZHash<ZBinary, ZHashBase::MD5>(data2).hash();
+        TASSERT(hasha == hash2); // correct
+        ZBinary hashb = ZHash<ZBinary, ZHashBase::MD5>(data2).hash();
+        TASSERT(hashb == hash2); // repeated
+    }
+}
+#endif
+
+#if ZHASH_HAS_SHA1
+void hash_sha1(){
+    ZBinary hash1 = { 0xcc, 0x70, 0x4a, 0x8b, 0x35, 0x3f, 0x3e, 0xe3, 0x94, 0xbb, 0x73, 0xdb, 0x70, 0x9d, 0x48, 0xbe, 0x2c, 0x4b, 0x09, 0xdd };
+    {
+        ZBinary hasha = ZHash<ZBinary, ZHashBase::SHA1>(data1).hash();
+        TASSERT(hasha == hash1); // correct
+        ZBinary hashb = ZHash<ZBinary, ZHashBase::SHA1>(data1).hash();
+        TASSERT(hashb == hash1); // repeated
+    }
+    ZBinary hash2 = { 0xe6, 0xb4, 0x9d, 0x85, 0x8b, 0x92, 0xe5, 0xa5, 0x11, 0x30, 0x3c, 0x44, 0xfb, 0xb4, 0xd6, 0x72, 0xe0, 0x83, 0xdb, 0xe6 };
+    {
+        ZBinary hasha = ZHash<ZBinary, ZHashBase::SHA1>(data2).hash();
+        TASSERT(hasha == hash2); // correct
+        ZBinary hashb = ZHash<ZBinary, ZHashBase::SHA1>(data2).hash();
+        TASSERT(hashb == hash2); // repeated
+    }
+}
+#endif
 
 void map(){
     ZMap<ZString, zu64> map1;
@@ -176,9 +238,16 @@ void set(){
 
 ZArray<Test> hash_tests(){
     return {
-        { "hash",   hash,   true, {} },
-        { "map",    map,    true, { "hash" } },
-        { "set",    set,    true, { "hash" } },
+        { "hash",       hash,       true, {} },
+        { "hash-crc32", hash_crc32, true, { "hash" } },
+#if ZHASH_HAS_MD5
+        { "hash-md5",   hash_md5,   true, { "hash" } },
+#endif
+#if ZHASH_HAS_SHA1
+        { "hash-sha1",  hash_sha1,  true, { "hash" } },
+#endif
+        { "map",        map,        true, { "hash" } },
+        { "set",        set,        true, { "hash" } },
     };
 }
 

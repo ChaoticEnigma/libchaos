@@ -12,6 +12,8 @@
 #ifdef ZMUTEX_WINTHREADS
     struct _RTL_CONDITION_VARIABLE;
     typedef _RTL_CONDITION_VARIABLE CONDITION_VARIABLE;
+#else
+    #include <pthread.h>
 #endif
 
 namespace LibChaos {

@@ -17,7 +17,7 @@
 
 namespace LibChaos {
 
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     typedef unsigned long long int zsocktype;
 #else
     typedef int zsocktype;

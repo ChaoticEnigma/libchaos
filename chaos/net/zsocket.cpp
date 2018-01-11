@@ -20,7 +20,7 @@
     #include <sys/socket.h>
     #include <netinet/in.h>
     #include <errno.h>
-    #if PLATFORM == MACOSX
+    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
         #include <sys/uio.h>
         #include <unistd.h>
     #endif
@@ -239,9 +239,9 @@ ZSocket::socketerror ZSocket::read(ZBinary &data){
         return ERR_BUFFER;
     }
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     long ret = ::recv(_socket, (char *)data.raw(), (int)data.size(), 0);
-#elif COMPILER == MINGW
+#elif LIBCHAOS_COMPILER == _COMPILER_MINGW
     long ret = ::recv(_socket, (char *)data.raw(), data.size(), 0);
 #else
     long ret = ::read(_socket, data.raw(), data.size());
@@ -275,9 +275,9 @@ ZSocket::socketerror ZSocket::write(const ZBinary &data){
         return ERR_BUFFER;
     }
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     long ret = ::send(_socket, (const char *)data.raw(), (int)data.size(), 0);
-#elif COMPILER == MINGW
+#elif LIBCHAOS_COMPILER == _COMPILER_MINGW
     long ret = ::send(_socket, (const char *)data.raw(), data.size(), 0);
 #else
     long ret = ::write(_socket, data.raw(), data.size());
@@ -314,9 +314,9 @@ ZSocket::socketerror ZSocket::send(ZAddress dest, const ZBinary &data){
     //dest = lookupAddr(dest, _type).front().addr;
     dest.populate(&addrstorage);
 
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     long ret = ::sendto(_socket, (const char *)data.raw(), (int)data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
-#elif COMPILER == MINGW
+#elif LIBCHAOS_COMPILER == _COMPILER_MINGW
     long ret = ::sendto(_socket, (const char *)data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());
 #else
     long ret = ::sendto(_socket, data.raw(), data.size(), 0, (const sockaddr *)&addrstorage, dest.getSockLen());

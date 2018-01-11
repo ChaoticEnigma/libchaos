@@ -40,20 +40,9 @@ SET(LibChaos_Test_SOURCES
     test_error.cpp
 )
 
+CollectSources(${LibChaos_Test_SOURCES})
+
 ### =================== CONFIG =================== ###
-
-# Export Properties
-CollectSources(${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
-
-# Include Directories
-GET_PROPERTY(LibChaos_Include GLOBAL PROPERTY LibChaosInclude)
-GET_PROPERTY(LibChaosExtern_Include GLOBAL PROPERTY LibChaosExternInclude)
-GET_PROPERTY(LibChaosUI_Include GLOBAL PROPERTY LibChaosUIInclude)
-INCLUDE_DIRECTORIES(
-    ${LibChaos_Include}
-    ${LibChaosExtern_Include}
-    ${LibChaosUI_Include}
-)
 
 # Download test images
 IF(LIBCHAOS_TEST AND LIBCHAOS_WITH_PNG)
@@ -68,16 +57,15 @@ IF(LIBCHAOS_TEST AND LIBCHAOS_WITH_WEBP)
     DownloadFile("https://www.gstatic.com/webp/gallery3/3_webp_ll.webp" dice.webp)
 ENDIF()
 
-IF(LIBCHAOS_BUILD_DEBUG)
-    SET(TEST_ALL)
-ELSE()
+IF(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
     SET(TEST_ALL EXCLUDE_FROM_ALL)
 ENDIF()
 
 ### =================== BUILD =================== ###
 
-ADD_EXECUTABLE(testchaos ${TEST_ALL} ${LibChaos_Test_HEADERS} ${LibChaos_Test_SOURCES})
-LibChaos_Configure_Target(testchaos)
+ADD_EXECUTABLE(testchaos ${TEST_ALL} ${LibChaos_Test_SOURCES})
+SET_PROPERTY(TARGET testchaos PROPERTY CXX_STANDARD 11)
+TARGET_LINK_LIBRARIES(testchaos chaos)
 
 ### =================== TESTS =================== ###
 
