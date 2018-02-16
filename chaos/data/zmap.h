@@ -122,7 +122,7 @@ public:
             }
         }
         // Should only ever fail if resize failed and the map is full
-        throw ZException(ZString("ZMap: Unable to add element to map ") + hash);
+        throw ZException(ZString("ZMap add: Unable to add element to map ") + hash);
     }
     inline T &push(const K &key, const T &value){ return add(key, value); }
 
@@ -207,7 +207,7 @@ public:
                 }
             }
         }
-        throw ZException("ZMap: Key does not exist", __LINE__);
+        throw ZException("ZMap get: Key does not exist", __LINE__);
     }
     inline const T &operator[](const K &key) const { return get(key); }
 
@@ -286,7 +286,7 @@ public:
                     }
                 }
                 if(!next)
-                    throw ZException("Could not add entry in hash table resize");
+                    throw ZException("ZMap resize: Could not add entry in hash table resize");
             }
             // Destroy old table
             _alloc->dealloc(olddata);
@@ -295,7 +295,23 @@ public:
 
     // TODO: ZMap erase
     void erase(K test){
-        throw ZException("Unimplemented");
+        throw ZException("ZMap erase: Unimplemented");
+    }
+    
+    //! Clear all entries and delete buffer.
+    void clear(){
+        MapElement *current = _head;
+        while(current != nullptr){
+            _kalloc.destroy(&(current->key));
+            _talloc.destroy(&(current->value));
+            current = current->next;
+        }
+        _alloc->dealloc(_data);
+        _data = nullptr;
+        _head = nullptr;
+        _tail = nullptr;
+        _size = 0;
+        _realsize = 0;
     }
 
     //! Get an array of the keys in the map.
@@ -317,7 +333,7 @@ public:
     float factor() const { return _factor; }
     void setFactor(float factor){
         if(factor > 1.0f)
-            throw ZException("Invalid ZMap load factor");
+            throw ZException("ZMap setFactor: Invalid load factor");
         _factor = factor;
     }
 

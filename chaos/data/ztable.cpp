@@ -24,8 +24,13 @@ void ZTable::addColumn(ZString name){
 
 void ZTable::addRecord(ZArray<ZString> record){
     if(record.size() != _columns.size())
-        throw ZException("Incorrect number of fields in record");
+        throw ZException("ZTable addRecord: Incorrect number of fields in record");
     _records.push(record);
+}
+
+void ZTable::clear(){
+    _columns.clear();
+    _records.clear();
 }
 
 ZString &ZTable::field(zu64 column, zu64 row){

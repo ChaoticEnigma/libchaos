@@ -87,7 +87,6 @@ int ZDatabase::Prepared::bind(ZString name, ZString value){
 }
 
 int ZDatabase::Prepared::execute(ZTable &result){
-
     // Step rows and get column values
     int rc;
     while(true){
