@@ -38,6 +38,8 @@ public:
 
     //! Execute an SQL query.
     int execute(ZString sql, ZTable &result);
+    
+    ZString getError();
 
     sqlite3 *handle(){ return _db; }
 

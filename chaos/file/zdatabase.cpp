@@ -63,6 +63,12 @@ int ZDatabase::execute(ZString sql, ZTable &result){
     return prep.execute(result);
 }
 
+ZString ZDatabase::getError(){
+    if(!ok())
+        return "Database not open";
+    return ZString::ItoS((zs64)sqlite3_errcode(_db))+ ": " + ZString(sqlite3_errmsg(_db));
+}
+
 // /////////////////////////////////////////////////////////////////////////////
 
 ZDatabase::Prepared::Prepared(sqlite3_stmt *stmt) : _stmt(stmt){
