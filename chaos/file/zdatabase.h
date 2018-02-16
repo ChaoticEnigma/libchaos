@@ -28,7 +28,7 @@ public:
     ~ZDatabase();
 
     //! Open database \p file.
-    bool open(ZPath file);
+    bool open(ZPath file, bool readonly = false);
     //! Close database.
     void close();
     //! Check if database is open.

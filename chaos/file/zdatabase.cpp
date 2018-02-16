@@ -15,11 +15,11 @@ ZDatabase::~ZDatabase(){
     close();
 }
 
-bool ZDatabase::open(ZPath file){
+bool ZDatabase::open(ZPath file, bool readonly){
     if(ok())
         close();
 #if SQLITE_VERSION_NUMBER >= 3005000
-    int rc = sqlite3_open_v2(file.str().cc(), &_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    int rc = sqlite3_open_v2(file.str().cc(), &_db, (readonly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), NULL);
 #else
     int rc = sqlite3_open(file.str().cc(), &_db);
 #endif
