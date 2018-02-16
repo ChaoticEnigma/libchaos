@@ -312,6 +312,8 @@ public:
         _tail = nullptr;
         _size = 0;
         _realsize = 0;
+        // force resize
+        resize(ZMAP_INITIAL_CAPACITY);
     }
 
     //! Get an array of the keys in the map.
