@@ -69,7 +69,7 @@ void uid_time(){
     //ZList<ZBinary> maclist = ZUID::getMACAddresses();
 }
 
-#if ZHASH_HAS_MD5 && ZHASH_HAS_SHA1
+#if defined(ZHASH_HAS_MD5) && defined(ZHASH_HAS_SHA1)
 void uid_name(){
     ZUID ndns("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     ZString name = "www.znnxs.com";
@@ -89,7 +89,7 @@ ZArray<Test> misc_tests(){
         { "mac",        test_mac,       true, {} },
         { "uid_str",    uid_str,        true, {} },
         { "uid_time",   uid_time,       true, {} },
-#if ZHASH_HAS_MD5 && ZHASH_HAS_SHA1
+#if defined(ZHASH_HAS_MD5) && defined(ZHASH_HAS_SHA1)
         { "uid_name",   uid_name,       true, {} },
 #endif
     };
