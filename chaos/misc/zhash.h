@@ -34,10 +34,10 @@ public:
         XXHASH64,   //!< xxHash - fast non-cryptographic hash.
         FNV64,      //!< FNV Hash - simple non-cryptographic hash.
         CRC32,      //!< CRC-32 - classic CRC.
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
         MD5,        //!< MD5 - old cryptographic hash.
 #endif
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
         SHA1,       //!< SHA-1 - old cryptographic hash.
 #endif
         DEFAULT = FNV64,
@@ -105,7 +105,7 @@ public:
     virtual ZBinary hash() const { return _hash; }
 
 public:
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
     // MD5
     static ZBinary md5_hash(const zbyte *data, zu64 size);
     static void *md5_init();
@@ -113,7 +113,7 @@ public:
     static ZBinary md5_finish(void *context);
 #endif
 
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
     // SHA
     static ZBinary sha1_hash(const zbyte *data, zu64 size);
     static void *sha1_init();
@@ -185,7 +185,7 @@ protected:
     void *_state;
 };
 
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
 
 // MD5 (128-bit)
 //! Hash method provider for 128-bit MD5 hash.
@@ -209,7 +209,7 @@ protected:
 
 #endif
 
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
 
 // SHA-1 (160-bit)
 //! Hash method provider for 160-bit SHA-1 hash.

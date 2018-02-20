@@ -127,7 +127,7 @@ ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
             break;
         }
 
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
         case NAME_MD5: {
             // Version 3 UUID: Namespace-Name-MD5
             nameHashSet(ZHash<ZBinary, ZHashBase::MD5>(nameHashData(namespce, name)).hash());
@@ -135,7 +135,7 @@ ZUID::ZUID(uuidtype type, ZUID namespce, ZString name){
         }
 #endif
 
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
         case NAME_SHA: {
             // Version 5 UUID: Namespace-Name-SHA
             nameHashSet(ZHash<ZBinary, ZHashBase::SHA1>(nameHashData(namespce, name)).hash());

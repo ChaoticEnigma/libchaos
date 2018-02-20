@@ -107,7 +107,8 @@ ZString ZTime::dateStr() const {
     struct tm *time;
     time = localtime(&_time);
     char buffer[20];
-    sprintf(buffer, "%02d/%02d/%02d", time->tm_mon + 1, time->tm_mday, time->tm_year - 100);
+    //sprintf(buffer, "%02d/%02d/%02d", time->tm_mon + 1, time->tm_mday, time->tm_year - 100);
+    sprintf(buffer, "%d-%02d-%02d", time->tm_year + 1900, time->tm_mon + 1, time->tm_mday);
     ZString out(buffer);
     return out;
 }

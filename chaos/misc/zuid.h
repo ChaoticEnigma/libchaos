@@ -24,10 +24,10 @@ public:
         NIL         = 0,    //!< Nil UUID (00000000-0000-0000-0000-000000000000).
         TIME        = 1,    //!< Date-time-MAC-based Version 1 UUID.
         RANDOM      = 4,    //!< Random-based Version 4 UUID.
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
         NAME_MD5    = 3,    //!< Name-MD5-based Version 3 UUID.
 #endif
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
         NAME_SHA    = 5,    //!< Name-SHA-based Version 5 UUID.
         NAME = NAME_SHA,    //!< Same as NAME_SHA.
 #endif

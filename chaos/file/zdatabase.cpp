@@ -15,11 +15,11 @@ ZDatabase::~ZDatabase(){
     close();
 }
 
-bool ZDatabase::open(ZPath file){
+bool ZDatabase::open(ZPath file, bool readonly){
     if(ok())
         close();
 #if SQLITE_VERSION_NUMBER >= 3005000
-    int rc = sqlite3_open_v2(file.str().cc(), &_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    int rc = sqlite3_open_v2(file.str().cc(), &_db, (readonly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), NULL);
 #else
     int rc = sqlite3_open(file.str().cc(), &_db);
 #endif
@@ -63,6 +63,12 @@ int ZDatabase::execute(ZString sql, ZTable &result){
     return prep.execute(result);
 }
 
+ZString ZDatabase::getError(){
+    if(!ok())
+        return "Database not open";
+    return ZString::ItoS((zs64)sqlite3_errcode(_db))+ ": " + ZString(sqlite3_errmsg(_db));
+}
+
 // /////////////////////////////////////////////////////////////////////////////
 
 ZDatabase::Prepared::Prepared(sqlite3_stmt *stmt) : _stmt(stmt){
@@ -81,7 +87,6 @@ int ZDatabase::Prepared::bind(ZString name, ZString value){
 }
 
 int ZDatabase::Prepared::execute(ZTable &result){
-
     // Step rows and get column values
     int rc;
     while(true){
