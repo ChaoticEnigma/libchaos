@@ -14,6 +14,9 @@
 
 #define RET_MAGIC 0x5a5b5c5d
 
+#define MUTEX_TEST_NTHREAD  1000
+#define MUTEX_TEST_NLOCK    1000
+
 namespace LibChaosTest {
 
 void *thread_func2(ZThread::ZThreadArg zarg){
@@ -34,9 +37,6 @@ void thread(){
     TASSERT((zu64)ret == RET_MAGIC);
 }
 
-#define MUTEX_TEST_NTHREAD  1000
-#define MUTEX_TEST_NLOCK    1000
-
 struct MutexTest {
     ZMutex mutex;
     zu32 count;
@@ -46,7 +46,11 @@ void *mutex_thread_func(ZThread::ZThreadArg zarg){
     MutexTest *test = (MutexTest *)zarg.arg;
     for(int i = 0; i < MUTEX_TEST_NLOCK; ++i){
         test->mutex.lock();
-        ++test->count;
+        // try to add time between load and store
+        zu32 tmp = test->count;
+        tmp += 5;
+        tmp -= 5;
+        test->count = tmp + 1;
         test->mutex.unlock();
     }
     return nullptr;
