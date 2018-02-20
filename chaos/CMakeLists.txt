@@ -280,7 +280,9 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
             >
         >
         # Clang-only
-        $<$<CXX_COMPILER_ID:Clang>:-Wno-nested-anon-types>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+            -Wno-nested-anon-types -Wno-c++11-extensions
+        >
     )
 ENDIF()
 

@@ -86,6 +86,10 @@
     #warning Unknown Platform!
 #endif
 
+//#define XSTR(x) PXSTR(x)
+//#define PXSTR(x) #x
+//#pragma message "Platform " XSTR(LIBCHAOS_PLATFORM)
+
 //
 // Build
 //
