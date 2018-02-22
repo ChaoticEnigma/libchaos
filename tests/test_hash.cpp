@@ -39,7 +39,7 @@ void hash(){
             TASSERT(hasha == hashb)
         }
 
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
         {
             ZBinary hasha = ZHash<ZString, ZHashBase::MD5>(data).hash();
             ZBinary hashb = ZHash<ZString, ZHashBase::MD5>(data).hash();
@@ -48,7 +48,7 @@ void hash(){
         }
 #endif
 
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
         {
             ZBinary hasha = ZHash<ZString, ZHashBase::SHA1>(data).hash();
             ZBinary hashb = ZHash<ZString, ZHashBase::SHA1>(data).hash();
@@ -87,7 +87,7 @@ void hash_crc32(){
     }
 }
 
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
 void hash_md5(){
     ZBinary hash1 = { 0xd8, 0x27, 0x81, 0xda, 0x14, 0x42, 0x7b, 0xd2, 0x4b, 0xed, 0x2c, 0x3b, 0x8b, 0x8c, 0x9a, 0x93 };
     {
@@ -106,7 +106,7 @@ void hash_md5(){
 }
 #endif
 
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
 void hash_sha1(){
     ZBinary hash1 = { 0xcc, 0x70, 0x4a, 0x8b, 0x35, 0x3f, 0x3e, 0xe3, 0x94, 0xbb, 0x73, 0xdb, 0x70, 0x9d, 0x48, 0xbe, 0x2c, 0x4b, 0x09, 0xdd };
     {
@@ -240,10 +240,10 @@ ZArray<Test> hash_tests(){
     return {
         { "hash",       hash,       true, {} },
         { "hash-crc32", hash_crc32, true, { "hash" } },
-#if ZHASH_HAS_MD5
+#ifdef ZHASH_HAS_MD5
         { "hash-md5",   hash_md5,   true, { "hash" } },
 #endif
-#if ZHASH_HAS_SHA1
+#ifdef ZHASH_HAS_SHA1
         { "hash-sha1",  hash_sha1,  true, { "hash" } },
 #endif
         { "map",        map,        true, { "hash" } },
