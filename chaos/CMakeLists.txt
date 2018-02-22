@@ -202,143 +202,154 @@ ELSE()
     SET(LIBCHAOS_LINK STATIC)
 ENDIF()
 
+MACRO(TargetConfigure TAR)
+    SET_PROPERTY(TARGET ${TAR} PROPERTY C_STANDARD 11)
+    SET_PROPERTY(TARGET ${TAR} PROPERTY CXX_STANDARD 14)
+    SET_PROPERTY(TARGET ${TAR} PROPERTY CXX_STANDARD_REQUIRED 11)
+
+    # Includes
+    TARGET_INCLUDE_DIRECTORIES(${TAR} PUBLIC
+        .
+        abstract
+        base
+        data
+        file
+        file/image
+        lib
+        math
+        misc
+        net
+        string
+        thread
+    )
+
+    # Defines
+    TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC BUILDING _LIBCHAOS_DESCRIBE="${LIBCHAOS_DESCRIBE}")
+
+    # Build Type
+    IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC _LIBCHAOS_BUILD_DEBUG)
+    ELSEIF(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC _LIBCHAOS_BUILD_DEBUG)
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC _LIBCHAOS_BUILD_RELEASE)
+    ELSE()
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC _LIBCHAOS_BUILD_RELEASE)
+    ENDIF()
+
+    # MinGW / MSYS Options
+    IF(MINGW OR MSYS)
+        TARGET_COMPILE_OPTIONS(${TAR} PRIVATE -mwin32 -mwindows -static-libgcc -static-libstdc++)
+    ENDIF()
+
+    # MSVC Options
+    IF(MSVC)
+        SET_PROPERTY(TARGET ${TAR} PROPERTY LINK_FLAGS "/ignore:4221")
+    ENDIF()
+
+    # GCC / Clang Options
+    IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+       CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        TARGET_COMPILE_OPTIONS(${TAR} PRIVATE
+            # Warning groups
+            -Wall -Wextra -Wpedantic
+            # Casting
+            -Wcast-qual -Wsign-conversion
+            # Formatting
+            -Wformat=2 -Wstrict-overflow=5 -Wswitch-default
+            # Declarations
+            -Winit-self -Wredundant-decls -Wundef
+            -Wmissing-include-dirs -Wdisabled-optimization
+
+            # C++ warnings
+            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy>
+
+            # Disabled warnings
+            -Wno-unused -Wno-unused-parameter
+
+            # Forced errors
+            -Werror=return-type -Werror=delete-incomplete
+
+            # GCC-only
+            $<$<CXX_COMPILER_ID:GNU>:
+                -Wlogical-op -Wno-expansion-to-defined
+                $<$<COMPILE_LANGUAGE:CXX>:
+                    -Wnoexcept -Wstrict-null-sentinel
+                >
+            >
+            # Clang-only
+            $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+                -Wno-nested-anon-types -Wno-c++11-extensions
+            >
+        )
+    ENDIF()
+
+    # Crypto
+    IF(LIBCHAOS_WITH_CRYPTO)
+        TARGET_INCLUDE_DIRECTORIES(${TAR} PUBLIC ${LIBCRYPTO_INCLUDE})
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC LIBCHAOS_HAS_CRYPTO)
+        TARGET_LINK_LIBRARIES(${TAR} ${LIBCRYPTO_LIB})
+    ENDIF()
+    # PNG
+    IF(LIBCHAOS_WITH_PNG)
+        TARGET_INCLUDE_DIRECTORIES(${TAR} PUBLIC ${ZLIB_INCLUDE} ${LIBPNG_INCLUDE})
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC LIBCHAOS_HAS_PNG PNG_STATIC)
+        TARGET_LINK_LIBRARIES(${TAR} ${LIBPNG_LIB} ${ZLIB_LIB})
+    ENDIF()
+    # JPEG
+    IF(LIBCHAOS_WITH_JPEG)
+        TARGET_INCLUDE_DIRECTORIES(${TAR} PUBLIC ${LIBJPEG_INCLUDE})
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC LIBCHAOS_HAS_JPEG)
+        TARGET_LINK_LIBRARIES(${TAR} ${LIBJPEG_LIB})
+    ENDIF()
+    # WEBP
+    IF(LIBCHAOS_WITH_WEBP)
+        TARGET_INCLUDE_DIRECTORIES(${TAR} PUBLIC ${LIBWEBP_INCLUDE})
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC LIBCHAOS_HAS_WEBP)
+        TARGET_LINK_LIBRARIES(${TAR} ${LIBWEBP_LIB})
+    ENDIF()
+    # Sqlite3
+    IF(LIBCHAOS_WITH_SQLITE3)
+        TARGET_INCLUDE_DIRECTORIES(${TAR} PUBLIC ${LIBSQLITE3_INCLUDE})
+        TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC LIBCHAOS_HAS_SQLITE3)
+        TARGET_LINK_LIBRARIES(${TAR} ${LIBSQLITE3_LIB})
+    ENDIF()
+
+    IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+        IF(MSVC)
+            TARGET_LINK_LIBRARIES(${TAR} Ws2_32 iphlpapi)
+        ELSE()
+            TARGET_LINK_LIBRARIES(${TAR} pthread)
+            TARGET_LINK_LIBRARIES(${TAR} ws2_32 dbghelp kernel32 psapi iphlpapi version)
+        ENDIF()
+    ELSE()
+        IF(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+            # For zclock
+            TARGET_LINK_LIBRARIES(${TAR} rt)
+        ENDIF()
+
+        # For pthreads
+        TARGET_LINK_LIBRARIES(${TAR} pthread)
+        IF(IBERTY_DEMANGLE)
+            TARGET_LINK_LIBRARIES(${TAR} iberty)
+        ENDIF()
+
+        IF(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+            TARGET_LINK_LIBRARIES(${TAR} execinfo)
+        ELSE()
+            TARGET_LINK_LIBRARIES(${TAR} dl)
+        ENDIF()
+    ENDIF()
+ENDMACRO()
+
 ### =================== BUILD =================== ###
 
-ADD_LIBRARY(chaos ${LIBCHAOS_LINK} ${LibChaos_SOURCES})
+# Shared
+ADD_LIBRARY(chaos-shared SHARED ${LibChaos_SOURCES})
+TargetConfigure(chaos-shared)
+SET_TARGET_PROPERTIES(chaos-shared PROPERTIES OUTPUT_NAME chaos)
+# Static
+ADD_LIBRARY(chaos-static STATIC ${LibChaos_SOURCES})
+TargetConfigure(chaos-static)
+SET_TARGET_PROPERTIES(chaos-static PROPERTIES OUTPUT_NAME chaos)
 
-SET_PROPERTY(TARGET chaos PROPERTY C_STANDARD 11)
-SET_PROPERTY(TARGET chaos PROPERTY CXX_STANDARD 14)
-SET_PROPERTY(TARGET chaos PROPERTY CXX_STANDARD_REQUIRED 11)
-
-# Includes
-TARGET_INCLUDE_DIRECTORIES(chaos PUBLIC
-    .
-    abstract
-    base
-    data
-    file
-    file/image
-    lib
-    math
-    misc
-    net
-    string
-    thread
-)
-
-# Defines
-TARGET_COMPILE_DEFINITIONS(chaos PUBLIC BUILDING _LIBCHAOS_DESCRIBE="${LIBCHAOS_DESCRIBE}")
-
-# Build Type
-IF(CMAKE_BUILD_TYPE MATCHES "Debug")
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC _LIBCHAOS_BUILD_DEBUG)
-ELSEIF(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC _LIBCHAOS_BUILD_DEBUG)
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC _LIBCHAOS_BUILD_RELEASE)
-ELSE()
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC _LIBCHAOS_BUILD_RELEASE)
-ENDIF()
-
-# MinGW / MSYS Options
-IF(MINGW OR MSYS)
-    TARGET_COMPILE_OPTIONS(chaos PRIVATE -mwin32 -mwindows -static-libgcc -static-libstdc++)
-ENDIF()
-
-# MSVC Options
-IF(MSVC)
-    SET_PROPERTY(TARGET chaos PROPERTY LINK_FLAGS "/ignore:4221")
-ENDIF()
-
-# GCC / Clang Options
-IF(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
-   CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    TARGET_COMPILE_OPTIONS(chaos PRIVATE
-        # Warning groups
-        -Wall -Wextra -Wpedantic
-        # Casting
-        -Wcast-qual -Wsign-conversion
-        # Formatting
-        -Wformat=2 -Wstrict-overflow=5 -Wswitch-default
-        # Declarations
-        -Winit-self -Wredundant-decls -Wundef
-        -Wmissing-include-dirs -Wdisabled-optimization
-
-        # C++ warnings
-        $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy>
-
-        # Disabled warnings
-        -Wno-unused -Wno-unused-parameter
-
-        # Forced errors
-        -Werror=return-type -Werror=delete-incomplete
-
-        # GCC-only
-        $<$<CXX_COMPILER_ID:GNU>:
-            -Wlogical-op -Wno-expansion-to-defined
-            $<$<COMPILE_LANGUAGE:CXX>:
-                -Wnoexcept -Wstrict-null-sentinel
-            >
-        >
-        # Clang-only
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-            -Wno-nested-anon-types -Wno-c++11-extensions
-        >
-    )
-ENDIF()
-
-# Crypto
-IF(LIBCHAOS_WITH_CRYPTO)
-    TARGET_INCLUDE_DIRECTORIES(chaos PUBLIC ${LIBCRYPTO_INCLUDE})
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC LIBCHAOS_HAS_CRYPTO)
-    TARGET_LINK_LIBRARIES(chaos ${LIBCRYPTO_LIB})
-ENDIF()
-# PNG
-IF(LIBCHAOS_WITH_PNG)
-    TARGET_INCLUDE_DIRECTORIES(chaos PUBLIC ${ZLIB_INCLUDE} ${LIBPNG_INCLUDE})
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC LIBCHAOS_HAS_PNG PNG_STATIC)
-    TARGET_LINK_LIBRARIES(chaos ${LIBPNG_LIB} ${ZLIB_LIB})
-ENDIF()
-# JPEG
-IF(LIBCHAOS_WITH_JPEG)
-    TARGET_INCLUDE_DIRECTORIES(chaos PUBLIC ${LIBJPEG_INCLUDE})
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC LIBCHAOS_HAS_JPEG)
-    TARGET_LINK_LIBRARIES(chaos ${LIBJPEG_LIB})
-ENDIF()
-# WEBP
-IF(LIBCHAOS_WITH_WEBP)
-    TARGET_INCLUDE_DIRECTORIES(chaos PUBLIC ${LIBWEBP_INCLUDE})
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC LIBCHAOS_HAS_WEBP)
-    TARGET_LINK_LIBRARIES(chaos ${LIBWEBP_LIB})
-ENDIF()
-# Sqlite3
-IF(LIBCHAOS_WITH_SQLITE3)
-    TARGET_INCLUDE_DIRECTORIES(chaos PUBLIC ${LIBSQLITE3_INCLUDE})
-    TARGET_COMPILE_DEFINITIONS(chaos PUBLIC LIBCHAOS_HAS_SQLITE3)
-    TARGET_LINK_LIBRARIES(chaos ${LIBSQLITE3_LIB})
-ENDIF()
-
-IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    IF(MSVC)
-        TARGET_LINK_LIBRARIES(chaos Ws2_32 iphlpapi)
-    ELSE()
-        TARGET_LINK_LIBRARIES(chaos pthread)
-        TARGET_LINK_LIBRARIES(chaos ws2_32 dbghelp kernel32 psapi iphlpapi version)
-    ENDIF()
-ELSE()
-    IF(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
-        # For zclock
-        TARGET_LINK_LIBRARIES(chaos rt)
-    ENDIF()
-
-    # For pthreads
-    TARGET_LINK_LIBRARIES(chaos pthread)
-    IF(IBERTY_DEMANGLE)
-        TARGET_LINK_LIBRARIES(chaos iberty)
-    ENDIF()
-
-    IF(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-        TARGET_LINK_LIBRARIES(chaos execinfo)
-    ELSE()
-        TARGET_LINK_LIBRARIES(chaos dl)
-    ENDIF()
-ENDIF()
+ADD_LIBRARY(chaos ALIAS chaos-shared)
