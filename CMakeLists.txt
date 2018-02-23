@@ -55,6 +55,11 @@ SET(LibChaos_OTHER_FILES
     doc/Doxyfile-help.in
 )
 
+# Add targets to all
+IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    SET(LIBCHAOS_ALL EXCLUDE_FROM_ALL)
+ENDIF()
+
 # LibChaos
 ADD_SUBDIRECTORY(chaos)
 

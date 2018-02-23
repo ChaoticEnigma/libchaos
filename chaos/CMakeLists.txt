@@ -344,11 +344,11 @@ ENDMACRO()
 ### =================== BUILD =================== ###
 
 # Shared
-ADD_LIBRARY(chaos-shared SHARED ${LibChaos_SOURCES})
+ADD_LIBRARY(chaos-shared SHARED ${LIBCHAOS_ALL} ${LibChaos_SOURCES})
 TargetConfigure(chaos-shared)
 SET_TARGET_PROPERTIES(chaos-shared PROPERTIES OUTPUT_NAME chaos)
 # Static
-ADD_LIBRARY(chaos-static STATIC ${LibChaos_SOURCES})
+ADD_LIBRARY(chaos-static STATIC ${LIBCHAOS_ALL} ${LibChaos_SOURCES})
 TargetConfigure(chaos-static)
 SET_TARGET_PROPERTIES(chaos-static PROPERTIES OUTPUT_NAME chaos)
 
