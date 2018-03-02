@@ -22,8 +22,8 @@ ZBinary &ZBinary::concat(const ZBinary &other){
 }
 
 ZBinary &ZBinary::append(ZBinary::bytetype byte){
-    reserve(_size + 1);
-    operator[](_size - 1) = byte;
+    resize(_size + 1);
+    at(_size - 1) = byte;
     return *this;
 }
 

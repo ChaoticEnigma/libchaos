@@ -12,6 +12,7 @@ public:
         NONE,
         STRING,
         INTEGER,
+        LIST,
     };
 
     struct OptDef {
@@ -23,7 +24,7 @@ public:
 public:
     ZOptions(ZArray<OptDef> optdef);
 
-    bool parse(int argc, char ** argv);
+    bool parse(int argc, const char *const *argv);
 
     ZArray<ZString> getArgs() const {
         return args;

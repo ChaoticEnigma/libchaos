@@ -21,7 +21,7 @@
 
 using namespace LibChaos;
 
-#if COMPILER == MINGW || PLATFORM == CYGWIN
+#if LIBCHAOS_COMPILER == _COMPILER_MINGW || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
 const char *inet_ntop(int af, const void *src, char *dest, int cnt){
     sockaddr_storage srcaddr;
     memset(&srcaddr, 0, sizeof(sockaddr_storage));
@@ -216,7 +216,7 @@ ZString ZAddress::str() const {
     }
 
     char *str = new char[csz];
-#if COMPILER == MSVC
+#if LIBCHAOS_COMPILER == _COMPILER_MSVC
     inet_ntop(_family, (void *)&_v4_addr, str, csz);
 #else
     inet_ntop(_family, (const void *)&_v4_addr, str, csz);

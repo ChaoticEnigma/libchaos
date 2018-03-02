@@ -37,7 +37,7 @@ public:
 
     int getNewId();
 
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == WINDOWS
     // internal stuffs
     void setHandle(HWND hndl);
     HWND getHandle();

@@ -87,6 +87,9 @@ ZString ZJSON::encode(){
     case BOOLEAN:
         return (_data.boolean ? "true" : "false");
         break;
+    case NULLVAL:
+        return "null";
+        break;
     default:
         break;
     }

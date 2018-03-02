@@ -3,38 +3,44 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaos)
 
-# Options
-INCLUDE(cmake/Options.cmake)
-# Find External Third Party Libraries
+# Build Modes
+OPTION(EXTRA_WARNINGS           "Produce Extra Compiler Warnings"           OFF )
+OPTION(BUILD_DOCS               "Documentation should be configured"        ON  )
+
+# General Options
+OPTION(LIBCHAOS_BUILD_SHARED    "Build as a shared library"                 OFF )
+OPTION(LIBCHAOS_LINK_STATIC     "Link with static libraries"                OFF )
+OPTION(LIBCHAOS_LINK_SHARED     "Link with shared libraries"                OFF )
+#OPTION(IBERTY_DEMANGLE          "Use libiberty to demangle symbols"         OFF )
+
+# Library Components
+OPTION(LIBCHAOS_UI              "Build LibChaos UI library"                 OFF )
+
+# Third-Party Library Support
+OPTION(DISABLE_CRYPTO           "Disable Crypto support"                    OFF )
+OPTION(DISABLE_ZPNG             "Disable PNG support"                       OFF )
+OPTION(DISABLE_ZJPEG            "Disable JPEG support"                      OFF )
+OPTION(DISABLE_ZWEBP            "Disable WebP support"                      OFF )
+OPTION(DISABLE_ZDATABASE        "Disable SQLite3 support"                   OFF )
+
+IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                OFF )
+ELSE()
+    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                ON  )
+ENDIF()
+OPTION(REQUIRE_ZJPEG            "Require JPEG support"                      OFF )
+OPTION(REQUIRE_ZPNG             "Require PNG support"                       OFF )
+OPTION(REQUIRE_ZWEBP            "Require WebP support"                      OFF )
+OPTION(REQUIRE_ZDATABASE        "Require SQLite3 support"                   OFF )
+
+# Find libraries
 INCLUDE(cmake/FindLibs.cmake)
-# Build Settings
-INCLUDE(cmake/ConfigureBuild.cmake)
-# CMake Utils
+
 INCLUDE(cmake/Utils.cmake)
 
 # CTest
 INCLUDE(CTest)
 ENABLE_TESTING()
-
-# Git Describe
-EXECUTE_PROCESS(
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND git describe --all --long --always --dirty=*
-    OUTPUT_VARIABLE LIBCHAOS_DESCRIBE
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-SET(LIBCHAOS_CXX_FLAGS "${LIBCHAOS_CXX_FLAGS} -D_LIBCHAOS_DESCRIBE=\\\"${LIBCHAOS_DESCRIBE}\\\"")
-
-SET_PROPERTY(GLOBAL PROPERTY LibChaosCXXFlags ${LIBCHAOS_CXX_FLAGS})
-
-# Library Linkage
-IF(LIBCHAOS_SHARED)
-    SET(LIBCHAOS_LINK SHARED)
-    SET(BUILD_STRING "${CONFIGURE_BUILD_STRING} (Shared)")
-ELSE()
-    SET(LIBCHAOS_LINK STATIC)
-    SET(BUILD_STRING "${CONFIGURE_BUILD_STRING} (Static)")
-ENDIF()
 
 # Readme Files
 SET(LibChaos_OTHER_FILES
@@ -47,72 +53,33 @@ SET(LibChaos_OTHER_FILES
     doc/LibChaos_Todo_Ideas.txt
     doc/Doxyfile.in
     doc/Doxyfile-help.in
-    doc/ZParcel.txt
 )
 
-## Libraries
+# Add targets to all
+IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    SET(LIBCHAOS_ALL EXCLUDE_FROM_ALL)
+    SET(TEST_ALL EXCLUDE_FROM_ALL)
+ENDIF()
 
 # LibChaos
 ADD_SUBDIRECTORY(chaos)
-IF(CORE_LIBS)
-    STRING(REPLACE ";" ", " CORE_LIBS_STRING "${CORE_LIBS}")
-    SET(LIBCHAOS_LIBS_STRING "Libs: (${CORE_LIBS_STRING})")
-ENDIF()
-SET(LibChaos_INCLUDE ${LibChaos_Core_INCLUDE})
 
 # LibChaos UI
 IF(LIBCHAOS_UI)
     ADD_SUBDIRECTORY(ui)
 ENDIF()
 
-## Tools
-
 # LibChaos Test
 ADD_SUBDIRECTORY(tests)
 
-# LibChaos Utils
-ADD_SUBDIRECTORY(utils)
-
-# Export Include Directories
+# Export configuration variables
 GET_DIRECTORY_PROPERTY(HAS_PARENT PARENT_DIRECTORY)
 IF(HAS_PARENT)
-    SET(LibChaos_COMPILER   ${LIBCHAOS_COMPILER}    PARENT_SCOPE)
-    SET(LibChaos_PLATFORM   ${LIBCHAOS_PLATFORM}    PARENT_SCOPE)
-    SET(LibChaos_BUILD      ${LIBCHAOS_BUILD}       PARENT_SCOPE)
-
-    SET(COMPILER_GCC        ${COMPILER_GCC}         PARENT_SCOPE)
-    SET(COMPILER_MINGW      ${COMPILER_MINGW}       PARENT_SCOPE)
-    SET(COMPILER_MSVC       ${COMPILER_MSVC}        PARENT_SCOPE)
-    SET(COMPILER_CLANG      ${COMPILER_CLANG}       PARENT_SCOPE)
-
-    SET(PLATFORM_LINUX      ${PLATFORM_LINUX}       PARENT_SCOPE)
-    SET(PLATFORM_FREEBSD    ${PLATFORM_FREEBSD}     PARENT_SCOPE)
-    SET(PLATFORM_WINDOWS    ${PLATFORM_WINDOWS}     PARENT_SCOPE)
-    SET(PLATFORM_MACOSX     ${PLATFORM_MACOSX}      PARENT_SCOPE)
-
-    SET(LibChaos_PLATFORM_LINUX     ${LIBCHAOS_PLATFORM_LINUX}      PARENT_SCOPE)
-    SET(LibChaos_PLATFORM_FREEBSD   ${LIBCHAOS_PLATFORM_FREEBSD}    PARENT_SCOPE)
-    SET(LibChaos_PLATFORM_WINDOWS   ${LIBCHAOS_PLATFORM_WINDOWS}    PARENT_SCOPE)
-    SET(LibChaos_PLATFORM_MACOSX    ${LIBCHAOS_PLATFORM_MACOSX}     PARENT_SCOPE)
-
-    SET(LibChaos_COMPILER_GCC       ${LIBCHAOS_COMPILER_GCC}        PARENT_SCOPE)
-    SET(LibChaos_COMPILER_MINGW     ${LIBCHAOS_COMPILER_MINGW}      PARENT_SCOPE)
-    SET(LibChaos_COMPILER_MSVC      ${LIBCHAOS_COMPILER_MSVC}       PARENT_SCOPE)
-    SET(LibChaos_COMPILER_CLANG     ${LIBCHAOS_COMPILER_CLANG}      PARENT_SCOPE)
-
-    GET_PROPERTY(LibChaosInclude        GLOBAL PROPERTY LibChaosInclude)
-    GET_PROPERTY(LibChaosUIInclude      GLOBAL PROPERTY LibChaosUIInclude)
-
-    # Add to INCLUDE_DIRECTORIES() in parent scope
-    SET(LibChaos_INCLUDE    ${LibChaosInclude}    PARENT_SCOPE)
-    SET(LibChaos_UI_INCLUDE ${LibChaosUIInclude}  PARENT_SCOPE)
-
-    # Add to ${CMAKE_CXX_FLAGS} in parent scope
-    SET(LibChaos_CXX_FLAGS  ${LIBCHAOS_CXX_FLAGS} PARENT_SCOPE)
-
-    SET(LibChaos_With_PNG   ${LIBCHAOS_WITH_PNG}  PARENT_SCOPE)
-    SET(LibChaos_With_JPEG  ${LIBCHAOS_WITH_JPEG} PARENT_SCOPE)
-    SET(LibChaos_With_WebP  ${LIBCHAOS_WITH_WEBP} PARENT_SCOPE)
+    SET(LibChaos_With_Crypto    ${LIBCHAOS_WITH_CRYPTO}     PARENT_SCOPE)
+    SET(LibChaos_With_PNG       ${LIBCHAOS_WITH_PNG}        PARENT_SCOPE)
+    SET(LibChaos_With_JPEG      ${LIBCHAOS_WITH_JPEG}       PARENT_SCOPE)
+    SET(LibChaos_With_WebP      ${LIBCHAOS_WITH_WEBP}       PARENT_SCOPE)
+    SET(LibChaos_With_SQLite3   ${LIBCHAOS_WITH_SQLITE3}    PARENT_SCOPE)
 ENDIF()
 
 # Doxygen
@@ -124,6 +91,3 @@ ADD_CUSTOM_TARGET(libchaos_dummy SOURCES
     ${LibChaosAllSources}
     ${LibChaos_OTHER_FILES}
 )
-
-# Build Status Line
-MESSAGE(STATUS "LibChaos: ${BUILD_STRING} - ${LIBCHAOS_LIBS_STRING} - ${LIBCHAOS_DESCRIBE}")

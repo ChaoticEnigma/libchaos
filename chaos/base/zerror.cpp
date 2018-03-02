@@ -11,7 +11,7 @@
 
 #define FUCK_WINDOWS 1
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
     #include <stdlib.h>
     #include <windows.h>
 
@@ -26,7 +26,7 @@
         #include "StackWalker.h"
         #include <list>
     #endif // FUCK_WINDOWS
-#elif PLATFORM == MACOSX
+#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
     #include <sys/errno.h>
     #include <execinfo.h>
     #include <signal.h>
@@ -45,7 +45,7 @@
     #ifdef IBERTY_DEMANGLE
         #include "demangle.h"
     #endif
-#endif // PLATFORM
+#endif // LIBCHAOS_PLATFORM
 
 //#include <assert.h>
 
@@ -63,7 +63,7 @@ void zassert(bool condition, ZString message){
         throw ZException(message);
 }
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
 
 #ifndef FUCK_WINDOWS
 struct module_data {
@@ -534,7 +534,7 @@ ZArray<TraceFrame> getStackTrace(unsigned trim){
     return trace;
 }
 
-#elif PLATFORM == MACOSX
+#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
 
 ZArray<TraceFrame> getStackTrace(unsigned trim){
     ZArray<TraceFrame> trace;
@@ -572,7 +572,7 @@ ZArray<TraceFrame> getStackTrace(unsigned trim){
     return trace;
 }
 
-#else // PLATFORM
+#else // LIBCHAOS_PLATFORM
 
 struct backtrace_parts {
     ZPath exec;
@@ -692,7 +692,7 @@ ZArray<TraceFrame> getStackTrace(unsigned trim){
     return trace;
 }
 
-#endif // PLATFORM
+#endif // LIBCHAOS_PLATFORM
 
 ZString traceFrameStr(const TraceFrame &frame){
     ZString str;
@@ -738,12 +738,12 @@ void fatalSignalHandler(int sig){
 }
 
 void registerSigSegv(){
-#if PLATFORM != WINDOWS
+#if LIBCHAOS_PLATFORM != _PLATFORM_WINDOWS
     signal(SIGSEGV, fatalSignalHandler);
 #endif
 }
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
 
 BOOL WINAPI ConsoleHandler(DWORD dwType){
     LOG("Console Exit Handler " << dwType);
@@ -768,11 +768,11 @@ void sigHandle(int sig){
         (sigmap[sig].handler)(sigmap[sig].sigtype);
 }
 
-#endif // PLATFORM
+#endif // LIBCHAOS_PLATFORM
 
 bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
-#if PLATFORM == WINDOWS || PLATFORM == CYGWIN
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
 
     if(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE)){
         return false;
@@ -819,7 +819,7 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
         throw ZException("sigaction");
     }
 
-#endif // PLATFORM
+#endif // LIBCHAOS_PLATFORM
 
     return true;
 }
@@ -828,7 +828,7 @@ bool registerInterruptHandler(signalHandler handler){
     return registerSignalHandler(INTERRUPT, handler);
 }
 
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
 unsigned long getSystemErrorCode(){
     return GetLastError();
 }
@@ -839,7 +839,7 @@ int getSystemErrorCode(){
 #endif
 
 ZString getSystemError(){
-#if  PLATFORM == WINDOWS
+#if  LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     DWORD err = GetLastError();
 //    wchar_t *str = nullptr;
 //    TCHAR *str = nullptr;
@@ -862,7 +862,7 @@ ZString getSystemError(){
 }
 
 int getSocketErrorCode(){
-#if PLATFORM == WINDOWS
+#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     return WSAGetLastError();
 #else
     return errno;
@@ -870,7 +870,7 @@ int getSocketErrorCode(){
 }
 
 ZString getSocketError(){
-#if  PLATFORM == WINDOWS
+#if  LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
     return ZString();
 #else
     int err = errno;

@@ -28,7 +28,7 @@ public:
     ~ZDatabase();
 
     //! Open database \p file.
-    bool open(ZPath file);
+    bool open(ZPath file, bool readonly = false);
     //! Close database.
     void close();
     //! Check if database is open.
@@ -38,6 +38,8 @@ public:
 
     //! Execute an SQL query.
     int execute(ZString sql, ZTable &result);
+    
+    ZString getError();
 
     sqlite3 *handle(){ return _db; }
 

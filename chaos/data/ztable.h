@@ -16,6 +16,9 @@ public:
     void addColumn(ZString name);
     //! Adda record to the table.
     void addRecord(ZArray<ZString> record);
+    
+    //! Clear columns and records.
+    void clear();
 
     //! Get reference to field in \a column and \a row.
     ZString &field(zu64 column, zu64 row);
