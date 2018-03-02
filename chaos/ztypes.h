@@ -35,18 +35,18 @@
 // Compiler
 //
 
-#define _COMPILER_GCC       0x11
-#define _COMPILER_MINGW     0x12
-#define _COMPILER_CLANG     0x13
-#define _COMPILER_MSVC      0x14
+#define _COMPILER_GCC       0x01
+#define _COMPILER_MINGW     0x02
+#define _COMPILER_CLANG     0x03
+#define _COMPILER_MSVC      0x04
 
 // Detection
-#if defined(__GNUC__)
-    #define LIBCHAOS_COMPILER _COMPILER_GCC
+#if defined(__clang__) // Must be first, clang defines GNUC
+    #define LIBCHAOS_COMPILER _COMPILER_CLANG
 #elif defined(__MINGW32__)
     #define LIBCHAOS_COMPILER _COMPILER_MINGW
-#elif defined(__clang__)
-    #define LIBCHAOS_COMPILER _COMPILER_CLANG
+#elif defined(__GNUC__)
+    #define LIBCHAOS_COMPILER _COMPILER_GCC
 #elif defined(_MSC_VER)
     #define LIBCHAOS_COMPILER _COMPILER_MSVC
 #else
@@ -65,11 +65,11 @@
 // Platform
 //
 
-#define _PLATFORM_LINUX     0x21
-#define _PLATFORM_FREEBSD   0x22
-#define _PLATFORM_WINDOWS   0x23
-#define _PLATFORM_MACOSX    0x24
-#define _PLATFORM_CYGWIN    0x25
+#define _PLATFORM_LINUX     0x01
+#define _PLATFORM_FREEBSD   0x02
+#define _PLATFORM_WINDOWS   0x03
+#define _PLATFORM_MACOSX    0x04
+#define _PLATFORM_CYGWIN    0x05
 
 // Detection
 #if defined(__linux__)
@@ -94,16 +94,13 @@
 // Build
 //
 
-#define LIBCHAOS_DEBUG      0x31
-#define LIBCHAOS_RELEASE    0x32
-#define LIBCHAOS_NORMAL     0x33
+#define LIBCHAOS_DEBUG      0x01
+#define LIBCHAOS_RELEASE    0x02
 
 #if defined(_LIBCHAOS_BUILD_DEBUG)
     #define LIBCHAOS_BUILD LIBCHAOS_DEBUG
 #elif defined(_LIBCHAOS_BUILD_RELEASE)
     #define LIBCHAOS_BUILD LIBCHAOS_RELEASE
-#else
-    #define LIBCHAOS_BUILD LIBCHAOS_NORMAL
 #endif
 
 // Signed Integer Encoding
@@ -249,7 +246,7 @@ static const char *LibChaosDescribe(){
 
 //! Get a word describing the build configuration of LibChaos.
 static zu32 LibChaosBuildConfig(){
-    return (LIBCHAOS_COMPILER << 24) | (LIBCHAOS_PLATFORM << 16) | (LIBCHAOS_BUILD);
+    return (LIBCHAOS_COMPILER << 16) | (LIBCHAOS_PLATFORM << 8) | (LIBCHAOS_BUILD);
 }
 
 } // namespace LibChaos

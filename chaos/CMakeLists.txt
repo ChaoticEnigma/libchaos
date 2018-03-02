@@ -261,7 +261,9 @@ MACRO(TargetConfigure TAR)
             -Wmissing-include-dirs -Wdisabled-optimization
 
             # C++ warnings
-            $<$<COMPILE_LANGUAGE:CXX>:-Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy>
+            $<$<COMPILE_LANGUAGE:CXX>:
+                -Wsign-promo -Woverloaded-virtual -Wctor-dtor-privacy
+            >
 
             # Disabled warnings
             -Wno-unused -Wno-unused-parameter

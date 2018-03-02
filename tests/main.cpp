@@ -35,6 +35,15 @@ int main(int argc, char **argv){
         ZLog::logLevelFile(ZLog::ERRORS, lgf, "%time% %thread% E [%function%|%file%:%line%] %log%");
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
+        zu64 conf = LibChaosBuildConfig();
+        const ZArray<ZString> comp = { "NONE", "GCC", "MinGW", "Clang", "MSVC" };
+        const ZArray<ZString> plat = { "NONE", "Linux", "FreeBSD", "Windows", "MacOSX", "Cygwin" };
+        const ZArray<ZString> type = { "NONE", "Debug", "Release", "Release+Debug" };
+        LOG("Library Config: " << ZString::ItoS(conf, 16)
+            << " " << comp[(conf >> 16) & 0xff]
+            << " " << plat[(conf >> 8) & 0xff]
+            << " " << type[(conf) & 0xff]
+        );
 
         // Test registration functions
         ZArray<reg_func> regtests = {
