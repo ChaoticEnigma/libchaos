@@ -12,6 +12,10 @@ void graph(){
     for(auto i = verts.begin(); i.more(); ++i){
         LOG(*i);
     }
+    
+    graph1.connect("A", "B", 1);
+    
+    TASSERT(graph1.connected("A", "B"));
 }
 
 ZArray<Test> graph_tests(){
