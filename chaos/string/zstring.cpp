@@ -489,7 +489,7 @@ ZArray<zu64> ZString::findAll(const ZString &findstr) const {
     zu64 next = 0;
     do {
         zu64 pos = findFirst(findstr, next);
-        if(pos == std::string::npos){
+        if(pos == NONE){
             break;
         }
         finds.push(pos);

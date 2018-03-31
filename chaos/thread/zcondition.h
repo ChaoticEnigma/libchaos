@@ -10,8 +10,9 @@
 #include "zmutex.h"
 
 #ifdef ZMUTEX_WINTHREADS
-    struct _RTL_CONDITION_VARIABLE;
-    typedef _RTL_CONDITION_VARIABLE CONDITION_VARIABLE;
+    //struct _RTL_CONDITION_VARIABLE;
+    //typedef _RTL_CONDITION_VARIABLE CONDITION_VARIABLE;
+    #include <windows.h>
 #else
     #include <pthread.h>
 #endif

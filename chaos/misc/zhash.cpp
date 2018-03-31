@@ -216,20 +216,20 @@ ZBinary ZHashBigBase::md5_hash(const zbyte *data, zu64 size){
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
     if(!CryptHashData(hHash, data, size, 0)){
-        CryptReleaseContext(hProv, 0);
         CryptDestroyHash(hHash);
+        CryptReleaseContext(hProv, 0);
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
     DWORD mlen = MD5LEN;
     ZBinary hash(mlen);
     if(!CryptGetHashParam(hHash, HP_HASHVAL, hash.raw(), &mlen, 0)){
-        CryptReleaseContext(hProv, 0);
         CryptDestroyHash(hHash);
+        CryptReleaseContext(hProv, 0);
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
 
-    CryptReleaseContext(hProv, 0);
     CryptDestroyHash(hHash);
+    CryptReleaseContext(hProv, 0);
 
     return hash;
 }
@@ -251,8 +251,8 @@ void *ZHashBigBase::md5_init(){
 void ZHashBigBase::md5_feed(void *context, const zbyte *data, zu64 size){
     WinCryptHash *ctx = (WinCryptHash *)context;
     if(!CryptHashData(ctx->hash, data, size, 0)){
-        CryptReleaseContext(ctx->prov, 0);
         CryptDestroyHash(ctx->hash);
+        CryptReleaseContext(ctx->prov, 0);
         delete ctx;
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
@@ -263,8 +263,8 @@ ZBinary ZHashBigBase::md5_finish(void *context){
     DWORD mlen = MD5LEN;
     ZBinary hash(mlen);
     if(!CryptGetHashParam(ctx->hash, HP_HASHVAL, hash.raw(), &mlen, 0)){
-        CryptReleaseContext(ctx->prov, 0);
         CryptDestroyHash(ctx->hash);
+        CryptReleaseContext(ctx->prov, 0);
         delete ctx;
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
@@ -287,20 +287,20 @@ ZBinary ZHashBigBase::sha1_hash(const zbyte *data, zu64 size){
         throw ZException("ZHash sha1_hash: " + ZError::getSystemError(), __LINE__);
     }
     if(!CryptHashData(hHash, data, size, 0)){
-        CryptReleaseContext(hProv, 0);
         CryptDestroyHash(hHash);
+        CryptReleaseContext(hProv, 0);
         throw ZException("ZHash sha1_hash: " + ZError::getSystemError(), __LINE__);
     }
     DWORD mlen = SHA1LEN;
     ZBinary hash(mlen);
     if(!CryptGetHashParam(hHash, HP_HASHVAL, hash.raw(), &mlen, 0)){
-        CryptReleaseContext(hProv, 0);
         CryptDestroyHash(hHash);
+        CryptReleaseContext(hProv, 0);
         throw ZException("ZHash sha1_hash: " + ZError::getSystemError(), __LINE__);
     }
 
-    CryptReleaseContext(hProv, 0);
     CryptDestroyHash(hHash);
+    CryptReleaseContext(hProv, 0);
 
     return hash;
 }
@@ -322,8 +322,8 @@ void *ZHashBigBase::sha1_init(){
 void ZHashBigBase::sha1_feed(void *context, const zbyte *data, zu64 size){
     WinCryptHash *ctx = (WinCryptHash *)context;
     if(!CryptHashData(ctx->hash, data, size, 0)){
-        CryptReleaseContext(ctx->prov, 0);
         CryptDestroyHash(ctx->hash);
+        CryptReleaseContext(ctx->prov, 0);
         delete ctx;
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
@@ -334,8 +334,8 @@ ZBinary ZHashBigBase::sha1_finish(void *context){
     DWORD mlen = SHA1LEN;
     ZBinary hash(mlen);
     if(!CryptGetHashParam(ctx->hash, HP_HASHVAL, hash.raw(), &mlen, 0)){
-        CryptReleaseContext(ctx->prov, 0);
         CryptDestroyHash(ctx->hash);
+        CryptReleaseContext(ctx->prov, 0);
         delete ctx;
         throw ZException("ZHash md5_hash: " + ZError::getSystemError(), __LINE__);
     }
