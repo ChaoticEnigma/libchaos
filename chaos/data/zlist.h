@@ -187,7 +187,7 @@ public:
     }
     //! Get an iterator starting at the end of the list.
     ZListIterator end(){
-        return ZListIterator(this, _head->prev);
+        return ZListIterator(this, (_head ? _head->prev : nullptr));
     }
 
     //! Get a const iterator starting at the beginning of the list.
@@ -196,7 +196,7 @@ public:
     }
     //! Get a const iterator starting at the end of the list.
     ZListConstIterator cend() const {
-        return ZListConstIterator(this, _head->prev);
+        return ZListConstIterator(this, (_head ? _head->prev : nullptr));
     }
 
 //    ZString debug() const {
@@ -217,22 +217,22 @@ public:
 
     inline T &front(){
         if(_head == nullptr)
-            throw zexception("Cannot reference head of empty ZList");
+            throw zexception("ZList: Cannot reference head of empty ZList");
         return _head->data;
     }
     inline const T &front() const {
         if(_head == nullptr)
-            throw zexception("Cannot reference head of empty ZList");
+            throw zexception("ZList: Cannot reference head of empty ZList");
         return _head->data;
     }
     inline T &back(){
         if(_head == nullptr)
-            throw zexception("Cannot reference back of empty ZList");
+            throw zexception("ZList: Cannot reference back of empty ZList");
         return _head->prev->data;
     }
     inline const T &back() const {
         if(_head == nullptr)
-            throw zexception("Cannot reference back of empty ZList");
+            throw zexception("ZList: Cannot reference back of empty ZList");
         return _head->prev->data;
     }
 
@@ -262,23 +262,29 @@ public:
         ZListConstIterator(const ZList<T> *list, const typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
 
         const T &get() const override {
+            if(!_node)
+                throw zexception("ZListConstIterator: Cannot reference iterator of empty list");
             return _node->data;
         }
 
         bool more() const override {
-            return (_prev == nullptr || _node != _list->_head);
+            return (_node && (_prev == nullptr || _node != _list->_head));
         }
         void advance() override {
-            _prev = _node;
-            _node = _node->next;
+            if(_node){
+                _prev = _node;
+                _node = _node->next;
+            }
         }
 
         bool less() const override {
-            return (_prev == nullptr || _node != _list->_head->prev);
+            return (_node && (_prev == nullptr || _node != _list->_head->prev));
         }
         void recede() override {
-            _prev = _node;
-            _node = _node->prev;
+            if(_node){
+                _prev = _node;
+                _node = _node->prev;
+            }
         }
 
         //bool compare(ZListIterator it) const {
@@ -297,26 +303,35 @@ public:
         ZListIterator(ZList<T> *list, typename ZList<T>::Node *start_node) : _list(list), _node(start_node), _prev(nullptr){}
 
         T &get() override {
+            if(!_node)
+                throw zexception("ZListIterator: Cannot reference iterator of empty list");
             return _node->data;
         }
         const T &get() const override {
+            if(!_node)
+                throw zexception("ZListIterator: Cannot reference iterator of empty list");
             return _node->data;
         }
 
         bool more() const override {
-            return (_prev == nullptr || _node != _list->_head);
+            return (_node && (_prev == nullptr || _node != _list->_head));
+//            return (_node != nullptr);
         }
         void advance() override {
-            _prev = _node;
-            _node = _node->next;
+            if(_node){
+                _prev = _node;
+                _node = _node->next;
+            }
         }
 
         bool less() const override {
-            return (_prev == nullptr || _node != _list->_head->prev);
+            return (_node && (_prev == nullptr || _node != _list->_head->prev));
         }
         void recede() override {
-            _prev = _node;
-            _node = _node->prev;
+            if(_node){
+                _prev = _node;
+                _node = _node->prev;
+            }
         }
 
         //bool compare(ZListIterator it) const {
