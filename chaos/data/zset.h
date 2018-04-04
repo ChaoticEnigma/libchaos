@@ -38,7 +38,7 @@ public:
     ZSet(std::initializer_list<T> list) : ZSet(){
         resize(list.size());
         for(auto item = list.begin(); item < list.end(); ++item){
-            add(item);
+            add(*item);
         }
     }
 
