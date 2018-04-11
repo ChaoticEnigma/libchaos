@@ -26,6 +26,8 @@ public:
 
     bool running() const { return run; }
 
+    bool passed(double seconds);
+    bool passedMs(double ms);
 
     /*! Get clock in seconds.
      *  If clock is running, get time since clock started.

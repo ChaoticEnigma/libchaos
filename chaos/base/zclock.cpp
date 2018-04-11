@@ -68,6 +68,14 @@ void ZClock::stop(){
     clock_b = _getTime();
 }
 
+bool ZClock::passed(double seconds){
+    return getSecs() >= seconds;
+}
+
+bool ZClock::passedMs(double ms){
+    return getSecs() >= (ms / 1000);
+}
+
 timespec ZClock::diff() const {
     timespec c = clock_b;
     if(run){
