@@ -77,6 +77,16 @@ void list_iterator(){
     test_duplex_iterator(&i4d, list4.size());
 }
 
+void list_empty(){
+    ZList<ZString> list;
+    TASSERT(list.size() == 0);
+
+    auto itf = list.begin();
+    test_forward_iterator(&itf, 0);
+    auto itr = list.end();
+    test_reverse_iterator(&itr, 0);
+}
+
 void queue(){
     ZQueue<int> tst1;
 }
@@ -87,6 +97,7 @@ ZArray<Test> list_tests(){
         { "list-construct", list_construct, true, {} },
         { "list-push-obj",  list_push_obj,  true, {} },
         { "list-iterator",  list_iterator,  true, {} },
+        { "list-empty",     list_empty,     true, {} },
         { "queue",          queue,          true, {} },
     };
 }
