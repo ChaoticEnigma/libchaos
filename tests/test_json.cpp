@@ -14,7 +14,7 @@ void checkType(ZJSON &json, ZString pre){
         break;
     }
     case ZJSON::ARRAY:
-        LOG(pre << "Array");
+        LOG(pre << "Array: " << json.array().size());
         for(zu64 i = 0; i < json.array().size(); ++i){
             LOG(pre << "  " << i << ":");
             checkType(json.array()[i], pre + "  | ");
@@ -41,31 +41,54 @@ void checkType(ZJSON &json, ZString pre){
     }
 }
 
-void json(){
-    ZString str1 = "{ \"object\" : { \"str\" : \"strval\" , \"num\" : 12345 } , \"array\" : [ \"val1\" , \"val2\" ], \"array2\" : [ 0, 1, 2, 3 ], \"string\" : \"stringval\" , \"number\" : 54321 }";
-    LOG(str1);
-    ZJSON json1;
-    TASSERT(json1.decode(str1));
-    checkType(json1, "");
+void json_encode(){
+    ZJSON json;
+    json["string"] = "test1";
+    json["number"] = 12345;
+    json["object"]["str"] = "test2";
+    json["array"] << "test\"3\"";
+    json["array"] << 54321;
+    ZString estr = json.encode(false);
+    LOG(estr);
+    TASSERT(estr == "{\"string\":\"test1\",\"number\":12345,\"object\":{\"str\":\"test2\"},\"array\":[\"test\\\"3\\\"\",54321]}");
+}
 
-    ZString str2 = "{\"func\":\"test\",\"arg\":[0,1,2,3]}";
-    LOG(str2);
-    ZJSON json2;
-    TASSERT(json2.decode(str2));
-    checkType(json2, "");
+void json_decode(){
+    ZString str = "{ \"object\" : { \"str\" : \"strval\", \"num\" : 12345 }, \"array\" : [ \"val1\", \"val2\" ], \"array2\" : [ 0, 1, 2, 3 ], \"string\" : \"stringval\", \"number\" : 54321 }";
+    LOG(str);
+    ZJSON json;
+    TASSERT(json.decode(str));
+    ZString estr = json.encode(true);
+    LOG(estr);
+    TASSERT(estr == str);
+    checkType(json, "");
+}
 
-    ZJSON json3;
-    json3["string"] = "test1";
-    json3["number"] = 12345;
-    json3["object"]["str"] = "test2";
-    json3["array"] << "test\"3\"";
-    json3["array"] << 54321;
-    LOG(json3.encode());
+void json_empty(){
+    ZString str = "{}";
+    ZJSON json;
+    TASSERT(json.decode(str));
+    TASSERT(json.encode(false) == str);
+    checkType(json, "");
+}
+
+void json_empty_elem(){
+    ZString str = "{ \"object\" : {}, \"array\" : [] }";
+    LOG(str);
+    ZJSON json;
+    TASSERT(json.decode(str));
+    ZString estr = json.encode(true);
+    LOG(estr);
+    TASSERT(estr == str);
+    checkType(json, "");
 }
 
 ZArray<Test> json_tests(){
     return {
-        { "json", json, true, {} },
+        { "json_encode", json_encode, true, {} },
+        { "json_decode", json_decode, true, { "json_encode" } },
+        { "json_empty", json_empty, true, { "json_encode" } },
+        { "json_empty_elem", json_empty_elem, true, { "json_encode" } },
     };
 }
 

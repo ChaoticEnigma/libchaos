@@ -56,7 +56,7 @@ public:
     ZJSON &operator=(const ZJSON &other);
 
     //! Encode JSON string.
-    ZString encode();
+    ZString encode(bool readable = false);
 
     //! Decode JSON string.
     bool decode(const ZString &str);
