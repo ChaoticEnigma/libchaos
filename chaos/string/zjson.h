@@ -26,6 +26,11 @@ public:
         NULLVAL,
     };
 
+    struct JsonError {
+        zu64 pos;
+        ZString desc;
+    };
+
 public:
     //! Type constructor.
     ZJSON(jsontype type = UNDEF);
@@ -51,13 +56,12 @@ public:
     ZJSON &operator=(const ZJSON &other);
 
     //! Encode JSON string.
-    ZString encode();
-
-    static bool validJSON(ZString str);
-    bool isValid();
+    ZString encode(bool readable = false);
 
     //! Decode JSON string.
-    bool decode(ZString str, zu64 *position = nullptr);
+    bool decode(const ZString &str);
+
+    bool isValid();
 
     //! Shortcut for object subscript operator.
     ZJSON &operator[](ZString key){
@@ -91,6 +95,7 @@ public:
 private:
     void initType(jsontype type);
     ZString jsonEscape(ZString str);
+    bool jsonDecode(const ZString &str, zu64 *position, JsonError *err);
 
 private:
     //! JSON type.

@@ -7,6 +7,7 @@ PROJECT(LibChaos)
 
 SET(LibChaos_SOURCES
     ztypes.h
+    chaos.cpp
 
     abstract/yindexedaccess.h
     abstract/ypushpopaccess.h
@@ -196,6 +197,9 @@ SOURCE_GROUP(thread     REGULAR_EXPRESSION "thread/.*")
 # Disable warnings on lib files
 SET_SOURCE_FILES_PROPERTIES(lib/xxhash.c PROPERTIES COMPILE_FLAGS -w)
 
+# Defines
+SET_SOURCE_FILES_PROPERTIES(chaos.cpp PROPERTIES COMPILE_DEFINITIONS _LIBCHAOS_DESCRIBE="${LIBCHAOS_DESCRIBE}")
+
 IF(LIBCHAOS_BUILD_SHARED)
     SET(LIBCHAOS_LINK SHARED)
 ELSE()
@@ -224,7 +228,7 @@ MACRO(TargetConfigure TAR)
     )
 
     # Defines
-    TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC BUILDING _LIBCHAOS_DESCRIBE="${LIBCHAOS_DESCRIBE}")
+    TARGET_COMPILE_DEFINITIONS(${TAR} PUBLIC BUILDING)
 
     # Build Type
     IF(CMAKE_BUILD_TYPE MATCHES "Debug")
