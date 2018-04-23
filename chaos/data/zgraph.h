@@ -79,7 +79,7 @@ public:
         _adjmap[parent][child].edge = edge;
     }
 
-    //! Determine if two vertices are connected.
+    //! Determine if two vertices are directly connected.
     bool connected(V parent, V child) const {
         return (_adjmap.contains(parent) && _adjmap.contains(child) && _adjmap[parent][child].flags == ZGRAPH_EDGE_EXISTS);
     }

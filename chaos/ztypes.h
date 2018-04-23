@@ -18,9 +18,6 @@
  *  Network and socket abstraction classes.
  */
 
-// Git Describe
-#define LIBCHAOS_DESCRIBE _LIBCHAOS_DESCRIBE
-
 // Require C++11
 #if __cplusplus < 201103L && !defined(_MSC_VER)
     #error LibChaos requires a C++11 compiler!
@@ -242,14 +239,10 @@ struct zexception {
 };
 
 //! Get a string describing this version of LibChaos.
-static const char *LibChaosDescribe(){
-    return LIBCHAOS_DESCRIBE;
-}
+const char *LibChaosDescribe();
 
 //! Get a word describing the build configuration of LibChaos.
-static zu32 LibChaosBuildConfig(){
-    return (LIBCHAOS_COMPILER << 16) | (LIBCHAOS_PLATFORM << 8) | (LIBCHAOS_BUILD);
-}
+zu32 LibChaosBuildConfig();
 
 } // namespace LibChaos
 

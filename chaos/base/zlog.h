@@ -22,7 +22,7 @@
 #elif LIBCHAOS_BUILD == LIBCHAOS_RELEASE
     // Debug logging disabled on release build
     #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
-    #define DLOG(A)
+    #define DLOG(A) ((void)0)
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
 #else
     // Default logging on normal build

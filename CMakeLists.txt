@@ -8,7 +8,7 @@ OPTION(EXTRA_WARNINGS           "Produce Extra Compiler Warnings"           OFF 
 OPTION(BUILD_DOCS               "Documentation should be configured"        ON  )
 
 # General Options
-OPTION(LIBCHAOS_BUILD_SHARED    "Build as a shared library"                 OFF )
+OPTION(LIBCHAOS_SHARED          "Dependencies link with shared library"     ON )
 OPTION(LIBCHAOS_LINK_STATIC     "Link with static libraries"                OFF )
 OPTION(LIBCHAOS_LINK_SHARED     "Link with shared libraries"                OFF )
 #OPTION(IBERTY_DEMANGLE          "Use libiberty to demangle symbols"         OFF )
