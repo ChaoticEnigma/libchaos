@@ -21,22 +21,42 @@
 
 typedef LibChaos::zu32 crc;
 
-#define POLYNOMIAL          0x04C11DB7
-#define INITIAL_REMAINDER   0xFFFFFFFF
-#define FINAL_XOR_VALUE     0xFFFFFFFF
-//#define CHECK_VALUE         0xCBF43926
-
-#define WIDTH   32
-#define TOPBIT  ((LibChaos::zu32)1 << (WIDTH - 1))
-
-#define REFLECT_DATA(X)         ((unsigned char)reflect(X, 8))
-#define REFLECT_REMAINDER(X)    ((crc)reflect(X, WIDTH))
-
 namespace LibChaos {
+
+// //////////////////////////////////////////////////////////
+// CRC-16
+// //////////////////////////////////////////////////////////
+
+// From http://mdfs.net/Info/Comp/Comms/CRC16.htm
+// CRC-CCITT
+#define CCITT_POLY 0x1021
+zu16 ZHash16Base::crcHash16_hash(const zbyte *ptr, zu64 size, zu16 init) {
+    zu32 crc = init;
+    for(zu64 i = 0; i < size; ++i){                 // Step through bytes in memory
+        crc ^= (zu16)(ptr[i] << 8);                 // Fetch byte from memory, XOR into CRC top byte
+        for(int j = 0; j < 8; j++){                 // Prepare to rotate 8 bits
+            crc = crc << 1;                         // rotate
+            if(crc & 0x10000)                       // bit 15 was set (now bit 16)...
+                crc = (crc ^ CCITT_POLY) & 0xFFFF;  // XOR with XMODEM polynomic and ensure CRC remains 16-bit value
+        }
+    }
+    return (zu16)(crc & 0xFFFF);
+}
 
 // //////////////////////////////////////////////////////////
 // CRC-32
 // //////////////////////////////////////////////////////////
+
+#define CRC32_POLYNOMIAL        0x04C11DB7
+#define CRC32_INITIAL_REMAINDER 0xFFFFFFFF
+#define CRC32_FINAL_XOR_VALUE   0xFFFFFFFF
+//#define CHECK_VALUE         0xCBF43926
+
+#define CRC32_WIDTH   32
+#define CRC32_TOPBIT  ((LibChaos::zu32)1 << (CRC32_WIDTH - 1))
+
+#define CRC32_REFLECT_DATA(X)       ((unsigned char)reflect(X, 8))
+#define CRC32_REFLECT_REMAINDER(X)  ((crc)reflect(X, CRC32_WIDTH))
 
 static zu32 reflect(zu32 data, zu8 bits){
     zu32 reflection = 0x00000000;
@@ -53,19 +73,19 @@ static zu32 reflect(zu32 data, zu8 bits){
 
 zu32 ZHash32Base::crcHash32_hash(const zbyte *data, zu64 size, zu32 remainder){
     // Convert the input remainder to the expected input
-    remainder = (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
+    remainder = (CRC32_REFLECT_REMAINDER(remainder) ^ CRC32_FINAL_XOR_VALUE);
     zu64 byte;
     unsigned char bit;
 
     // * Perform modulo-2 division, a byte at a time.
     for(byte = 0; byte < size; ++byte){
         // * Bring the next byte into the remainder.
-        remainder ^= ((zu32)REFLECT_DATA(data[byte]) << (WIDTH - 8));
+        remainder ^= ((zu32)CRC32_REFLECT_DATA(data[byte]) << (CRC32_WIDTH - 8));
         // Perform modulo-2 division, a bit at a time.
         for(bit = 8; bit > 0; --bit){
             // * Try to divide the current data bit.
-            if(remainder & TOPBIT){
-                remainder = (remainder << 1) ^ POLYNOMIAL;
+            if(remainder & CRC32_TOPBIT){
+                remainder = (remainder << 1) ^ CRC32_POLYNOMIAL;
             } else {
                 remainder = (remainder << 1);
             }
@@ -73,7 +93,7 @@ zu32 ZHash32Base::crcHash32_hash(const zbyte *data, zu64 size, zu32 remainder){
     }
 
     // * The final remainder is the CRC result.
-    return (REFLECT_REMAINDER(remainder) ^ FINAL_XOR_VALUE);
+    return (CRC32_REFLECT_REMAINDER(remainder) ^ CRC32_FINAL_XOR_VALUE);
 }
 
 // //////////////////////////////////////////////////////////
