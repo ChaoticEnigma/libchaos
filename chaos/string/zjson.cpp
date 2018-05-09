@@ -7,6 +7,8 @@
 #include "zlog.h"
 
 #include <string>
+#include <cmath>
+#include <stdexcept>
 #include <assert.h>
 
 //#define ZJSON_DEBUG
@@ -287,7 +289,7 @@ bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
         LOG("c " << i << ": '" << c << "' " << descs[loc]);
 #endif
         // skip whitespace except inside strings
-        if(loc != strv && isWhitespace(c))
+        if(loc != strv && loc != num && isWhitespace(c))
             continue;
 
         switch(loc){
@@ -305,7 +307,7 @@ bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
                 } else if(isDigit(c)){
                     initType(NUMBER);
                     loc = num;
-                    vbuff += c;
+                    vbuff = c;
                 } else {
                     err->pos = i;
                     err->desc = ZString("unexpected character '") + c + "'";
@@ -393,8 +395,14 @@ bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
 
             // Number
             case num:
-                if(c == ',' || c == '}' || c == ']'){
-                    _data.number = std::stod(vbuff.str());
+                if(c == ',' || c == '}' || c == ']' || isWhitespace(c)){
+                    try {
+                        _data.number = std::stod(vbuff.str());
+                    } catch(const std::logic_error &e){
+                        err->pos = i;
+                        err->desc = ZString("invalid number: ") + e.what();
+                        return false;
+                    }
                     *position = i-1;
                     status = true;
                     break;
