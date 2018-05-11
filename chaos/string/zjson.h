@@ -95,7 +95,7 @@ public:
 private:
     void initType(jsontype type);
     ZString jsonEscape(ZString str);
-    bool jsonDecode(const ZString &str, zu64 *position, JsonError *err);
+    bool jsonDecode(const ZString &str, zsize *position, JsonError *err);
 
 private:
     //! JSON type.

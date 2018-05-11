@@ -27,6 +27,7 @@ public:
     enum { NONE = ZU64_MAX };
 
     class ZArrayIterator;
+    class ZArrayConstIterator;
 
 public:
     //! ZArray default constructor, optional user allocator.
@@ -306,7 +307,16 @@ public:
     }
     //! Get an iterator starting at the end of the array.
     ZArrayIterator end(){
-        return ZArrayIterator(this, size()-1);
+        return ZArrayIterator(this, (size() ? size()-1 : 0));
+    }
+
+    //! Get a const iterator starting at the beginning of the array.
+    ZArrayConstIterator cbegin() const {
+        return ZArrayConstIterator(this, 0);
+    }
+    //! Get a const iterator starting at the end of the array.
+    ZArrayConstIterator cend() const {
+        return ZArrayConstIterator(this, (size() ? size()-1 : 0));
     }
 
     inline bool isEmpty() const { return (_size == 0); }
@@ -320,39 +330,79 @@ public:
     inline T *raw() const { return ptr(); }
 
 public:
+    class ZArrayConstIterator : public ZRandomConstIterator<T> {
+    public:
+        ZArrayConstIterator(const ZArray<T> *array, zu64 index) : _array(array), _index(index){}
+
+        const T &get() const override {
+            return _array->at(_index);
+        }
+
+        bool more() const override {
+            return (_index < _array->size());
+        }
+        void advance() override {
+            ++_index;
+        }
+
+        bool less() const override {
+            return (_index >= 0 && _index < _array->size());
+        }
+        void recede() override {
+            --_index;
+        }
+
+        zu64 size() const override {
+            return _array->size();
+        }
+
+        const T &at(zu64 i) const override {
+            return _array->at(i);
+        }
+
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        const ZArray<T> *_array;
+        zu64 _index;
+    };
+
     class ZArrayIterator : public ZRandomIterator<T> {
     public:
         ZArrayIterator(ZArray<T> *array, zu64 index) : _array(array), _index(index){}
 
-        T &get(){
+        T &get() override {
             return _array->at(_index);
         }
-        const T &get() const {
+        const T &get() const override {
             return _array->at(_index);
         }
 
-        bool more() const {
+        bool more() const override {
             return (_index < _array->size());
         }
-        void advance(){
+        void advance() override {
             ++_index;
         }
 
-        bool less() const {
+        bool less() const override {
             return (_index >= 0 && _index < _array->size());
         }
-        void recede(){
+        void recede() override {
             --_index;
         }
 
-        zu64 size() const {
+        zu64 size() const override {
             return _array->size();
         }
 
-        T &at(zu64 i){
+        T &at(zu64 i) override {
             return _array->at(i);
         }
-        const T &at(zu64 i) const {
+        const T &at(zu64 i) const override {
             return _array->at(i);
         }
 

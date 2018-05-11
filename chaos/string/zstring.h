@@ -131,6 +131,8 @@ public:
     zu64 readUTF16(codeunit16 *dest, zu64 maxsize) const;
     zu64 readUTF32(codeunit32 *dest, zu64 maxsize) const;
 
+    codepoint nextCodePoint(zsize &pos) const;
+
     // Numerical Conversions
 
     //! Get string representation of unsigned integer \a num with \a base, padded to \a pad characters, using uppercase letters if \a upper.
@@ -383,7 +385,7 @@ public:
     inline bool isEmpty() const { return (size() == 0); }
 
     //! Number of bytes (code units).
-    inline zu64 realSize() const { return _realsize; }
+    inline zu64 size() const { return _size; }
 
     //! Number of *characters* (code points).
     zu64 length() const;
@@ -418,7 +420,6 @@ public:
 
     char *raw(){ return c(); }
     const char *raw() const { return cc(); }
-    inline zu64 size() const { return _size; }
 
 private:
     //! Resize buffer. (IMPORTANT: memory is only allocated and initialized here)

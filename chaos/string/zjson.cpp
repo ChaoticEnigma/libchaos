@@ -114,7 +114,7 @@ ZString ZJSON::encode(bool readable){
 }
 
 bool isWhitespace(char ch){
-    return (ch == ' ' || ch == '\n' || ch == '\t');
+    return (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t');
 }
 
 bool isDigit(char ch){
@@ -126,7 +126,7 @@ bool ZJSON::isValid(){
 }
 
 bool ZJSON::decode(const ZString &str){
-    zu64 position = 0;
+    zsize position = 0;
     JsonError err;
     if(jsonDecode(str, &position, &err))
         return true;
@@ -231,10 +231,7 @@ ZString ZJSON::jsonEscape(ZString str){
     return str;
 }
 
-bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
-//    if(!validJSON(s))
-//        return false;
-
+bool ZJSON::jsonDecode(const ZString &str, zsize *position, JsonError *err){
     // Check if JSON is special value
     ZString tstr = ZString::substr(str, *position);
     tstr.strip(' ');
@@ -283,8 +280,13 @@ bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
 
     // Start decoding
     bool status = false;
-    for(zu64 i = *position; i < str.size(); ++i){
-        char c = str[i];
+    char c;
+    char cprev;
+    for(zsize i = *position; i < str.size(); ++i){
+        cprev = c;
+        //c = str.nextCodePoint(npos);
+        c = str[i];
+
 #ifdef ZJSON_DEBUG
         LOG("c " << i << ": '" << c << "' " << descs[loc]);
 #endif
@@ -325,14 +327,14 @@ bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
                     loc = key;
                 } else {
                     err->pos = i;
-                    err->desc = "expected \" or whitespace";
+                    err->desc = "expected \", } or whitespace";
                     return false;
                 }
                 break;
 
             // In Key
             case key:
-                if(c == '"' && str[i-1] != '\\'){
+                if(c == '"' && cprev != '\\'){
                     loc = akey;
                 } else {
                     kbuff += c;
@@ -382,10 +384,10 @@ bool ZJSON::jsonDecode(const ZString &str, zu64 *position, JsonError *err){
 
             // String
             case strv:
-                if(c == '"' && str[i-1] != '\\'){
+                if(c == '"' && cprev != '\\'){
                     _data.string = vbuff;
+                    *position = i;
                     ++i;
-                    *position = i-1;
                     status = true;
                     break;
                 } else {

@@ -159,6 +159,15 @@ zu64 ZString::readUTF32(codeunit32 *dest, zu64 maxsize) const {
     return len;
 }
 
+ZString::codepoint ZString::nextCodePoint(zsize &pos) const {
+    zu64 max = size() - pos;
+    const codeunit *units = _data + pos;
+    codepoint cp = _nextUTF8(&units, &max);
+    if(cp)
+        pos = units - _data;
+    return cp;
+}
+
 //
 // Numerical Conversions
 //
@@ -989,8 +998,15 @@ void ZString::swap(ZString &other){
 }
 
 zu64 ZString::length() const {
-    // TODO: This is wrong, WIP
-    return size();
+    zu64 max = size();
+    const codeunit *units = _data;
+    zu64 len = 0;
+    // Read and add code points
+    while(max && *units){
+        zassert(_nextUTF8(&units, &max), "corrupt UTF-8 in zstring");
+        len++;
+    }
+    return len;
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
