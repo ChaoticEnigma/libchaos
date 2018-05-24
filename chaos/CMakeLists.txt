@@ -363,3 +363,6 @@ IF(LIBCHAOS_SHARED)
 ELSE()
     ADD_LIBRARY(chaos ALIAS chaos-static)
 ENDIF()
+
+# Install
+INSTALL(TARGETS chaos-shared DESTINATION lib)
