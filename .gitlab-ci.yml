@@ -27,6 +27,10 @@ test:linux:
     - linux
   dependencies:
     - build:linux
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - apt-get install openssl libpng libjpeg libwebp
   script:
     - cd build/tests
     - ./testchaos
