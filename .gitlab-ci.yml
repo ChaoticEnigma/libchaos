@@ -1,12 +1,12 @@
 
-#image: rikorose/gcc-cmake:8
-image: gcc:latest
+image: rikorose/gcc-cmake:latest
+#image: gcc:latest
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 before_script:
-  - apt-get install cmake
+  #- apt-get install cmake
 
 stages:
   - build
