@@ -1,0 +1,33 @@
+
+image: ubuntu
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - test
+
+build:linux:
+  stage: build
+  tags:
+    - linux
+  script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+  artifacts:
+    paths:
+      - build/chaos/libchaos.a
+      - build/chaos/libchaos.so
+      - build/tests/testchaos
+
+test:linux:
+  stage: test
+  dependencies:
+    - build:linux
+  script:
+    - cd build/tests
+    - ./testchaos
+
