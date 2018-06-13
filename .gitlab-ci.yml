@@ -1,25 +1,18 @@
 
-image: rikorose/gcc-cmake:latest
-#image: gcc:latest
-
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
-before_script:
-  #- apt-get install cmake
-
 stages:
   - build
   - test
 
 build:linux:
   stage: build
+  image: rikorose/gcc-cmake:latest
+  #image: gcc:latest
   tags:
     - linux
   script:
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake -D CMAKE_BUILD_TYPE="Release" ..
     - make
   artifacts:
     paths:
@@ -29,6 +22,9 @@ build:linux:
 
 test:linux:
   stage: test
+  image: ubuntu
+  tags:
+    - linux
   dependencies:
     - build:linux
   script:
