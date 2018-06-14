@@ -32,7 +32,7 @@ test:linux:
     - linux
   image: fedora
   before_script:
-    - yum install -y openssl libpng libjpeg libwebp
+    - yum install -y libstdc++ openssl libpng libjpeg libwebp
   script:
     - cd build/tests
     - ./testchaos
