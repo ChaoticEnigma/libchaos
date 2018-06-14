@@ -265,26 +265,24 @@ ZList<ZBinary> ZUID::getMACAddresses(){
 
     // Win32 API
 
-    PIP_ADAPTER_INFO adapterInfo;
     ULONG bufLen = sizeof(IP_ADAPTER_INFO);
-    adapterInfo = new IP_ADAPTER_INFO[1];
+    IP_ADAPTER_INFO *adapterInfo = (IP_ADAPTER_INFO *)new zu8[bufLen];
 
     // Get number of adapters and list of adapter info
     DWORD status = GetAdaptersInfo(adapterInfo, &bufLen);
     if(status == ERROR_BUFFER_OVERFLOW){
         // Make larger list for adapters
         delete[] adapterInfo;
-        adapterInfo = new IP_ADAPTER_INFO[bufLen];
+        adapterInfo = (IP_ADAPTER_INFO *)new zu8[bufLen];
         status = GetAdaptersInfo(adapterInfo, &bufLen);
     }
 
     if(status == NO_ERROR){
         // Get first acceptable MAC from list
-        PIP_ADAPTER_INFO adapterInfoList = adapterInfo;
+        IP_ADAPTER_INFO *adapterInfoList = adapterInfo;
         while(adapterInfoList != NULL){
             if(validMAC(adapterInfoList->Address)){
                 maclist.push(ZBinary(adapterInfoList->Address, 6));
-                delete[] adapterInfo;
             }
             adapterInfoList = adapterInfoList->Next;
         }

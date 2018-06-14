@@ -53,10 +53,6 @@ public:
     //! Get the current element.
     virtual T &get() = 0;
     inline T &operator*(){ return get(); }
-
-    //! Get the current const element.
-    virtual const T &get() const = 0;
-    inline const T &operator*() const { return get(); }
 };
 
 // ////////////////////////////////////////
@@ -127,10 +123,6 @@ public:
     //! Get number of elements.
     virtual zu64 size() const = 0;
 
-    //! Get element at index.
-    virtual T &at(zu64 i) = 0;
-    inline T &operator[](zu64 i){ return at(i); }
-
     //! Get const element at index.
     virtual const T &at(zu64 i) const  = 0;
     inline const T &operator[](zu64 i) const { return at(i); }
@@ -141,6 +133,10 @@ template <typename T> class ZRandomIterator  : public virtual ZDuplexIterator<T>
 public:
     virtual ~ZRandomIterator(){}
     ZIteratorBase::iterator_type iteratorType() const override { return ZIteratorBase::RANDOM; }
+
+    //! Get element at index.
+    virtual T &at(zu64 i) = 0;
+    inline T &operator[](zu64 i){ return at(i); }
 };
 
 }

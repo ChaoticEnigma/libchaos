@@ -1,5 +1,6 @@
 #include "zbinary.h"
 #include "zerror.h"
+//#include "zlog.h"
 
 namespace LibChaos {
 
@@ -65,6 +66,33 @@ ZBinary ZBinary::getSub(zu64 start, zu64 len) const {
     if(start + len >= _size)
         len = _size - start;
     return ZBinary(_data + start, len);
+}
+
+zsize ZBinary::subDiff(const ZBinary &in, ZBinary &out){
+    if(!size() || !in.size() || size() != in.size())
+        return ZU64_MAX;
+
+    zsize start = 0;
+    // Find first different byte
+    for(zsize i = 0; i < size() && i < in.size(); ++i){
+        if(at(i) != in[i]){
+            start = i;
+            break;
+        }
+    }
+
+    zsize end = 0;
+    // Find last different byte
+    for(zsize i = 0; i < size() && i < in.size(); ++i){
+        if(at(size()-1-i) != in[size()-1-i]){
+            end = size()-1-i;
+            break;
+        }
+    }
+
+    //LOG("start " << ZString::ItoS(start, 16) << " end " << ZString::ItoS(end, 16));
+    out = in.getSub(start, end-start+1);
+    return start;
 }
 
 ZBinary ZBinary::fromzu8(zu8 num){

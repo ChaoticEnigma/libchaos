@@ -121,6 +121,8 @@ public:
     ZBinary getSub(zu64 start) const { return getSub(start, size() - start); }
     ZBinary getSub(zu64 start, zu64 len) const;
 
+    zsize subDiff(const ZBinary &in, ZBinary &out);
+
     static ZBinary fromzu8(zu8 num);
     static ZBinary fromzu16(zu16 num);
     static ZBinary fromzu32(zu32 num);

@@ -19,7 +19,7 @@
  */
 
 // Require C++11
-#if __cplusplus < 201103L
+#if __cplusplus < 201103L && !defined(_MSC_VER)
     #error LibChaos requires a C++11 compiler!
 #endif
 
@@ -229,7 +229,7 @@ static_assert(sizeof(zu64) == 8, "zu64 has incorrect size");
 
 // Force 64-bit platform
 #ifndef ALLOW_X32
-static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
+//static_assert(sizeof(void *) == 8, "void pointer is not 64-bit");
 #endif
 
 //! Simple exception structure.

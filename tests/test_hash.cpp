@@ -33,6 +33,13 @@ void hash(){
         }
 
         {
+            zu32 hasha = ZHash<ZString, ZHashBase::CRC16>(data).hash();
+            zu32 hashb = ZHash<ZString, ZHashBase::CRC16>(data).hash();
+            LOG("CRC-16: " << data << " " << hasha << " " << hashb);
+            TASSERT(hasha == hashb)
+        }
+
+        {
             zu32 hasha = ZHash<ZString, ZHashBase::CRC32>(data).hash();
             zu32 hashb = ZHash<ZString, ZHashBase::CRC32>(data).hash();
             LOG("CRC-32: " << data << " " << hasha << " " << hashb);
@@ -69,6 +76,19 @@ void hash(){
 
 const ZBinary data1 = { 0x43, 0x66, 0x88, 0x09, 0x9c, 0x84, 0x93, 0xf0, 0x13, 0xc3, 0xd3, 0x56, 0x84, 0x9e, 0xfb, 0xf7 };
 const ZBinary data2 = { 0x70, 0xf4, 0x26, 0xe8, 0xe3, 0xd6, 0xcb, 0x2f, 0xb7, 0x8c, 0xfd, 0x9a, 0x6b, 0x04, 0xf7, 0x6a };
+
+void hash_crc16(){
+    zu16 hash1 = 0xbcdc;
+    {
+        zu16 hasha = ZHash<ZBinary, ZHashBase::CRC16>(data1).hash();
+        TASSERT(hasha == hash1); // correct
+    }
+    zu16 hash2 = 0x413a;
+    {
+        zu16 hasha = ZHash<ZBinary, ZHashBase::CRC16>(data2).hash();
+        TASSERT(hasha == hash2); // correct
+    }
+}
 
 void hash_crc32(){
     zu32 hash1 = 0xc3ee16eb;
@@ -239,6 +259,7 @@ void set(){
 ZArray<Test> hash_tests(){
     return {
         { "hash",       hash,       true, {} },
+        { "hash-crc16", hash_crc16, true, { "hash" } },
         { "hash-crc32", hash_crc32, true, { "hash" } },
 #ifdef ZHASH_HAS_MD5
         { "hash-md5",   hash_md5,   true, { "hash" } },

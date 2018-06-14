@@ -21,7 +21,10 @@
 // FNV-1(a) initial base is the the FNV-0 hash of "chongo <Landon Curt Noll> /\../\" (32 bytes)
 #define ZHASH_FNV1A_64_INIT ((zu64)0xcbf29ce484222325ULL)
 
-// CRC 32 initial remainder
+// CRC-16 initial remainder
+#define ZHASH_CRC16_INIT ((zu16)0x0)
+
+// CRC-32 initial remainder
 #define ZHASH_CRC32_INIT ((zu32)0x0)
 
 namespace LibChaos {
@@ -33,6 +36,7 @@ public:
         SIMPLE64,   //!< Simple - fast, dumb, barely a hash function.
         XXHASH64,   //!< xxHash - fast non-cryptographic hash.
         FNV64,      //!< FNV Hash - simple non-cryptographic hash.
+        CRC16,      //!< CRC-CCITT - CRC-16 with CCITT polynomial.
         CRC32,      //!< CRC-32 - classic CRC.
 #ifdef ZHASH_HAS_MD5
         MD5,        //!< MD5 - old cryptographic hash.
@@ -49,6 +53,22 @@ public:
 protected:
     virtual void feedHash(const zbyte *data, zu64 size) = 0;
     virtual void finishHash(){}
+};
+
+//! 16-bit hash code base class.
+class ZHash16Base : public ZHashBase {
+public:
+    typedef zu16 hashtype;
+
+public:
+    ZHash16Base(zu16 hash) : _hash(hash){}
+    virtual zu16 hash() const { return _hash; }
+
+public:
+    static zu16 crcHash16_hash(const zbyte *data, zu64 size, zu16 remainder = ZHASH_CRC16_INIT);
+
+protected:
+    hashtype _hash;
 };
 
 //! 32-bit hash code base class.
@@ -128,6 +148,18 @@ protected:
 // Base ZHashMethod template
 //! Hash method provider template.
 template <ZHashBase::hashMethod> class ZHashMethod;
+
+// CRC-16 (16-bit)
+//! Hash method provider for 16-bit CRC.
+template <> class ZHashMethod<ZHashBase::CRC16> : public ZHash16Base {
+public:
+    ZHashMethod() : ZHash16Base(ZHASH_CRC16_INIT){}
+    ZHashMethod(const zbyte *data, zu64 size) : ZHash16Base(crcHash16_hash(data, size)){}
+protected:
+    void feedHash(const zbyte *data, zu64 size){
+        _hash = crcHash16_hash(data, size, _hash);
+    }
+};
 
 // CRC-32 (32-bit)
 //! Hash method provider for 32-bit CRC.

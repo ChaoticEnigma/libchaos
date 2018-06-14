@@ -392,10 +392,7 @@ zu64 ZFile::readBinary(ZPath path, ZBinary &out){
 }
 
 zu64 ZFile::writeBinary(ZPath path, const ZBinary &data){
-    if(!ZFile::createDirsTo(path))
-        throw ZException("could not create dirs to file");
-
-    ZFile file(path, ZFile::WRITE);
+    ZFile file(path, ZFile::WRITE | ZFile::TRUNCATE);
     if(!file.isOpen())
         return 0;
     zu64 wrt = file.write(data.raw(), data.size());
