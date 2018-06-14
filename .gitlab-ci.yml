@@ -4,10 +4,13 @@ stages:
 
 build:linux:
   stage: build
-  image: rikorose/gcc-cmake:latest
+  #image: rikorose/gcc-cmake:latest
   #image: gcc:latest
   tags:
     - linux
+  image: fedora
+  before_script:
+    - yum install -y gcc cmake openssl-devel libpng-devel libjpeg-devel libwebp-devel
   script:
     - mkdir build
     - cd build
@@ -21,16 +24,15 @@ build:linux:
 
 test:linux:
   stage: test
-  image: ubuntu
-  tags:
-    - linux
   dependencies:
     - build:linux
   variables:
     GIT_STRATEGY: none
+  tags:
+    - linux
+  image: fedora
   before_script:
-    - apt-get -y update
-    - apt-get -y install openssl libpng libjpeg libwebp
+    - yum install -y openssl libpng libjpeg libwebp
   script:
     - cd build/tests
     - ./testchaos
