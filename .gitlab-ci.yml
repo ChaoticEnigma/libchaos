@@ -10,7 +10,7 @@ build:linux:
     - linux
   image: fedora
   before_script:
-    - yum install -y gcc cmake openssl-devel libpng-devel libjpeg-devel libwebp-devel
+    - yum install -y gcc cmake make openssl-devel libpng-devel libjpeg-devel libwebp-devel
   script:
     - mkdir build
     - cd build
