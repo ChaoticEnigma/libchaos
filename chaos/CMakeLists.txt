@@ -273,11 +273,18 @@ MACRO(TargetConfigure TAR)
             -Wno-unused -Wno-unused-parameter
 
             # Forced errors
-            -Werror=return-type -Werror=delete-incomplete
+            -Werror=return-type
+
+            $<$<OR:$<NOT:$<CXX_COMPILER_ID:GNU>>,$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,4.9.0>>>:
+                -Werror=delete-incomplete
+            >
 
             # GCC-only
             $<$<CXX_COMPILER_ID:GNU>:
-                -Wlogical-op -Wno-expansion-to-defined
+                -Wlogical-op
+                $<$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,4.9.0>>:
+                    -Wno-expansion-to-defined
+                >
                 $<$<COMPILE_LANGUAGE:CXX>:
                     -Wnoexcept -Wstrict-null-sentinel
                 >

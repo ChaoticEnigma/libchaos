@@ -164,7 +164,7 @@ ZString::codepoint ZString::nextCodePoint(zsize &pos) const {
     const codeunit *units = _data + pos;
     codepoint cp = _nextUTF8(&units, &max);
     if(cp)
-        pos = units - _data;
+        pos = (zsize)(units - _data);
     return cp;
 }
 
