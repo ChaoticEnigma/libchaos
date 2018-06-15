@@ -2,10 +2,8 @@ stages:
   - build
   - test
 
-build:linux:
+libchaos:linux-gcc:
   stage: build
-  #image: rikorose/gcc-cmake:latest
-  #image: gcc:latest
   tags:
     - linux
   image: fedora
@@ -22,10 +20,10 @@ build:linux:
       - build/chaos/libchaos.so
       - build/tests/testchaos
 
-test:linux:
+test:linux-gcc:
   stage: test
   dependencies:
-    - build:linux
+    - libchaos:linux-gcc
   variables:
     GIT_STRATEGY: none
   tags:
