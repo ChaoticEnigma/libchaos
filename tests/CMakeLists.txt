@@ -36,6 +36,7 @@ SET(LibChaos_Test_SOURCES
     test_pdf.cpp
 
     test_socket.cpp
+    test_http.cpp
 
     test_error.cpp
 )

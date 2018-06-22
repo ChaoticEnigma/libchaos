@@ -69,6 +69,7 @@ int main(int argc, char **argv){
             pdf_tests,
 
             socket_tests,
+            http_tests,
 
             thread_tests,
             error_tests,

@@ -44,6 +44,7 @@ ZArray<Test> image_tests();
 ZArray<Test> pdf_tests();
 
 ZArray<Test> socket_tests();
+ZArray<Test> http_tests();
 
 ZArray<Test> thread_tests();
 ZArray<Test> error_tests();

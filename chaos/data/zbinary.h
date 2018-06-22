@@ -123,6 +123,8 @@ public:
 
     zsize subDiff(const ZBinary &in, ZBinary &out);
 
+    static ZBinary fromHex(ZString str);
+
     static ZBinary fromzu8(zu8 num);
     static ZBinary fromzu16(zu16 num);
     static ZBinary fromzu32(zu32 num);

@@ -95,6 +95,31 @@ zsize ZBinary::subDiff(const ZBinary &in, ZBinary &out){
     return start;
 }
 
+ZBinary ZBinary::fromHex(ZString str){
+    ZBinary bin;
+    str.replace(" ", "");
+    str.replace("\t", "");
+    str.replace("\n", "");
+    str.replace("\r", "");
+    str.replace(":", "");
+    if((str.size() % 2) != 0){
+        return bin;
+    }
+    for(zu64 i = 0; i < str.size(); ++i){
+        char ch = str[i];
+        if(!(ch >= 48 && ch <= 57) && !(ch >= 97 && ch <= 102))
+            return bin;
+    }
+    str.toLower();
+    bin.resize(str.size() / 2);
+    for(zu64 i = 0; i < bin.size(); ++i){
+        char ch = str[(i*2)];
+        char cl = str[(i*2)+1];
+        bin[i] = (ch > 57 ? ch - 87 : ch - 48) << 4 | (cl > 57 ? cl - 87 : cl - 48);
+    }
+    return bin;
+}
+
 ZBinary ZBinary::fromzu8(zu8 num){
     ZBinary bin(1);
     encu8(bin._data, num);

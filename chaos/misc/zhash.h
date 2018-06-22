@@ -49,6 +49,7 @@ public:
 
 public:
     virtual ~ZHashBase(){}
+    void finish(){ finishHash(); }
 
 protected:
     virtual void feedHash(const zbyte *data, zu64 size) = 0;
@@ -312,11 +313,15 @@ ZHASH_TRIVIAL_TEMPLATE(zs64)
 #define ZHASH_USER_SPECIALIAZATION(TYPE, ARGS, CONSTRUCT, IMPLEMENTATION) \
 template <ZHashBase::hashMethod M> class ZHash<TYPE, M> : public ZHashMethod<M> { \
 public: \
+    ZHash() : ZHashMethod<M>(){} \
     ZHash ARGS : ZHashMethod<M> CONSTRUCT IMPLEMENTATION \
+    void feed ARGS { ZHashMethod<M>::feedHash CONSTRUCT ; } \
 }; \
 template <> class ZHash<TYPE, ZHashBase::DEFAULT> : public ZHashMethod<ZHashBase::DEFAULT> { \
 public: \
+    ZHash() : ZHashMethod<ZHashBase::DEFAULT>(){} \
     ZHash ARGS : ZHashMethod<ZHashBase::DEFAULT> CONSTRUCT IMPLEMENTATION \
+    void feed ARGS { ZHashMethod<ZHashBase::DEFAULT>::feedHash CONSTRUCT ; } \
 };
 
 // ZBinary specialization ZHash

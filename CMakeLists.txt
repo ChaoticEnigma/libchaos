@@ -4,34 +4,35 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(LibChaos)
 
 # Build Modes
-OPTION(EXTRA_WARNINGS           "Produce Extra Compiler Warnings"           OFF )
-OPTION(BUILD_DOCS               "Documentation should be configured"        ON  )
+OPTION(EXTRA_WARNINGS           "Produce Extra Compiler Warnings"               OFF )
+OPTION(BUILD_DOCS               "Documentation should be configured"            ON  )
 
 # General Options
-OPTION(LIBCHAOS_SHARED          "Dependencies link with shared library"     ON )
-OPTION(LIBCHAOS_LINK_STATIC     "Link with static libraries"                OFF )
-OPTION(LIBCHAOS_LINK_SHARED     "Link with shared libraries"                OFF )
-#OPTION(IBERTY_DEMANGLE          "Use libiberty to demangle symbols"         OFF )
+OPTION(LIBCHAOS_SHARED          "Dependent targets link with shared library"    ON )
+OPTION(LIBCHAOS_LINK_STATIC     "Link with static libraries"                    OFF )
+OPTION(LIBCHAOS_LINK_SHARED     "Link with shared libraries"                    OFF )
+#OPTION(IBERTY_DEMANGLE          "Use libiberty to demangle symbols"            OFF )
 
 # Library Components
-OPTION(LIBCHAOS_UI              "Build LibChaos UI library"                 OFF )
+OPTION(LIBCHAOS_UI              "Build LibChaos UI library"                     OFF )
+OPTION(LIBCHAOS_TEST            "Build LibChaos tests"                          OFF )
 
 # Third-Party Library Support
-OPTION(DISABLE_CRYPTO           "Disable Crypto support"                    OFF )
-OPTION(DISABLE_ZPNG             "Disable PNG support"                       OFF )
-OPTION(DISABLE_ZJPEG            "Disable JPEG support"                      OFF )
-OPTION(DISABLE_ZWEBP            "Disable WebP support"                      OFF )
-OPTION(DISABLE_ZDATABASE        "Disable SQLite3 support"                   OFF )
+OPTION(DISABLE_CRYPTO           "Disable Crypto support"                        OFF )
+OPTION(DISABLE_ZPNG             "Disable PNG support"                           OFF )
+OPTION(DISABLE_ZJPEG            "Disable JPEG support"                          OFF )
+OPTION(DISABLE_ZWEBP            "Disable WebP support"                          OFF )
+OPTION(DISABLE_ZDATABASE        "Disable SQLite3 support"                       OFF )
 
 IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                OFF )
+    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                    OFF )
 ELSE()
-    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                ON  )
+    OPTION(REQUIRE_CRYPTO           "Require Crypto support"                    ON  )
 ENDIF()
-OPTION(REQUIRE_ZJPEG            "Require JPEG support"                      OFF )
-OPTION(REQUIRE_ZPNG             "Require PNG support"                       OFF )
-OPTION(REQUIRE_ZWEBP            "Require WebP support"                      OFF )
-OPTION(REQUIRE_ZDATABASE        "Require SQLite3 support"                   OFF )
+OPTION(REQUIRE_ZJPEG            "Require JPEG support"                          OFF )
+OPTION(REQUIRE_ZPNG             "Require PNG support"                           OFF )
+OPTION(REQUIRE_ZWEBP            "Require WebP support"                          OFF )
+OPTION(REQUIRE_ZDATABASE        "Require SQLite3 support"                       OFF )
 
 # Find libraries
 INCLUDE(cmake/FindLibs.cmake)
@@ -56,7 +57,7 @@ SET(LibChaos_OTHER_FILES
 )
 
 # Add targets to all
-IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT LIBCHAOS_TEST)
     SET(LIBCHAOS_ALL EXCLUDE_FROM_ALL)
     SET(TEST_ALL EXCLUDE_FROM_ALL)
 ENDIF()

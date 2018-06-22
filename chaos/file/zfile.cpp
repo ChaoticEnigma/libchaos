@@ -300,8 +300,7 @@ zu64 ZFile::write(const ZString &str){
 
 bool ZFile::remove(){
     close();
-    remove(_data->path);
-    return true;
+    return remove(_data->path);
 }
 bool ZFile::remove(ZPath file){
 #ifdef ZFILE_WINAPI

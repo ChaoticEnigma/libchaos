@@ -169,7 +169,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
             addrs.rotate();
             continue;
         }
-        DLOG("ZSocket::connect Got socket for " << addrs.front().addr.debugStr());
+        DLOG("ZSocket::connect opened socket " << _socket << " for " << addrs.front().addr.debugStr());
         ZAddress caddr = addrs.front().addr;
         sockaddr_storage addrstorage;
         caddr.populate(&addrstorage);
