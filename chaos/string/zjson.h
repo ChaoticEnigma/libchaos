@@ -100,9 +100,13 @@ private:
 private:
     //! JSON type.
     jsontype _type;
+    ZAllocator<ZMap<ZString,ZJSON>> _oalloc;
+    ZAllocator<ZArray<ZJSON>> _aalloc;
+    ZAllocator<ZString> _salloc;
 
     //! Decoded JSON data.
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+//#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if 1
     struct JSONValue {
 #else
     union JSONValue {
@@ -111,9 +115,9 @@ private:
         JSONValue(){}
         ~JSONValue(){}
 
-        ZMap<ZString, ZJSON> object;
-        ZArray<ZJSON> array;
-        ZString string;
+        ZMap<ZString, ZJSON> *object;
+        ZArray<ZJSON> *array;
+        ZString *string;
         double number;
         bool boolean;
     } _data;

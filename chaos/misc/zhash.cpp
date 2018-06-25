@@ -170,18 +170,21 @@ ZBinary ZHashBigBase::md5_hash(const zbyte *data, zu64 size){
 
 void *ZHashBigBase::md5_init(){
     MD5_CTX *context = new MD5_CTX;
-    MD5_Init(context);
+    if(context)
+        MD5_Init(context);
     return context;
 }
 
 void ZHashBigBase::md5_feed(void *context, const zbyte *data, zu64 size){
-    MD5_Update((MD5_CTX *)context, data, size);
+    if(context)
+        MD5_Update((MD5_CTX *)context, data, size);
 }
 
 ZBinary ZHashBigBase::md5_finish(void *ctx){
     MD5_CTX *context = (MD5_CTX *)ctx;
     ZBinary hash(MD5_DIGEST_LENGTH);
-    MD5_Final(hash.raw(), context);
+    if(context)
+        MD5_Final(hash.raw(), context);
     delete context;
     return hash;
 }
@@ -198,18 +201,21 @@ ZBinary ZHashBigBase::sha1_hash(const zbyte *data, zu64 size){
 
 void *ZHashBigBase::sha1_init(){
     SHA_CTX *context = new SHA_CTX;
-    SHA1_Init(context);
+    if(context)
+        SHA1_Init(context);
     return context;
 }
 
 void ZHashBigBase::sha1_feed(void *context, const zbyte *data, zu64 size){
-    SHA1_Update((SHA_CTX *)context, data, size);
+    if(context)
+        SHA1_Update((SHA_CTX *)context, data, size);
 }
 
 ZBinary ZHashBigBase::sha1_finish(void *ctx){
     SHA_CTX *context = (SHA_CTX *)ctx;
     ZBinary hash(SHA_DIGEST_LENGTH);
-    SHA1_Final(hash.raw(), context);
+    if(context)
+        SHA1_Final(hash.raw(), context);
     delete context;
     return hash;
 }

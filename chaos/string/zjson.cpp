@@ -25,20 +25,20 @@ ZJSON::ZJSON(const ZJSON &other) : _type(UNDEF){
 
 ZJSON::~ZJSON(){
     // BUG: ZJSON memory leak
-    //initType(UNDEF);
+    initType(UNDEF);
 }
 
 ZJSON &ZJSON::operator=(const ZJSON &other){
     initType(other._type);
     switch(other._type){
         case OBJECT:
-            _data.object = other._data.object;
+            *_data.object = *other._data.object;
             break;
         case ARRAY:
-            _data.array = other._data.array;
+            *_data.array = *other._data.array;
             break;
         case STRING:
-            _data.string = other._data.string;
+            *_data.string = *other._data.string;
             break;
         case NUMBER:
             _data.number = other._data.number;
@@ -56,11 +56,11 @@ ZString ZJSON::encode(bool readable){
     ZString tmp;
     switch(_type){
         case OBJECT:
-            if(_data.object.size()){
+            if(_data.object->size()){
                 tmp = "{";
                 if(readable) tmp += " ";
                 bool first = true;
-                for(auto i = _data.object.begin(); i.more(); i.advance()){
+                for(auto i = _data.object->begin(); i.more(); i.advance()){
                     if(!first){
                         tmp += (readable ? ", " : ",");
                     }
@@ -69,7 +69,7 @@ ZString ZJSON::encode(bool readable){
                     if(readable) tmp += " ";
                     tmp += ":";
                     if(readable) tmp += " ";
-                    tmp += _data.object[i.get()].encode(readable);
+                    tmp += _data.object->get(i.get()).encode(readable);
                 }
                 if(readable) tmp += " ";
                 tmp += "}";
@@ -78,16 +78,16 @@ ZString ZJSON::encode(bool readable){
             }
             break;
         case ARRAY:
-            if(_data.array.size()){
+            if(_data.array->size()){
                 tmp = "[";
                 if(readable) tmp += " ";
                 bool first = true;
-                for(zu64 i = 0; i < _data.array.size(); ++i){
+                for(zu64 i = 0; i < _data.array->size(); ++i){
                     if(!first){
                         tmp += (readable ? ", " : ",");
                     }
                     first = false;
-                    tmp += _data.array[i].encode(readable);
+                    tmp += _data.array->at(i).encode(readable);
                 }
                 if(readable) tmp += " ";
                 tmp += "]";
@@ -96,7 +96,7 @@ ZString ZJSON::encode(bool readable){
             }
             break;
         case STRING:
-            return ZString("\"") + jsonEscape(_data.string) + "\"";
+            return ZString("\"") + jsonEscape(*_data.string) + "\"";
             break;
         case NUMBER:
             return _data.number;
@@ -149,19 +149,19 @@ bool ZJSON::decode(const ZString &str){
 ZMap<ZString, ZJSON> &ZJSON::object(){
     if(_type != OBJECT)
         throw ZException("ZJSON object is not Object");
-    return _data.object;
+    return *_data.object;
 }
 
 ZArray<ZJSON> &ZJSON::array(){
     if(_type != ARRAY)
         throw ZException("ZJSON object is not Array");
-    return _data.array;
+    return *_data.array;
 }
 
 ZString &ZJSON::string(){
     if(_type != STRING)
         throw ZException("ZJSON object is not String");
-    return _data.string;
+    return *_data.string;
 }
 
 double &ZJSON::number(){
@@ -184,13 +184,25 @@ void ZJSON::initType(ZJSON::jsontype type){
     // Deconstruct existing value
     switch(_type){
         case OBJECT:
-            _data.object.~ZMap();
+            LOG("obj destroy");
+            _oalloc.destroy(_data.object);
+            _oalloc.dealloc(_data.object);
+            _data.object = nullptr;
+            //_data.object.~ZMap();
             break;
         case ARRAY:
-            _data.array.~ZArray();
+            LOG("arr destroy");
+            _aalloc.destroy(_data.array);
+            _aalloc.dealloc(_data.array);
+            _data.array = nullptr;
+            //_data.array.~ZArray();
             break;
         case STRING:
-            _data.string.~ZString();
+            LOG("str destroy");
+            _salloc.destroy(_data.string);
+            _salloc.dealloc(_data.string);
+            _data.string = nullptr;
+            //_data.string.~ZString();
             break;
         default:
             break;
@@ -201,13 +213,22 @@ void ZJSON::initType(ZJSON::jsontype type){
     // Construct new value
     switch(_type){
         case OBJECT:
-            new (&_data.object) ZMap<ZString, ZJSON>;
+            LOG("obj alloc");
+            _data.object = _oalloc.alloc();
+            _oalloc.construct(_data.object);
+            //new (&_data.object) ZMap<ZString, ZJSON>;
             break;
         case ARRAY:
-            new (&_data.array) ZArray<ZJSON>;
+            LOG("arr alloc");
+            _data.array = _aalloc.alloc();
+            _aalloc.construct(_data.array);
+            //new (&_data.array) ZArray<ZJSON>;
             break;
         case STRING:
-            new (&_data.string) ZString;
+            LOG("str alloc");
+            _data.string = _salloc.alloc();
+            _salloc.construct(_data.string);
+            //new (&_data.string) ZString;
             break;
         case NUMBER:
             _data.number = 0.0f;
@@ -366,11 +387,11 @@ bool ZJSON::jsonDecode(const ZString &str, zsize *position, JsonError *err){
                     //--i;
                     if(_type == OBJECT){
                         //DLOG("add to object: " << json.encode());
-                        _data.object.add(kbuff, json);
+                        _data.object->add(kbuff, json);
                         kbuff.clear();
                     } else if(_type == ARRAY){
                         //DLOG("add to array: " << json.encode());
-                        _data.array.push(json);
+                        _data.array->push(json);
                     } else {
                         assert(false);
                         err->pos = i;
@@ -385,7 +406,7 @@ bool ZJSON::jsonDecode(const ZString &str, zsize *position, JsonError *err){
             // String
             case strv:
                 if(c == '"' && cprev != '\\'){
-                    _data.string = vbuff;
+                    *_data.string = vbuff;
                     *position = i;
                     ++i;
                     status = true;

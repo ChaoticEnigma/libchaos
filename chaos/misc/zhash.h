@@ -226,6 +226,7 @@ template <> class ZHashMethod<ZHashBase::MD5> : public ZHashBigBase {
 public:
     ZHashMethod() : ZHashBigBase(ZBinary()), _context(md5_init()){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHashBigBase(md5_hash(data, size)), _context(nullptr){}
+    ~ZHashMethod(){ md5_finish(_context); }
 protected:
     void feedHash(const zbyte *data, zu64 size){
         if(_context != nullptr)
@@ -250,6 +251,7 @@ template <> class ZHashMethod<ZHashBase::SHA1> : public ZHashBigBase {
 public:
     ZHashMethod() : ZHashBigBase(ZBinary()), _context(sha1_init()){}
     ZHashMethod(const zbyte *data, zu64 size) : ZHashBigBase(sha1_hash(data, size)), _context(nullptr){}
+    ~ZHashMethod(){ sha1_finish(_context); }
 protected:
     void feedHash(const zbyte *data, zu64 size){
         if(_context != nullptr)

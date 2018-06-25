@@ -41,8 +41,6 @@ SET(LibChaos_Test_SOURCES
     test_error.cpp
 )
 
-CollectSources(${LibChaos_Test_SOURCES})
-
 ### =================== CONFIG =================== ###
 
 # Download test images
