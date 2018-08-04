@@ -88,7 +88,7 @@ INCLUDE(cmake/Doxygen.cmake)
 
 # Add All Sources to Dummy Target for IDE File Listing
 GET_PROPERTY(LibChaosAllSources GLOBAL PROPERTY LibChaosAllSources)
-ADD_CUSTOM_TARGET(libchaos_dummy SOURCES
-    ${LibChaosAllSources}
-    ${LibChaos_OTHER_FILES}
-)
+#ADD_CUSTOM_TARGET(libchaos_dummy SOURCES
+#    ${LibChaosAllSources}
+#    ${LibChaos_OTHER_FILES}
+#)
