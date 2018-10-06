@@ -19,11 +19,6 @@
     #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define DLOG(A) LibChaos::ZLog(LibChaos::ZLog::DEBUG, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
     #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS, ZLOG_PREFILE, ZLOG_PRELINE, ZLOG_PREFUNC) << A
-#elif LIBCHAOS_BUILD == LIBCHAOS_RELEASE
-    // Debug logging disabled on release build
-    #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
-    #define DLOG(A) ((void)0)
-    #define ELOG(A) LibChaos::ZLog(LibChaos::ZLog::ERRORS) << A
 #else
     // Default logging on normal build
     #define LOG(A)  LibChaos::ZLog(LibChaos::ZLog::INFO) << A
