@@ -15,7 +15,7 @@
 // Needed for std::ostream overload
 #include <iosfwd>
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_CYGWIN
     #define UNICODE
     #define _UNICODE
     #include <string>

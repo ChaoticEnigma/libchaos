@@ -12,7 +12,7 @@
 #ifdef LIBCHAOS_HAS_CRYPTO
     #include <openssl/md5.h>
     #include <openssl/sha.h>
-#elif LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     #include <windows.h>
     #include <wincrypt.h>
     #define MD5LEN  16
@@ -194,7 +194,7 @@ ZBinary ZHashBigBase::sha1_finish(void *ctx){
     return hash;
 }
 
-#elif LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
 
 struct WinCryptHash {
     HCRYPTPROV prov;

@@ -15,14 +15,14 @@
 #include <sys/stat.h>
 //#include <string>
 
-#if LIBCHAOS_COMPILER == _COMPILER_GCC || LIBCHAOS_COMPILER == _COMPILER_MINGW || LIBCHAOS_COMPILER == _COMPILER_CLANG
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_GCC || LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MINGW || LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_CLANG
     #include <dirent.h>
     #include <unistd.h>
 #endif
 
 #include "xxhash.h"
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_CYGWIN
     #include <windows.h>
 #endif
 
@@ -544,7 +544,7 @@ bool ZFile::makeDir(ZPath dir){
             return false;
         }
     }
-#if LIBCHAOS_COMPILER == _COMPILER_MINGW
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MINGW
     ret = mkdir(dir.str().cc());
 #else // GCC
     ret = mkdir(dir.str().cc(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -574,7 +574,7 @@ ZArray<ZPath> ZFile::listFiles(ZPath dir, bool recurse){
         return ZArray<ZPath>();
     }
 //#ifdef ZFILE_WINAPI
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_CYGWIN
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){
@@ -620,7 +620,7 @@ ZArray<ZPath> ZFile::listDirs(ZPath dir, bool recurse, bool hidden){
     if(!isDir(dir))
         return dirs;
 //#ifdef ZFILE_WINAPI
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_CYGWIN
     WIN32_FIND_DATA finddata;
     HANDLE find = FindFirstFile((dir + "*").str('\\').wstr().c_str(), &finddata);
     if(find == INVALID_HANDLE_VALUE){

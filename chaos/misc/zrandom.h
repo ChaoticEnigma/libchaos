@@ -9,7 +9,7 @@
 #include "ztypes.h"
 #include "zbinary.h"
 
-#if LIBCHAOS_PLATFORM != _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM != LIBCHAOS_PLATFORM_WINDOWS
     #include <stdio.h>
 #endif
 
@@ -28,7 +28,7 @@ public:
     bool chance(double probability);
 
 private:
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     void *_cryptprov;
 #else
     FILE *_devrandom;

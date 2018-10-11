@@ -1,7 +1,7 @@
 ## LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(LibChaos)
+PROJECT(LibChaos CXX)
 
 # Build Modes
 OPTION(EXTRA_WARNINGS           "Produce Extra Compiler Warnings"           OFF )

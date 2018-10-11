@@ -171,7 +171,7 @@ IF(WIN32)
     #SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_WIN32_SOURCES})
 ENDIF()
 
-CollectSources(
+SET(ALL_SOURCES
     ${LibChaos_SOURCES}
     ${LibChaos_PNG_SOURCES}
     ${LibChaos_JPEG_SOURCES}
@@ -179,6 +179,8 @@ CollectSources(
     ${LibChaos_DATABASE_SOURCES}
     ${LibChaos_WIN32_SOURCES}
 )
+LIST(REMOVE_ITEM ALL_SOURCES ${LibChaos_SOURCES})
+CollectSources(${ALL_SOURCES})
 
 ### =================== CONFIG =================== ###
 
@@ -277,7 +279,7 @@ MACRO(TargetConfigure TAR)
 
             # GCC-only
             $<$<CXX_COMPILER_ID:GNU>:
-                -Wlogical-op -Wno-expansion-to-defined
+                -Wlogical-op
                 $<$<COMPILE_LANGUAGE:CXX>:
                     -Wnoexcept -Wstrict-null-sentinel
                 >

@@ -8,9 +8,9 @@
 #ifdef ZTHREAD_WINTHREADS
     #include <windows.h>
 #else
-    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+    #if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX
         #include <sched.h>
-    #elif LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+    #elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_FREEBSD
         #include <sys/thr.h>
     #endif
     #include <signal.h>
@@ -136,7 +136,7 @@ ztid ZThread::tid(){
 ztid ZThread::thisTid(){
 #ifdef ZTHREAD_WINTHREADS
     return (ztid)GetCurrentThreadId();
-#elif LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_FREEBSD
     long id;
     thr_self(&id);
     return (ztid)id;
@@ -151,9 +151,9 @@ ztid ZThread::thisTid(){
 void ZThread::yield(){
 #ifdef ZTHREAD_WINTHREADS
     SwitchToThread();
-#elif LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     std::this_thread::yield();
-#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX
     sched_yield();
 #else
     ::pthread_yield();
@@ -204,7 +204,7 @@ void *ZThread::_entry_common(zthreadparam *param){
 
 #ifdef ZTHREAD_WINTHREADS
 
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
 ZThread::DWORD _stdcall ZThread::_entry_win(LPVOID ptr){
 #else
 ZThread::DWORD __attribute__((__stdcall__)) ZThread::_entry_win(LPVOID ptr){

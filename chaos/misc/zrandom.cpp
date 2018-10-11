@@ -10,10 +10,10 @@
 
 #include <assert.h>
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     #include <windows.h>
     #define RAND_DEV "ZRANDOM_GENERATOR"
-#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX
     // OSX's /dev/random is equivalent to UNIX's /dev/urandom
     #define RAND_DEV "/dev/random"
 #else
@@ -24,7 +24,7 @@
 namespace LibChaos {
 
 ZRandom::ZRandom(){
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     _cryptprov = new HCRYPTPROV;
     ZString keyset = RAND_DEV;
     // Try to use existing named keyset
@@ -49,7 +49,7 @@ ZRandom::ZRandom(){
 }
 
 ZRandom::~ZRandom(){
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     delete (HCRYPTPROV*)_cryptprov;
 #else
     fclose(_devrandom);
@@ -67,7 +67,7 @@ zu64 ZRandom::genzu(zu64 min, zu64 max){
 
 ZBinary ZRandom::generate(zu64 size){
     ZBuffer buffer(size);
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     BOOL ret = CryptGenRandom(*(HCRYPTPROV*)_cryptprov, size, buffer.raw());
     if(ret == FALSE)
         ELOG(ZError::getSystemError());

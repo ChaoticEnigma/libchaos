@@ -102,7 +102,7 @@ private:
     jsontype _type;
 
     //! Decoded JSON data.
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     struct JSONValue {
 #else
     union JSONValue {
