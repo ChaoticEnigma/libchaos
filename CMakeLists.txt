@@ -8,7 +8,6 @@ OPTION(EXTRA_WARNINGS           "Produce Extra Compiler Warnings"           OFF 
 OPTION(BUILD_DOCS               "Documentation should be configured"        ON  )
 
 # General Options
-OPTION(LIBCHAOS_SHARED          "Dependencies link with shared library"     ON )
 OPTION(LIBCHAOS_LINK_STATIC     "Link with static libraries"                OFF )
 OPTION(LIBCHAOS_LINK_SHARED     "Link with shared libraries"                OFF )
 #OPTION(IBERTY_DEMANGLE          "Use libiberty to demangle symbols"         OFF )
@@ -55,7 +54,7 @@ SET(LibChaos_OTHER_FILES
     doc/Doxyfile-help.in
 )
 
-# Add targets to all
+# Exclude targets from all
 IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     SET(LIBCHAOS_ALL EXCLUDE_FROM_ALL)
     SET(TEST_ALL EXCLUDE_FROM_ALL)

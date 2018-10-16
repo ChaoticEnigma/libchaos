@@ -95,6 +95,8 @@ SET(LibChaos_SOURCES
     net/zconnection.cpp
     net/zdatagramsocket.h
     net/zdatagramsocket.cpp
+    net/zmultiplex.h
+    net/zmultiplex.cpp
     net/zsocket.h
     net/zsocket.cpp
     net/zstreamsocket.h
@@ -201,12 +203,6 @@ SET_SOURCE_FILES_PROPERTIES(lib/xxhash.c PROPERTIES COMPILE_FLAGS -w)
 
 # Defines
 SET_SOURCE_FILES_PROPERTIES(chaos.cpp PROPERTIES COMPILE_DEFINITIONS _LIBCHAOS_DESCRIBE="${LIBCHAOS_DESCRIBE}")
-
-IF(LIBCHAOS_BUILD_SHARED)
-    SET(LIBCHAOS_LINK SHARED)
-ELSE()
-    SET(LIBCHAOS_LINK STATIC)
-ENDIF()
 
 MACRO(TargetConfigure TAR)
     SET_PROPERTY(TARGET ${TAR} PROPERTY C_STANDARD 11)
@@ -351,17 +347,14 @@ ENDMACRO()
 
 ### =================== BUILD =================== ###
 
-# Shared
-ADD_LIBRARY(chaos-shared SHARED ${LIBCHAOS_ALL} ${LibChaos_SOURCES})
-TargetConfigure(chaos-shared)
-SET_TARGET_PROPERTIES(chaos-shared PROPERTIES OUTPUT_NAME chaos)
 # Static
 ADD_LIBRARY(chaos-static STATIC ${LIBCHAOS_ALL} ${LibChaos_SOURCES})
 TargetConfigure(chaos-static)
 SET_TARGET_PROPERTIES(chaos-static PROPERTIES OUTPUT_NAME chaos)
+# Alias
+ADD_LIBRARY(chaos ALIAS chaos-static)
 
-IF(LIBCHAOS_SHARED)
-    ADD_LIBRARY(chaos ALIAS chaos-shared)
-ELSE()
-    ADD_LIBRARY(chaos ALIAS chaos-static)
-ENDIF()
+# Shared
+ADD_LIBRARY(chaos-shared SHARED ${LIBCHAOS_ALL} ${LibChaos_SOURCES})
+TargetConfigure(chaos-shared)
+SET_TARGET_PROPERTIES(chaos-shared PROPERTIES OUTPUT_NAME chaos)

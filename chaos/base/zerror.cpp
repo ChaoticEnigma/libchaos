@@ -871,7 +871,21 @@ int getSocketErrorCode(){
 
 ZString getSocketError(){
 #if  LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
-    return ZString();
+    DWORD err = WSAGetLastError();
+//    wchar_t *str = nullptr;
+//    TCHAR *str = nullptr;
+    TCHAR buffer[1024];
+    DWORD size = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                               FORMAT_MESSAGE_IGNORE_INSERTS,
+                               NULL,
+                               err,
+                               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                               buffer,
+                               1024,
+                               NULL);
+    ZString errstr(buffer, size);
+//    LocalFree(str);
+    return ZString(err) + ": " + errstr;
 #else
     int err = errno;
     return ZString() << err << ": " << strerror(err);

@@ -2,6 +2,7 @@
 #include "zfile.h"
 #include "zdatagramsocket.h"
 #include "zstreamsocket.h"
+#include "zconnection.h"
 //#include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -108,34 +109,50 @@ void udp_server(){
     sock.close();
 }
 
+#define TCP_PORT    8998
+#define TCP_SIZE    1024
+#define TCP_DAT1    "ping"
+#define TCP_DAT2    "pong"
+
 void tcp_client(){
     LOG("=== TCP Socket Test...");
     ZError::registerInterruptHandler(stopHandler);
     ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
-    ZStreamSocket sock;
-
-    //ZAddress addr("::1", 8998);
-    ZAddress addr("127.0.0.1", 8998);
-    //ZAddress addr("192.168.1.71", 8998);
-    //ZAddress addr("192.168.1.89", 8998);
+    ZAddress addr("::1", TCP_PORT);
+    //ZAddress addr("127.0.0.1", TCP_PORT);
 
     ZConnection conn;
     LOG("Connecting to " << addr.str());
-    if(!sock.connect(addr, conn)){
+    if(!conn.connect(addr)){
         ELOG("Socket Connect Fail");
         TASSERT(false);
     }
     LOG("connected " << conn.peer().str());
 
-    ZString str = "hi connection!";
-    ZBinary snddata((const unsigned char *)str.cc(), str.size());
-    conn.write(snddata);
-    LOG("write (" << snddata.size() << "): \"" << snddata << "\"");
+    ZSocket::socket_error err;
 
-    ZBinary data;
-    conn.read(data);
-    LOG("read (" << data.size() << "): \"" << data << "\"");
+    ZString str = TCP_DAT1;
+    ZBinary snddata(str);
+    err = conn.write(snddata);
+    if(err != ZSocket::OK){
+        ELOG(ZSocket::errorStr(err));
+        TASSERT(false);
+    }
+    LOG("write (" << snddata.size() << "): \"" << snddata.printable().asChar() << "\"");
+
+    ZBinary data(TCP_SIZE);
+    do {
+        err = conn.read(data);
+    } while(err == ZSocket::DONE);
+    if(err != ZSocket::OK){
+        ELOG(ZSocket::errorStr(err));
+        TASSERT(false);
+    }
+    ZString recv = ZString(data.printable().asChar());
+    LOG("read (" << data.size() << "): \"" << recv << "\"");
+
+    TASSERT(recv == TCP_DAT2);
 }
 
 void tcp_server(){
@@ -144,7 +161,7 @@ void tcp_server(){
     ZError::registerSignalHandler(ZError::TERMINATE, stopHandler);
 
     ZStreamSocket sock;
-    ZAddress bind(8080);
+    ZAddress bind(TCP_PORT);
     LOG(bind.debugStr());
     if(!sock.listen(bind)){
         ELOG("Socket Listen Fail");
@@ -153,21 +170,39 @@ void tcp_server(){
 
     LOG("Listening...");
 
+    bool ok = false;
     while(run){
         ZPointer<ZConnection> client;
         sock.accept(client);
 
         LOG("accept " << client->peer().debugStr());
 
-        ZBinary data;
-        client->read(data);
-        LOG("read (" << data.size() << "): \"" << ZString(data.printable().asChar()) << "\"");
+        ZSocket::socket_error err;
+        ZBinary data(TCP_SIZE);
+        do {
+            err = client->read(data);
+        } while(err == ZSocket::DONE);
+        if(err != ZSocket::OK){
+            ELOG(ZSocket::errorStr(err));
+            TASSERT(false);
+        }
+        ZString recv = ZString(data.printable().asChar());
+        LOG("read (" << data.size() << "): \"" << recv << "\"");
 
-        ZString str = "hello back there!";
-        ZBinary snddata((const unsigned char *)str.cc(), str.size());
-        client->write(snddata);
-        LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
+        if(recv == TCP_DAT1){
+            ZString str = TCP_DAT2;
+            ZBinary snddata(str);
+            err = client->write(snddata);
+            if(err != ZSocket::OK){
+                ELOG(ZSocket::errorStr(err));
+                TASSERT(false);
+            }
+            LOG("write (" << snddata.size() << "): \"" << ZString(snddata.printable().asChar()) << "\"");
+            ok = true;
+            break;
+        }
     }
+    TASSERT(ok);
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////

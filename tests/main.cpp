@@ -40,9 +40,9 @@ int main(int argc, char **argv){
         const ZArray<ZString> plat = { "NONE", "Linux", "FreeBSD", "Windows", "MacOSX", "Cygwin" };
         const ZArray<ZString> type = { "NONE", "Debug", "Release", "Release+Debug" };
         LOG("Library Config: " << ZString::ItoS(conf, 16)
-            << " " << comp[(conf >> 16) & 0xff]
-            << " " << plat[(conf >> 8) & 0xff]
-            << " " << type[(conf) & 0xff]
+            << " " << comp[(conf >> 16) & 0xf]
+            << " " << plat[(conf >> 8) & 0xf]
+            << " " << type[(conf) & 0xf]
         );
 
         // Test registration functions

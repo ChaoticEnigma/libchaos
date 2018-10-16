@@ -284,7 +284,6 @@ ZList<ZBinary> ZUID::getMACAddresses(){
         while(adapterInfoList != NULL){
             if(validMAC(adapterInfoList->Address)){
                 maclist.push(ZBinary(adapterInfoList->Address, 6));
-                delete[] adapterInfo;
             }
             adapterInfoList = adapterInfoList->Next;
         }

@@ -4,19 +4,15 @@
 **                          See COPYRIGHT and LICENSE                         **
 *******************************************************************************/
 #include "zstreamsocket.h"
+#include "zconnection.h"
 
 namespace LibChaos {
 
 ZStreamSocket::ZStreamSocket() : ZSocket(ZSocket::STREAM){
 
 }
+ZStreamSocket::ZStreamSocket(zsocktype fd) : ZSocket(ZSocket::STREAM, fd){
 
-bool ZStreamSocket::connect(ZAddress addr, ZConnection &conn){
-    zsocktype connfd;
-    ZAddress connaddr;
-    bool ret = ZSocket::connect(addr, connfd, connaddr);
-    conn = ZConnection(connfd, connaddr);
-    return ret;
 }
 
 bool ZStreamSocket::listen(ZAddress bindaddr){
@@ -27,10 +23,10 @@ bool ZStreamSocket::listen(ZAddress bindaddr){
     return true;
 }
 
-ZSocket::socketerror ZStreamSocket::accept(ZPointer<ZConnection> &conn){
+ZSocket::socket_error ZStreamSocket::accept(ZPointer<ZConnection> &conn){
     zsocktype connfd;
     ZAddress connaddr;
-    socketerror ret = ZSocket::accept(connfd, connaddr);
+    socket_error ret = ZSocket::accept(connfd, connaddr);
     if(ret == OK){
         conn = new ZConnection(connfd, connaddr);
     } else {
