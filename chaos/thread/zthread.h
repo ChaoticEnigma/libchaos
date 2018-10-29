@@ -11,7 +11,7 @@
 
 #include <atomic>
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_CYGWIN
     #define ZTHREAD_WINTHREADS
 #endif
 
@@ -126,7 +126,7 @@ private:
     static void *_entry_common(zthreadparam *param);
 
 #ifdef ZTHREAD_WINTHREADS
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     static DWORD _stdcall _entry_win(LPVOID ptr);
 #else
     static DWORD __attribute__((__stdcall__)) _entry_win(LPVOID ptr);

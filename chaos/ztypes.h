@@ -32,26 +32,26 @@
 // Compiler
 //
 
-#define _COMPILER_GCC       0x01
-#define _COMPILER_MINGW     0x02
-#define _COMPILER_CLANG     0x03
-#define _COMPILER_MSVC      0x04
+#define LIBCHAOS_COMPILER_GCC       0x11
+#define LIBCHAOS_COMPILER_MINGW     0x12
+#define LIBCHAOS_COMPILER_CLANG     0x13
+#define LIBCHAOS_COMPILER_MSVC      0x14
 
 // Detection
 #if defined(__clang__) // Must be first, clang defines GNUC
-    #define LIBCHAOS_COMPILER _COMPILER_CLANG
+    #define LIBCHAOS_COMPILER LIBCHAOS_COMPILER_CLANG
 #elif defined(__MINGW32__)
-    #define LIBCHAOS_COMPILER _COMPILER_MINGW
+    #define LIBCHAOS_COMPILER LIBCHAOS_COMPILER_MINGW
 #elif defined(__GNUC__)
-    #define LIBCHAOS_COMPILER _COMPILER_GCC
+    #define LIBCHAOS_COMPILER LIBCHAOS_COMPILER_GCC
 #elif defined(_MSC_VER)
-    #define LIBCHAOS_COMPILER _COMPILER_MSVC
+    #define LIBCHAOS_COMPILER LIBCHAOS_COMPILER_MSVC
 #else
     #warning Unknown Compiler!
 #endif
 
 // Disable some MSVC warnings
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     #pragma warning(disable : 4244) // C4244: conversion from 'x' to 'y', possible loss of data
     #pragma warning(disable : 4800) // C4800: forcing value to 'true' or 'false' (performance warning)
     #pragma warning(disable : 4996) // C4996: This function or variable may be unsafe.
@@ -62,23 +62,23 @@
 // Platform
 //
 
-#define _PLATFORM_LINUX     0x01
-#define _PLATFORM_FREEBSD   0x02
-#define _PLATFORM_WINDOWS   0x03
-#define _PLATFORM_MACOSX    0x04
-#define _PLATFORM_CYGWIN    0x05
+#define LIBCHAOS_PLATFORM_LINUX     0x21
+#define LIBCHAOS_PLATFORM_FREEBSD   0x22
+#define LIBCHAOS_PLATFORM_WINDOWS   0x23
+#define LIBCHAOS_PLATFORM_MACOSX    0x24
+#define LIBCHAOS_PLATFORM_CYGWIN    0x25
 
 // Detection
 #if defined(__linux__)
-    #define LIBCHAOS_PLATFORM _PLATFORM_LINUX
+    #define LIBCHAOS_PLATFORM LIBCHAOS_PLATFORM_LINUX
 #elif defined(__FreeBSD__)
-    #define LIBCHAOS_PLATFORM _PLATFORM_FREEBSD
+    #define LIBCHAOS_PLATFORM LIBCHAOS_PLATFORM_FREEBSD
 #elif defined(_WIN32)
-    #define LIBCHAOS_PLATFORM _PLATFORM_WINDOWS
+    #define LIBCHAOS_PLATFORM LIBCHAOS_PLATFORM_WINDOWS
 #elif defined(__APPLE__)
-    #define LIBCHAOS_PLATFORM _PLATFORM_MACOSX
+    #define LIBCHAOS_PLATFORM LIBCHAOS_PLATFORM_MACOSX
 #elif defined(__CYGWIN__)
-    #define LIBCHAOS_PLATFORM _PLATFORM_CYGWIN
+    #define LIBCHAOS_PLATFORM LIBCHAOS_PLATFORM_CYGWIN
 #else
     #warning Unknown Platform!
 #endif
@@ -132,7 +132,7 @@ template <typename T> static inline T ABS(T a){ return (a < 0) ? -a : a; }
 // LibChaos experimental versions
 #define ZARRAY_VERSION /*1*/ 2
 
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     //#define ZMUTEX_VERSION 2 // CRITICAL_SECTION
     //#define ZMUTEX_VERSION 3 // std::mutex
     #define ZMUTEX_VERSION 4 // Win32 Mutex

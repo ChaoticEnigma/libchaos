@@ -28,7 +28,7 @@ public:
      * Does not construct objects.
      */
     virtual T *alloc(zu64 count = 1){
-        T *ptr = (T*)::operator new(sizeof(T) * count, std::nothrow);
+        T *ptr = reinterpret_cast<T*>(::operator new(sizeof(T) * count, std::nothrow));
         if(ptr == nullptr)
             throw zallocator_exception("Failed to alloc()");
         return ptr;
@@ -68,10 +68,10 @@ public:
     }
 
     virtual void rawcopy(const T *src, T *dest, zu64 count = 1){
-        ::memcpy((void *)dest, (const void *)src, sizeof(T) * count);
+        ::memcpy(reinterpret_cast<void *>(dest), src, sizeof(T) * count);
     }
     virtual void rawmove(const T *src, T *dest, zu64 count = 1){
-        ::memmove((void *)dest, (const void *)src, sizeof(T) * count);
+        ::memmove(reinterpret_cast<void *>(dest), src, sizeof(T) * count);
     }
 
     /*! Expects \p src originally returned by alloc() and construct()ed.
@@ -112,11 +112,13 @@ public:
     //! Get address from reference.
     static inline T *addressOf(T &ref){
         //return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(ref)));
-        return (T*)&(char &)ref;
+        //return (T*)&(char &)ref;
+        return reinterpret_cast<T*>(&reinterpret_cast<zbyte &>(ref));
     }
     //! Get const address from const reference.
     static inline const T *addressOf(const T &ref){
-        return (const T*)&(const char &)ref;
+        //return (const T*)&(const char &)ref;
+        return reinterpret_cast<const T *>(&reinterpret_cast<const zbyte &>(ref));
     }
 
 public:
@@ -124,13 +126,13 @@ public:
     public:
         static void *setRaw(void *dest, zu8 src, zu64 size){
             if(dest && size)
-                memset((unsigned char *)dest, src, size);
+                memset(dest, src, size);
             return dest;
         }
 
         static void *fillRaw(void *dest, const void *src, zu64 src_size, zu64 dest_count){
             for(zu64 i = 0; i < dest_count; ++i){
-                memcpy((unsigned char *)dest + i, src, src_size);
+                memcpy(reinterpret_cast<zbyte *>(dest) + i, src, src_size);
             }
             return dest;
         }
@@ -143,7 +145,7 @@ public:
         return new zbyte[count];
     }
     void dealloc(void *data){
-        delete[] (zbyte *)data;
+        delete[] reinterpret_cast<zbyte *>(data);
     }
 };
 

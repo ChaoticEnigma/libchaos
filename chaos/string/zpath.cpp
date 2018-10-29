@@ -7,9 +7,9 @@
 
 #include "zfile.h"
 
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     #include <direct.h>
-#elif LIBCHAOS_COMPILER == _COMPILER_MINGW
+#elif LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MINGW
     #include <direct.h>
     #include <unistd.h>
 #else
@@ -22,11 +22,11 @@
 namespace LibChaos {
 
 ZPath::ZPath() : _absolute(false){
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     // Detect prefix (drive letter) on Windows
     size_t sz = 1024;
     char *ptr = new char[sz];
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     _getcwd(ptr, (int)sz);
 #else
     getcwd(ptr, sz);
@@ -59,7 +59,7 @@ bool ZPath::operator==(ZPath pth){
 }
 
 void ZPath::fromStr(ZString path){
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     if(path.size() >= 2 && path[1] == ':'){
         _absolute = true;
         _prefix = ZString::substr(path, 0, 2);
@@ -70,7 +70,7 @@ void ZPath::fromStr(ZString path){
         _absolute = true;
     }
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     _data = path.explodeList(2, ZPATH_DEFAULT_DELIM, '/');
 #else
     _data = path.explode(ZPATH_DEFAULT_DELIM);
@@ -90,7 +90,7 @@ void ZPath::fromStr(ZString path){
 }
 
 bool ZPath::isDelim(char ch){
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     if(ch == '\\')
         return true;
 #endif
@@ -111,7 +111,7 @@ ZPath ZPath::concat(ZPath path) const {
 ZPath ZPath::pwd(){
     size_t sz = 1024;
     char *ptr = new char[sz];
-#if LIBCHAOS_COMPILER == _COMPILER_MSVC
+#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     _getcwd(ptr, (int)sz);
 #else
     getcwd(ptr, sz);
@@ -275,7 +275,7 @@ ZPath ZPath::getAbsolute(ZPath path){
 }
 
 bool ZPath::valid(){
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     for(unsigned i = 0; i < _data.size(); ++i){
         if(_data[i].count("/") > 0 ||
            _data[i].count("\\") > 0 ||

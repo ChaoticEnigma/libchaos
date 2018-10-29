@@ -10,7 +10,7 @@
 #include "zstring.h"
 #include "zhash.h"
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     #define ZPATH_DEFAULT_DELIM '\\'
 #else
     #define ZPATH_DEFAULT_DELIM '/'

@@ -105,16 +105,12 @@ private:
     ZAllocator<ZString> _salloc;
 
     //! Decoded JSON data.
-//#if LIBCHAOS_COMPILER == _COMPILER_MSVC
 #if 1
+//#if LIBCHAOS_COMPILER == LIBCHAOS_COMPILER_MSVC
     struct JSONValue {
 #else
     union JSONValue {
 #endif
-        // Required empty constructor/destructor
-        JSONValue(){}
-        ~JSONValue(){}
-
         ZMap<ZString, ZJSON> *object;
         ZArray<ZJSON> *array;
         ZString *string;

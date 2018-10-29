@@ -11,7 +11,7 @@
 
 #include <time.h>
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == _PLATFORM_CYGWIN
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_CYGWIN
     #define ZUID_WINAPI
 #endif
 
@@ -28,7 +28,7 @@
     #include <ifaddrs.h>
     #include <net/if.h>
     #include <netinet/in.h>
-    #if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX || LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+    #if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_FREEBSD
         #include <net/if_dl.h>
     #else
         #include <linux/if_packet.h>
@@ -301,7 +301,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
         // Walk linked list
         while(current != NULL){
             // Look for an interface with a hardware address
-#if LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD || LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_FREEBSD || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX
             if((current->ifa_addr != NULL) && (current->ifa_addr->sa_family == AF_LINK)){
                 struct sockaddr_dl *sockdl = (struct sockaddr_dl *)current->ifa_addr;
                 const uint8_t *mac = reinterpret_cast<const uint8_t*>(LLADDR(sockdl));
@@ -365,7 +365,7 @@ ZBinary ZUID::getMACAddress(bool cache){
     }
     delete[] adapterInfo;
 
-#elif LIBCHAOS_PLATFORM == _PLATFORM_MACOSX || LIBCHAOS_PLATFORM == _PLATFORM_FREEBSD
+#elif LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX || LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_FREEBSD
 
     // getifaddrs
 

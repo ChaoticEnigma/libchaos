@@ -62,7 +62,7 @@ namespace ZError {
     bool registerSignalHandler(zerror_signal, signalHandler);
 
     //! Get the last error code from the system.
-    #if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+    #if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     unsigned long getSystemErrorCode();
     #else
     int getSystemErrorCode();

@@ -41,6 +41,8 @@ SET(LibChaos_Test_SOURCES
     test_error.cpp
 )
 
+#CollectSources(${LibChaos_Test_SOURCES})
+
 ### =================== CONFIG =================== ###
 
 # Download test images
@@ -58,36 +60,39 @@ ENDIF()
 
 ### =================== BUILD =================== ###
 
-ADD_EXECUTABLE(testchaos ${TEST_ALL} ${LibChaos_Test_SOURCES})
-SET_PROPERTY(TARGET testchaos PROPERTY CXX_STANDARD 11)
-TARGET_LINK_LIBRARIES(testchaos chaos)
+ADD_EXECUTABLE(testchaos-shared ${TEST_ALL} ${LibChaos_Test_SOURCES})
+SET_PROPERTY(TARGET testchaos-shared PROPERTY CXX_STANDARD 11)
+TARGET_LINK_LIBRARIES(testchaos-shared chaos-shared)
+
+ADD_EXECUTABLE(testchaos-static ${TEST_ALL} ${LibChaos_Test_SOURCES})
+SET_PROPERTY(TARGET testchaos-static PROPERTY CXX_STANDARD 11)
+TARGET_LINK_LIBRARIES(testchaos-static chaos-static)
 
 ### =================== TESTS =================== ###
 
-ADD_TEST(NAME "Allocator" CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> allocator)
-ADD_TEST(NAME "Pointer"   CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> pointer)
-ADD_TEST(NAME "Storage"   CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> storage)
-ADD_TEST(NAME "Binary"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> binary)
-
-ADD_TEST(NAME "Array"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> array)
-ADD_TEST(NAME "Assoc"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> assoc)
-ADD_TEST(NAME "Stack"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> stack)
-ADD_TEST(NAME "Map"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> map)
-ADD_TEST(NAME "List"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> list)
-ADD_TEST(NAME "Queue"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> queue)
-
-ADD_TEST(NAME "String"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> string)
-ADD_TEST(NAME "Path"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> path)
-ADD_TEST(NAME "JSON"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> json)
-ADD_TEST(NAME "Number"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> number)
-
-ADD_TEST(NAME "Hash"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> hash)
-ADD_TEST(NAME "UID"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> uid)
-
-ADD_TEST(NAME "Thread"    CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> thread)
-ADD_TEST(NAME "Mutex"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> mutex)
-
-ADD_TEST(NAME "File"      CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> file)
-ADD_TEST(NAME "Image"     CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> image)
-ADD_TEST(NAME "PDF"       CONFIGURATIONS testchaos COMMAND $<TARGET_FILE:testchaos> pdf)
-
+#ADD_TEST(NAME "Allocator" CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> allocator)
+#ADD_TEST(NAME "Pointer"   CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> pointer)
+#ADD_TEST(NAME "Storage"   CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> storage)
+#ADD_TEST(NAME "Binary"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> binary)
+#
+#ADD_TEST(NAME "Array"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> array)
+#ADD_TEST(NAME "Assoc"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> assoc)
+#ADD_TEST(NAME "Stack"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> stack)
+#ADD_TEST(NAME "Map"       CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> map)
+#ADD_TEST(NAME "List"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> list)
+#ADD_TEST(NAME "Queue"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> queue)
+#
+#ADD_TEST(NAME "String"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> string)
+#ADD_TEST(NAME "Path"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> path)
+#ADD_TEST(NAME "JSON"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> json)
+#ADD_TEST(NAME "Number"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> number)
+#
+#ADD_TEST(NAME "Hash"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> hash)
+#ADD_TEST(NAME "UID"       CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> uid)
+#
+#ADD_TEST(NAME "Thread"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> thread)
+#ADD_TEST(NAME "Mutex"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> mutex)
+#
+#ADD_TEST(NAME "File"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> file)
+#ADD_TEST(NAME "Image"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> image)
+#ADD_TEST(NAME "PDF"       CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> pdf)

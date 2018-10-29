@@ -1,21 +1,19 @@
 ## LibChaos CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(LibChaos)
+PROJECT(LibChaos CXX)
 
 # Build Modes
 OPTION(LIBCHAOS_EXTRA_WARNINGS      "Produce Extra Compiler Warnings"               OFF )
 OPTION(LIBCHAOS_BUILD_DOCS          "Documentation should be configured"            ON  )
 
 # General Options
-OPTION(LIBCHAOS_SHARED              "Dependent targets link with shared library"    ON )
 OPTION(LIBCHAOS_LINK_STATIC         "Link with static libraries"                    OFF )
 OPTION(LIBCHAOS_LINK_SHARED         "Link with shared libraries"                    OFF )
 #OPTION(IBERTY_DEMANGLE              "Use libiberty to demangle symbols"             OFF )
 
 # Library Components
 OPTION(LIBCHAOS_UI                  "Build LibChaos UI library"                     OFF )
-OPTION(LIBCHAOS_TEST                "Build LibChaos tests"                          OFF )
 
 # Third-Party Library Support
 OPTION(LIBCHAOS_DISABLE_CRYPTO      "Disable Crypto support"                        OFF )
@@ -57,7 +55,7 @@ SET(LibChaos_OTHER_FILES
 )
 
 # Add targets to all
-IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT LIBCHAOS_TEST)
+IF(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     SET(LIBCHAOS_ALL EXCLUDE_FROM_ALL)
     SET(TEST_ALL EXCLUDE_FROM_ALL)
 ENDIF()

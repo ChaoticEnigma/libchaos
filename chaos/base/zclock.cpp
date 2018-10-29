@@ -6,7 +6,7 @@
 #include "zclock.h"
 #include <time.h>
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX
 
 #include <mach/mach_time.h>
 #define ORWL_NANO (+1.0E-9)
@@ -94,7 +94,7 @@ ZString ZClock::str() const {
 }
 
 timespec ZClock::_getTime() const {
-#if LIBCHAOS_PLATFORM == _PLATFORM_MACOSX
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_MACOSX
     return orwl_gettime();
 #else
     timespec clock_n;

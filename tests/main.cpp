@@ -40,9 +40,9 @@ int main(int argc, char **argv){
         const ZArray<ZString> plat = { "NONE", "Linux", "FreeBSD", "Windows", "MacOSX", "Cygwin" };
         const ZArray<ZString> type = { "NONE", "Debug", "Release", "Release+Debug" };
         LOG("Library Config: " << ZString::ItoS(conf, 16)
-            << " " << comp[(conf >> 16) & 0xff]
-            << " " << plat[(conf >> 8) & 0xff]
-            << " " << type[(conf) & 0xff]
+            << " " << comp[(conf >> 16) & 0x0f]
+            << " " << plat[(conf >> 8) & 0x0f]
+            << " " << type[(conf) & 0x0f]
         );
 
         // Test registration functions
@@ -140,7 +140,7 @@ int main(int argc, char **argv){
 
         // Run tests
         ZMap<ZString, int> teststatus;
-        zu64 failed = 0;
+        int failed = 0;
         for(zu64 i = 0; i < tests.size(); ++i){
             Test test = tests[i];
             ZString status = " PASS";
@@ -215,7 +215,7 @@ int main(int argc, char **argv){
         LOG("Result: " << tests.size() - failed << "/" << tests.size() << " passed, " << failed << " failed");
 
         // Return number of tests failed
-        return (int)failed;
+        return failed;
 
     } catch(ZException e){
         printf("Catastrophic Failure: %s - %d\n%s\n", e.what().cc(), e.code(), e.traceStr().cc());

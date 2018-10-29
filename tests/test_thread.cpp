@@ -4,7 +4,7 @@
 #include "zmutex.h"
 #include "zlock.h"
 
-#if LIBCHAOS_PLATFORM == _PLATFORM_WINDOWS
+#if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
     #include <windows.h>
     #include <stdio.h>
     #include <stdlib.h>

@@ -171,7 +171,7 @@ IF(WIN32)
     #SET(LibChaos_SOURCES ${LibChaos_SOURCES} ${LibChaos_WIN32_SOURCES})
 ENDIF()
 
-CollectSources(
+SET(ALL_SOURCES
     ${LibChaos_SOURCES}
     ${LibChaos_PNG_SOURCES}
     ${LibChaos_JPEG_SOURCES}
@@ -179,6 +179,8 @@ CollectSources(
     ${LibChaos_DATABASE_SOURCES}
     ${LibChaos_WIN32_SOURCES}
 )
+LIST(REMOVE_ITEM ALL_SOURCES ${LibChaos_SOURCES})
+#CollectSources(${ALL_SOURCES})
 
 ### =================== CONFIG =================== ###
 
@@ -199,12 +201,6 @@ SET_SOURCE_FILES_PROPERTIES(lib/xxhash.c PROPERTIES COMPILE_FLAGS -w)
 
 # Defines
 SET_SOURCE_FILES_PROPERTIES(chaos.cpp PROPERTIES COMPILE_DEFINITIONS _LIBCHAOS_DESCRIBE="${LIBCHAOS_DESCRIBE}")
-
-IF(LIBCHAOS_BUILD_SHARED)
-    SET(LIBCHAOS_LINK SHARED)
-ELSE()
-    SET(LIBCHAOS_LINK STATIC)
-ENDIF()
 
 MACRO(TargetConfigure TAR)
     TARGET_COMPILE_FEATURES(${TAR} PUBLIC cxx_std_11)
@@ -366,11 +362,7 @@ ADD_LIBRARY(chaos-static STATIC ${LIBCHAOS_ALL} ${LibChaos_SOURCES})
 TargetConfigure(chaos-static)
 SET_TARGET_PROPERTIES(chaos-static PROPERTIES OUTPUT_NAME chaos)
 
-IF(LIBCHAOS_SHARED)
-    ADD_LIBRARY(chaos ALIAS chaos-shared)
-ELSE()
-    ADD_LIBRARY(chaos ALIAS chaos-static)
-ENDIF()
-
 # Install
-INSTALL(TARGETS chaos-shared DESTINATION lib)
+IF(${LIBCHAOS_ALL})
+    INSTALL(TARGETS chaos-shared DESTINATION lib)
+ENDIF()
