@@ -99,11 +99,11 @@ void json_empty_elem(){
 
 ZArray<Test> json_tests(){
     return {
-        { "json_type",          json_type,          true, {} },
-        { "json_empty",         json_empty,         true, {} },
-        { "json_empty_elem",    json_empty_elem,    true, {} },
-        { "json_encode",        json_encode,        true, {} },
-        { "json_decode",        json_decode,        true, { "json_encode" } },
+        { "json_type",          json_type,          false, {} },
+        { "json_empty",         json_empty,         false, {} },
+        { "json_empty_elem",    json_empty_elem,    false, {} },
+        { "json_encode",        json_encode,        false, {} },
+        { "json_decode",        json_decode,        false, { "json_encode" } },
     };
 }
 

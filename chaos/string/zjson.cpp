@@ -20,7 +20,26 @@ ZJSON::ZJSON(jsontype type) : _type(UNDEF){
 }
 
 ZJSON::ZJSON(const ZJSON &other) : _type(UNDEF){
-    operator=(other);
+    initType(other._type);
+    switch(other._type){
+        case OBJECT:
+            _data.object = other._data.object;
+            break;
+        case ARRAY:
+            _data.array = other._data.array;
+            break;
+        case STRING:
+            _data.string = other._data.string;
+            break;
+        case NUMBER:
+            _data.number = other._data.number;
+            break;
+        case BOOLEAN:
+            _data.boolean = other._data.boolean;
+            break;
+        default:
+            break;
+    }
 }
 
 ZJSON::~ZJSON(){
@@ -126,7 +145,9 @@ bool ZJSON::isValid(){
 }
 
 bool ZJSON::decode(const ZString &str){
-    zsize position = 0;
+    if(str.isEmpty())
+        return false;
+    zu64 position = 0;
     JsonError err;
     if(jsonDecode(str, &position, &err))
         return true;
@@ -203,6 +224,11 @@ void ZJSON::initType(ZJSON::jsontype type){
             _salloc.dealloc(_data.string);
             _data.string = nullptr;
             //_data.string.~ZString();
+            break;
+        case UNDEF:
+            _data.object = nullptr;
+            _data.array = nullptr;
+            _data.string = nullptr;
             break;
         default:
             break;

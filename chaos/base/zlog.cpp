@@ -14,10 +14,10 @@
 namespace LibChaos {
 
 std::atomic<bool> ZLog::_init(false);
-ZLogWorker *ZLog::worker = nullptr;
+ZLogWorker ZLog::default_worker;
 ZClock ZLog::clock;
 
-ZLog::ZLog(zlog_level source) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false){
+ZLog::ZLog(zlog_level source, ZLogWorker *worker) : job(new LogJob), stdiolog(false), newline(true), rawlog(false), /*synclog(false),*/ noqueue(false), worker(worker){
     job->level = source;
     job->time = ZTime::now();
     job->clock = ZClock(clock);
@@ -55,7 +55,7 @@ void ZLog::flushLog(bool final){
     if(!noqueue && _init){
         worker->queue(jobptr);
     } else {
-        ZLogWorker::doLog(jobptr);
+        worker->doLog(jobptr);
     }
 }
 
@@ -111,22 +111,6 @@ ZString ZLog::genLogFileName(ZString prefix){
     ZString out(prefix);
     out << buffer << ".log";
     return out;
-}
-
-void ZLog::init(){
-    if(!_init){
-        worker = new ZLogWorker;
-        worker->run();
-        _init = true;
-    }
-}
-
-void ZLog::deinit(){
-    if(_init){
-        _init = false;
-        worker->stop();
-        delete worker;
-    }
 }
 
 }

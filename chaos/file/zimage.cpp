@@ -59,7 +59,7 @@ ZImage::ZImage(const ZImage &other) : ZImage(other._buffer, other._width, other.
 
 ZImage::~ZImage(){
     delete[] _buffer;
-    _buffer = nullptr;
+    delete _backend;
 }
 
 void ZImage::destroy(){

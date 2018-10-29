@@ -49,6 +49,7 @@ ZThread::ZThread(funcType func) : ZThread(new ZThreadCallback(func)){
 ZThread::~ZThread(){
     // Detach thread handle
     detach();
+    //delete _container;
 }
 
 bool ZThread::exec(void *user){

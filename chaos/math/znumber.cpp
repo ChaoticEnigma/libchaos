@@ -45,6 +45,7 @@ ZNumber::ZNumber(const ZNumber &other) : ZNumber(){
 
 ZNumber::~ZNumber(){
     clear();
+    delete _alloc;
 }
 
 //ZNumber::operator zu64(){

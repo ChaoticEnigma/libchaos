@@ -72,7 +72,7 @@ public:
         THIS_THREAD = 12,   // Log immediately from this thread, block until done
     };
 
-    ZLog(zlog_level source = ZLog::INFO);
+    ZLog(zlog_level source = ZLog::INFO, ZLogWorker *worker = &default_worker);
     ZLog(zlog_level source, ZString prefile, ZString preline, ZString prefunc);
 
     ~ZLog();
@@ -108,21 +108,13 @@ public:
     static ZString getThread();
     static ZString genLogFileName(ZString prefix);
 
-    static void init();
-    static void deinit();
-
-    //! Set the standard output format string for \a level.
-    static inline void logLevelStdOut(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdOut(level, fmt); }
-    //! Set the standard error format string for \a level.
-    static inline void logLevelStdErr(zlog_level level, ZString fmt){ ZLogWorker::logLevelStdErr(level, fmt); }
-    //! Set the file output format string for \a level on \a file.
-    static inline void logLevelFile(zlog_level level, ZPath file, ZString fmt){ ZLogWorker::logLevelFile(level, file, fmt); }
+    static ZLogWorker *defaultWorker(){ return &default_worker; }
 
 private:
     void flushLog(bool final);
 
     static std::atomic<bool> _init;
-    static ZLogWorker *worker;
+    static ZLogWorker default_worker;
     static ZClock clock;
 
     LogJob *job;
@@ -130,6 +122,8 @@ private:
     bool newline;
     bool rawlog;
     bool noqueue;
+
+    ZLogWorker *worker;
 };
 
 } // namespace LibChaos

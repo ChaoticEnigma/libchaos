@@ -35,8 +35,8 @@ void http_get(){
     }
     LOG("connected " << conn.peer().str());
 
-    ZThread::sleep(1);
-    TASSERT(false);
+//    ZThread::sleep(1);
+//    TASSERT(false);
 
     ZString reqstr = "GET " + path.str() + " HTTP/1.1\nHost: " + host + "\n\n";
     ZBinary request(reqstr.bytes(), reqstr.size());
@@ -55,7 +55,7 @@ void http_get(){
 
 ZArray<Test> http_tests(){
     return {
-        { "http_get", http_get, true, {} },
+        { "http_get", http_get, false, {} },
     };
 }
 

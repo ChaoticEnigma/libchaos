@@ -26,13 +26,13 @@ void addTest(Test &test, ZMap<ZString, Test*> &testmap, ZArray<Test> &testout, Z
 int main(int argc, char **argv){
     try {
         //ZLog::init(); // BUG: threaded zlog sometimes crashes
-        ZLog::logLevelStdOut(ZLog::INFO, "%clock% %thread% N %log%");
-        ZLog::logLevelStdOut(ZLog::DEBUG, "\x1b[35m%clock% %thread% D %log%\x1b[m");
-        ZLog::logLevelStdErr(ZLog::ERRORS, "\x1b[31m%clock% %thread% E [%function%|%file%:%line%] %log%\x1b[m");
+        ZLog::defaultWorker()->logLevelStdOut(ZLog::INFO, "%clock% %thread% N %log%");
+        ZLog::defaultWorker()->logLevelStdOut(ZLog::DEBUG, "\x1b[35m%clock% %thread% D %log%\x1b[m");
+        ZLog::defaultWorker()->logLevelStdErr(ZLog::ERRORS, "\x1b[31m%clock% %thread% E [%function%|%file%:%line%] %log%\x1b[m");
         ZPath lgf = ZPath("logs") + ZLog::genLogFileName("testchaos_");
-        ZLog::logLevelFile(ZLog::INFO, lgf, "%time% %thread% N %log%");
-        ZLog::logLevelFile(ZLog::DEBUG, lgf, "%time% %thread% D [%function%|%file%:%line%] %log%");
-        ZLog::logLevelFile(ZLog::ERRORS, lgf, "%time% %thread% E [%function%|%file%:%line%] %log%");
+        ZLog::defaultWorker()->logLevelFile(ZLog::INFO, lgf, "%time% %thread% N %log%");
+        ZLog::defaultWorker()->logLevelFile(ZLog::DEBUG, lgf, "%time% %thread% D [%function%|%file%:%line%] %log%");
+        ZLog::defaultWorker()->logLevelFile(ZLog::ERRORS, lgf, "%time% %thread% E [%function%|%file%:%line%] %log%");
 
         LOG("Testing LibChaos: " << LibChaosDescribe());
         zu64 conf = LibChaosBuildConfig();
@@ -158,8 +158,8 @@ int main(int argc, char **argv){
             ZClock clock;
             if(!skip && test.func){
                 if(hideout){
-                    ZLogWorker::setStdOutEnable(false);
-                    ZLogWorker::setStdErrEnable(false);
+                    ZLog::defaultWorker()->setStdOutEnable(false);
+                    ZLog::defaultWorker()->setStdErrEnable(false);
                 }
                 try {
                     clock.start();
@@ -184,8 +184,8 @@ int main(int argc, char **argv){
                     ++failed;
                 }
                 if(hideout){
-                    ZLogWorker::setStdOutEnable(true);
-                    ZLogWorker::setStdErrEnable(true);
+                    ZLog::defaultWorker()->setStdOutEnable(true);
+                    ZLog::defaultWorker()->setStdErrEnable(true);
                 }
             }
 

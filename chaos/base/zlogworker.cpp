@@ -18,34 +18,10 @@
 
 namespace LibChaos {
 
-ZMutex jobmutex;
-ZCondition jobcondition;
-ZQueue<ZLogWorker::LogJob*> jobs;
-
-//ZMutex writemutex;
-
-struct LogHandler {
-    enum lhtype {
-       STDOUT, STDERR, FILE
-    };
-    LogHandler(lhtype t, ZString f) : type(t), fmt(f){}
-    lhtype type;
-    ZString fmt;
-    ZPath file;
-};
-
-ZMutex formatmutex;
-ZMap<int, ZList<LogHandler>> logformats;
-
 ZMutex threadidmutex;
 ZMap<ztid, zu32> threadids;
 
-bool ZLogWorker::lastcomp;
-
-bool enablestdout = true;
-bool enablestderr = true;
-
-ZLogWorker::ZLogWorker() : worker(zlogWorker){
+ZLogWorker::ZLogWorker() : worker(this){
 //    work = work(zlogWorker);
 
     // Output buffering can be default, since it is flushed each line anyway
@@ -61,11 +37,11 @@ ZLogWorker::~ZLogWorker(){
     }
 }
 
-void ZLogWorker::run(){
+void ZLogWorker::startWorker(){
     worker.exec();
 }
 
-void ZLogWorker::stop(){ // Must NEVER be called by log worker thread
+void ZLogWorker::stopWorker(){ // Must NEVER be called by log worker thread
     // BUG: Sometimes hangs?
     worker.stop();
     jobcondition.signal(); // Wake up thread
@@ -79,12 +55,12 @@ void ZLogWorker::queue(LogJob *job){
     jobcondition.signal();
 }
 
-void *ZLogWorker::zlogWorker(ZThread::ZThreadArg zarg){
+void *ZLogWorker::run(void *zarg){
     ZQueue<LogJob*> tmp;
     while(true){
         jobmutex.lock(); // Lock mutex
         if(jobs.isEmpty()){ // If no jobs, wait for jobs
-            if(zarg.stop()){ // If stopped, just break
+            if(stop()){ // If stopped, just break
                 jobmutex.unlock();
                 break;
             }
@@ -109,7 +85,7 @@ void *ZLogWorker::zlogWorker(ZThread::ZThreadArg zarg){
 
         ZThread::yield(); // Yield to other threads
     }
-    return NULL;
+    return nullptr;
 }
 
 ZString ZLogWorker::getThread(ztid thread){

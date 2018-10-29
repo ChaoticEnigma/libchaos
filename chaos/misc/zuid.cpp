@@ -317,6 +317,7 @@ ZList<ZBinary> ZUID::getMACAddresses(){
             current = current->ifa_next;
         }
     }
+    freeifaddrs(iflist);
 
 #endif
 

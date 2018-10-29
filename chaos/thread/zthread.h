@@ -37,6 +37,7 @@ public:
         virtual void *run(void *arg) = 0;
 
     public:
+        virtual ~ZThreadContainer(){}
         //! Check whether the thread should stop.
         bool stop() const;
 

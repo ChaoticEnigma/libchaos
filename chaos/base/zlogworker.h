@@ -9,6 +9,8 @@
 #include "zstring.h"
 #include "zbinary.h"
 #include "zpath.h"
+#include "zqueue.h"
+#include "zmap.h"
 
 #include "zthread.h"
 #include "zmutex.h"
@@ -26,7 +28,7 @@
 namespace LibChaos {
 
 //! ZLog entry handler, processor, formatter, writer.
-class ZLogWorker {
+class ZLogWorker : private ZThread::ZThreadContainer {
 public:
     struct LogJob {
         int level;
@@ -45,32 +47,50 @@ public:
         ZString log;
     };
 
-    static bool lastcomp;
+    struct LogHandler {
+        enum lhtype {
+           STDOUT, STDERR, FILE
+        };
+        LogHandler(lhtype t, ZString f) : type(t), fmt(f){}
+        lhtype type;
+        ZString fmt;
+        ZPath file;
+    };
 
     ZLogWorker();
     ~ZLogWorker();
 
-    void run();
-    void stop();
+    void startWorker();
+    void stopWorker();
 
     void queue(LogJob *job);
-    static void doLog(LogJob *job);
+    void doLog(LogJob *job);
 
-    static void logLevelStdOut(int type, ZString fmt);
-    static void logLevelStdErr(int level, ZString fmt);
-    static void logLevelFile(int level, ZPath file, ZString fmt);
+    void logLevelStdOut(int type, ZString fmt);
+    void logLevelStdErr(int level, ZString fmt);
+    void logLevelFile(int level, ZPath file, ZString fmt);
 
-    static void setStdOutEnable(bool set);
-    static void setStdErrEnable(bool set);
+    void setStdOutEnable(bool set);
+    void setStdErrEnable(bool set);
 
 private:
-    static void *zlogWorker(ZThread::ZThreadArg zarg);
+    void *run(void *zarg);
     static void sigHandle(int sig);
 
     static ZString getThread(ztid thread);
     static ZString makeLog(const LogJob *job, ZString fmt);
 
     ZThread worker;
+
+    ZMutex jobmutex;
+    ZCondition jobcondition;
+    ZQueue<LogJob*> jobs;
+
+    ZMutex formatmutex;
+    ZMap<int, ZList<LogHandler>> logformats;
+
+    bool enablestdout = true;
+    bool enablestderr = true;
 };
 
 } // namespace LibChaos
