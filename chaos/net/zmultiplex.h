@@ -9,10 +9,13 @@ class ZMultiplex {
 public:
     ZMultiplex();
 
+    bool add();
     bool wait();
+    zsize count(){ return ready_count; }
 
 private:
     int handle;
+    zsize ready_count;
 };
 
 } // namespace LibChaos

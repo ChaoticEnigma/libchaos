@@ -3,6 +3,7 @@
 #include "zdatagramsocket.h"
 #include "zstreamsocket.h"
 #include "zconnection.h"
+#include "zmultiplex.h"
 //#include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -203,6 +204,17 @@ void tcp_server(){
         }
     }
     TASSERT(ok);
+}
+
+void multiplex_tcp_server(){
+    ZPointer<ZStreamSocket> lsocket = new ZStreamSocket;
+    ZMultiplex events;
+    events.add(lsocket);
+    while(events.wait()){
+        for(zsize i = 0; i < events.count(); ++i){
+
+        }
+    }
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -609,12 +621,13 @@ void tcp_server_3(){
 
 ZArray<Test> socket_tests(){
     return {
-        { "udp-client",     udp_client,     false, {} },
-        { "udp-server",     udp_server,     false, {} },
-        { "tcp-client",     tcp_client,     false, {} },
-        { "tcp-server",     tcp_server,     false, {} },
-        { "tcp-server-2",   tcp_server_2,   false, {} },
-        { "tcp-server-3",   tcp_server_3,   false, {} },
+        { "udp-client",             udp_client,             false, {} },
+        { "udp-server",             udp_server,             false, {} },
+        { "tcp-client",             tcp_client,             false, {} },
+        { "tcp-server",             tcp_server,             false, {} },
+        { "multiplex-tcp-server",   multiplex_tcp_server,   false, {} },
+        { "tcp-server-2",           tcp_server_2,           false, {} },
+        { "tcp-server-3",           tcp_server_3,           false, {} },
     };
 }
 
