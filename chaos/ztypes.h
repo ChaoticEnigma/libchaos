@@ -91,8 +91,8 @@
 // Build
 //
 
-#define LIBCHAOS_DEBUG      0x01
-#define LIBCHAOS_RELEASE    0x02
+#define LIBCHAOS_DEBUG      0x31
+#define LIBCHAOS_RELEASE    0x32
 
 #if defined(_LIBCHAOS_BUILD_DEBUG)
     #define LIBCHAOS_BUILD LIBCHAOS_DEBUG

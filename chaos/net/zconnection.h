@@ -7,7 +7,7 @@
 #define ZCONNECTION_H
 
 #include "ztypes.h"
-#include "zsocket.h"
+#include "zstreamsocket.h"
 #include "zaddress.h"
 
 namespace LibChaos {
@@ -15,7 +15,7 @@ namespace LibChaos {
 /*! TCP connection abstraction of ZSocket.
  *  \ingroup Network
  */
-class ZConnection : private ZSocket {
+class ZConnection : private ZStreamSocket {
 public:
     //! Construct unopened connection.
     ZConnection();
@@ -25,14 +25,16 @@ public:
     ~ZConnection();
 
     // Functions imported from ZSocket
-    using ZSocket::close;
-    using ZSocket::isOpen;
+    using ZStreamSocket::close;
+    using ZStreamSocket::isOpen;
 
-    using ZSocket::read;
-    using ZSocket::write;
+    using ZStreamSocket::read;
+    using ZStreamSocket::write;
 
-    using ZSocket::setBlocking;
-    using ZSocket::getSocket;
+    using ZStreamSocket::setBlocking;
+    using ZStreamSocket::getSocket;
+
+    bool connect(ZAddress addr);
 
     //! Get the address of the peer.
     ZAddress peer();

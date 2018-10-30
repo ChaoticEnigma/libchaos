@@ -7,10 +7,11 @@
 #define ZSTREAMSOCKET_H
 
 #include "zsocket.h"
-#include "zconnection.h"
 #include "zpointer.h"
 
 namespace LibChaos {
+
+class ZConnection;
 
 /*! TCP interface for ZSocket.
  *  \ingroup Network
@@ -18,6 +19,7 @@ namespace LibChaos {
 class ZStreamSocket : private ZSocket {
 public:
     ZStreamSocket();
+    ZStreamSocket(zsocktype fd);
 
     // Functions imported from ZSocket
     using ZSocket::close;
@@ -31,14 +33,13 @@ public:
     using ZSocket::getBoundAddress;
     using ZSocket::getSocket;
 
-    //! Open a stream connection.
-    bool connect(ZAddress addr, ZConnection &conn);
+    using ZSocket::connect;
 
     //! Open, bind and listen on a stream socket.
     bool listen(ZAddress bindaddr);
 
     //! Accept a new connection on the socket.
-    socketerror accept(ZPointer<ZConnection> &conn);
+    socket_error accept(ZPointer<ZConnection> &conn);
 
     void setReadBuffer(zu64 size);
 };

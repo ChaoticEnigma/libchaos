@@ -1,4 +1,4 @@
-#f # LibChaos Test CMakeLists.txt
+# LibChaos Test CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(LibChaos_Test)
@@ -60,39 +60,46 @@ ENDIF()
 
 ### =================== BUILD =================== ###
 
-ADD_EXECUTABLE(testchaos-shared ${TEST_ALL} ${LibChaos_Test_SOURCES})
-SET_PROPERTY(TARGET testchaos-shared PROPERTY CXX_STANDARD 11)
-TARGET_LINK_LIBRARIES(testchaos-shared chaos-shared)
-
 ADD_EXECUTABLE(testchaos-static ${TEST_ALL} ${LibChaos_Test_SOURCES})
 SET_PROPERTY(TARGET testchaos-static PROPERTY CXX_STANDARD 11)
 TARGET_LINK_LIBRARIES(testchaos-static chaos-static)
 
+ADD_EXECUTABLE(testchaos-shared ${TEST_ALL} ${LibChaos_Test_SOURCES})
+SET_PROPERTY(TARGET testchaos-shared PROPERTY CXX_STANDARD 11)
+TARGET_LINK_LIBRARIES(testchaos-shared chaos-shared)
+
+ADD_CUSTOM_TARGET(testchaos DEPENDS testchaos-shared testchaos-static)
+
 ### =================== TESTS =================== ###
 
-#ADD_TEST(NAME "Allocator" CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> allocator)
-#ADD_TEST(NAME "Pointer"   CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> pointer)
-#ADD_TEST(NAME "Storage"   CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> storage)
-#ADD_TEST(NAME "Binary"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> binary)
-#
-#ADD_TEST(NAME "Array"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> array)
-#ADD_TEST(NAME "Assoc"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> assoc)
-#ADD_TEST(NAME "Stack"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> stack)
-#ADD_TEST(NAME "Map"       CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> map)
-#ADD_TEST(NAME "List"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> list)
-#ADD_TEST(NAME "Queue"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> queue)
-#
-#ADD_TEST(NAME "String"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> string)
-#ADD_TEST(NAME "Path"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> path)
-#ADD_TEST(NAME "JSON"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> json)
-#ADD_TEST(NAME "Number"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> number)
-#
-#ADD_TEST(NAME "Hash"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> hash)
-#ADD_TEST(NAME "UID"       CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> uid)
-#
-#ADD_TEST(NAME "Thread"    CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> thread)
-#ADD_TEST(NAME "Mutex"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> mutex)
-#
-#ADD_TEST(NAME "File"      CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> file)
-#ADD_TEST(NAME "Image"     CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> image)
-#ADD_TEST(NAME "PDF"       CONFIGURATIONS testchaos-shared COMMAND $<TARGET_FILE:testchaos-shared> pdf)
+MACRO(TestChaos_Tests TARGET)
+    ADD_TEST(NAME "${TARGET} Allocator" CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> allocator)
+    ADD_TEST(NAME "${TARGET} Pointer"   CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> pointer)
+    ADD_TEST(NAME "${TARGET} Storage"   CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> storage)
+    ADD_TEST(NAME "${TARGET} Binary"    CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> binary)
+
+    ADD_TEST(NAME "${TARGET} Array"     CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> array)
+    ADD_TEST(NAME "${TARGET} Assoc"     CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> assoc)
+    ADD_TEST(NAME "${TARGET} Stack"     CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> stack)
+    ADD_TEST(NAME "${TARGET} Map"       CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> map)
+    ADD_TEST(NAME "${TARGET} List"      CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> list)
+    ADD_TEST(NAME "${TARGET} Queue"     CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> queue)
+
+    ADD_TEST(NAME "${TARGET} String"    CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> string)
+    ADD_TEST(NAME "${TARGET} Path"      CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> path)
+    ADD_TEST(NAME "${TARGET} JSON"      CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> json)
+    ADD_TEST(NAME "${TARGET} Number"    CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> number)
+
+    ADD_TEST(NAME "${TARGET} Hash"      CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> hash)
+    ADD_TEST(NAME "${TARGET} UID"       CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> uid)
+
+    ADD_TEST(NAME "${TARGET} Thread"    CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> thread)
+    ADD_TEST(NAME "${TARGET} Mutex"     CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> mutex)
+
+    ADD_TEST(NAME "${TARGET} File"      CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> file)
+    ADD_TEST(NAME "${TARGET} Image"     CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> image)
+    ADD_TEST(NAME "${TARGET} PDF"       CONFIGURATIONS ${TARGET} COMMAND $<TARGET_FILE:${TARGET}> pdf)
+ENDMACRO()
+
+TestChaos_Tests(testchaos-static)
+TestChaos_Tests(testchaos-shared)

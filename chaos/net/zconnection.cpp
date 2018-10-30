@@ -8,11 +8,11 @@
 
 namespace LibChaos {
 
-ZConnection::ZConnection() : ZSocket(STREAM), buffer(nullptr){
+ZConnection::ZConnection() : ZStreamSocket(), buffer(nullptr){
 
 }
 
-ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZSocket(STREAM, fd), _peeraddr(addr), buffer(nullptr){
+ZConnection::ZConnection(zsocktype fd, ZAddress addr) : ZStreamSocket(fd), _peeraddr(addr), buffer(nullptr){
 
 }
 
@@ -20,6 +20,11 @@ ZConnection::~ZConnection(){
     // Close the socket
     close();
     delete buffer;
+}
+
+bool ZConnection::connect(ZAddress addr){
+    zsocktype connfd;
+    return ZStreamSocket::connect(addr, connfd, _peeraddr);
 }
 
 ZAddress ZConnection::peer(){

@@ -38,10 +38,13 @@ const char *inet_ntop(int af, const void *src, char *dest, int cnt){
         return NULL;
     }
 
+    ZSocket::_sockInit();
     if(WSAAddressToStringA((struct sockaddr *)&srcaddr, sizeof(sockaddr_storage), 0, dest, (LPDWORD)&cnt) != 0){
         ELOG("ZAddress: WSAAddressToString error " << ZError::getSystemError());
+        ZSocket::_sockDeInit();
         return NULL;
     }
+    ZSocket::_sockDeInit();
     return dest;
 }
 
@@ -113,7 +116,7 @@ ZAddress::ZAddress(zport port) : ZAddressData(IPV6, port){
     memset(_v6_addr, 0, 16);
 }
 
-ZAddress::ZAddress(const sockaddr_storage *addr, socklen_t len) : ZAddressData(IPV4, 0){
+ZAddress::ZAddress(const sockaddr_storage *addr, zsocklen len) : ZAddressData(IPV4, 0){
     if(addr->ss_family == IPV4){
         if(len >= sizeof(sockaddr_in)){
             const sockaddr_in *v4 = (const sockaddr_in *)addr;
@@ -180,10 +183,10 @@ bool ZAddress::operator==(const ZAddress &rhs) const {
 ZString ZAddress::familyStr() const {
     switch(_family){
     case ZAddress::NAME:    return "Unspecified";
-    case ZAddress::UNIX:        return "UNIX";
-    case ZAddress::IPV4:        return "IPv4";
-    case ZAddress::IPV6:        return "IPv6";
-    default:                    return "Unknwon";
+    case ZAddress::UNIX:    return "UNIX";
+    case ZAddress::IPV4:    return "IPv4";
+    case ZAddress::IPV6:    return "IPv6";
+    default:                return "Unknown";
     }
 }
 
@@ -206,7 +209,7 @@ ZString ZAddress::familyStr() const {
 //}
 
 ZString ZAddress::str() const {
-    socklen_t csz;
+    zsocklen csz;
     if(_family == IPV4){
         csz = IPV4_MAX;
     } else if(_family == IPV6){
@@ -244,7 +247,7 @@ bool ZAddress::populate(sockaddr_storage *ptr) const {
     return true;
 }
 
-socklen_t ZAddress::getSockLen() const {
+zsocklen ZAddress::getSockLen() const {
     if(_family == IPV4)
         return sizeof(sockaddr_in);
     else if(_family == IPV6)

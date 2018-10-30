@@ -61,22 +61,35 @@ ZString socketerrors[ZSocket::ERR_MAX] = {
 };
 
 ZSocket::ZSocket(socket_type type) : _socket(0), _type(type), _reuseaddr(false){
-
+    _sockInit();
 }
 
 ZSocket::ZSocket(socket_type type, zsocktype fd) : ZSocket(type){
     _socket = fd;
 }
 
-ZSocket::~ZSocket(){
-    delete buffer;
-}
-
-bool ZSocket::open(int family, int type, int proto){
+void ZSocket::_sockInit(){
     // Initialize sockets if needed
     if(socket_count <= 0)
         InitializeSockets();
     ++socket_count;
+}
+
+void ZSocket::_sockDeInit(){
+    // Shutdown sockets if needed
+    --socket_count;
+    if(socket_count <= 0)
+        ShutdownSockets();
+}
+
+ZSocket::~ZSocket(){
+    delete buffer;
+    _sockDeInit();
+}
+
+bool ZSocket::open(int family, int type, int proto){
+    if(isOpen())
+        return false;
 
     _family = (ZAddress::address_family)family;
     _type = (ZSocket::socket_type)type;
@@ -84,7 +97,7 @@ bool ZSocket::open(int family, int type, int proto){
     // Create socket
     _socket = ::socket(_family, _type, proto);
     if(_socket <= 0){
-        ELOG("ZSocket::open failed to create socket: " + ZError::getSystemError());
+        ELOG("ZSocket::open failed to create socket: " + ZError::getSocketError());
         _socket = 0;
         return false;
     }
@@ -100,11 +113,6 @@ void ZSocket::close(){
         ::close(_socket);
 #endif
         _socket = 0;
-
-        // Shutdown sockets if needed
-        --socket_count;
-        if(socket_count <= 0)
-            ShutdownSockets();
     }
 }
 
@@ -138,7 +146,7 @@ bool ZSocket::bind(ZAddress addr){
         sockaddr_storage addrstorage;
         saddr.addr.populate(&addrstorage);
         if(::bind(_socket, (const sockaddr *)&addrstorage, saddr.addr.getSockLen()) != 0){
-            ELOG("ZSocket::bind failed to bind " +  saddr.addr.debugStr() + " - error " + ZError::getSystemError());
+            ELOG("ZSocket::bind failed to bind " +  saddr.addr.debugStr() + " - error " + ZError::getSocketError());
             close();
             addrs.rotate();
             continue;
@@ -174,7 +182,7 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
         sockaddr_storage addrstorage;
         caddr.populate(&addrstorage);
         if(::connect(_socket, (const sockaddr *)&addrstorage, caddr.getSockLen()) != 0){
-            ELOG("ZSocket: connect error " + ZError::getSystemError());
+            ELOG("ZSocket: connect error " + ZError::getSocketError());
             close();
             addrs.rotate();
             continue;
@@ -193,13 +201,13 @@ bool ZSocket::connect(ZAddress addr, zsocktype &connfd, ZAddress &connaddr){
 
 bool ZSocket::listen(){
     if(::listen(_socket, SOMAXCONN) != 0){
-        ELOG("ZSocket: listen error " + ZError::getSystemError());
+        ELOG("ZSocket: listen error " + ZError::getSocketError());
         return false;
     }
     return true;
 }
 
-ZSocket::socketerror ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
+ZSocket::socket_error ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
         return ERR_NOTOPEN;
@@ -219,7 +227,7 @@ ZSocket::socketerror ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
 #endif
             return AGAIN;
         }
-        ELOG("ZSocket:accept failed: " + ZError::getSystemError());
+        ELOG("ZSocket:accept failed: " + ZError::getSocketError());
         return ERR_ACCEPT;
     }
 
@@ -230,7 +238,7 @@ ZSocket::socketerror ZSocket::accept(zsocktype &connfd, ZAddress &connaddr){
     return OK;
 }
 
-ZSocket::socketerror ZSocket::read(ZBinary &data){
+ZSocket::socket_error ZSocket::read(ZBinary &data){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
         return ERR_NOTOPEN;
@@ -258,7 +266,7 @@ ZSocket::socketerror ZSocket::read(ZBinary &data){
 #endif
             return AGAIN;
         }
-        ELOG("ZSocket: read error: " + ZError::getSystemError());
+        ELOG("ZSocket: read error: " + ZError::getSocketError());
         return ERR_READ;
     }
 
@@ -266,7 +274,7 @@ ZSocket::socketerror ZSocket::read(ZBinary &data){
     return OK;
 }
 
-ZSocket::socketerror ZSocket::write(const ZBinary &data){
+ZSocket::socket_error ZSocket::write(const ZBinary &data){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
         return ERR_NOTOPEN;
@@ -294,14 +302,14 @@ ZSocket::socketerror ZSocket::write(const ZBinary &data){
 #endif
             return AGAIN;
         }
-        ELOG("ZSocket: write error: " + ZError::getSystemError());
+        ELOG("ZSocket: write error: " + ZError::getSocketError());
         return ERR_WRITE;
     }
 
     return OK;
 }
 
-ZSocket::socketerror ZSocket::send(ZAddress dest, const ZBinary &data){
+ZSocket::socket_error ZSocket::send(ZAddress dest, const ZBinary &data){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
         return ERR_NOTOPEN;
@@ -331,14 +339,14 @@ ZSocket::socketerror ZSocket::send(ZAddress dest, const ZBinary &data){
 #endif
             return AGAIN;
         }
-        ELOG("ZSocket::send sendto error " + ZError::getSystemError());
+        ELOG("ZSocket::send sendto error " + ZError::getSocketError());
         return ERR_WRITE;
     }
 
     return OK;
 }
 
-ZSocket::socketerror ZSocket::receive(ZAddress &sender, ZBinary &data){
+ZSocket::socket_error ZSocket::receive(ZAddress &sender, ZBinary &data){
     if(!isOpen()){
         ELOG("ZSocket: socket is not open");
         return ERR_NOTOPEN;
@@ -366,7 +374,7 @@ ZSocket::socketerror ZSocket::receive(ZAddress &sender, ZBinary &data){
 #endif
             return AGAIN;
         }
-        ELOG("ZSocket:receive error - " + ZError::getSystemError());
+        ELOG("ZSocket:receive error - " + ZError::getSocketError());
         return ERR_READ;
     }
 
@@ -416,11 +424,11 @@ bool ZSocket::setSocketOption(SocketOptions::socketoption option, int value){
     }
 
 #ifdef ZSOCKET_WINAPI
-    if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, (char *)optptr, optptrsize) != 0){
+    if(optptr != nullptr && ::setsockopt(_socket, SOL_SOCKET, sockoption, (char *)optptr, optptrsize) != 0){
 #else
-    if(optptr != nullptr && setsockopt(_socket, SOL_SOCKET, sockoption, optptr, optptrsize) != 0){
+    if(optptr != nullptr && ::setsockopt(_socket, SOL_SOCKET, sockoption, optptr, optptrsize) != 0){
 #endif
-        ELOG("ZSocket: setsockopt error: " + ZError::getSystemError());
+        ELOG("ZSocket: setsockopt error: " + ZError::getSocketError());
         return false;
     }
     return true;
@@ -438,7 +446,7 @@ bool ZSocket::setBlocking(bool set){
     // Set or unset nonblocking option
     DWORD opt = set ? 0 : 1;
     if(ioctlsocket(_socket, (long)FIONBIO, &opt) != 0){
-        ELOG("ZSocket: failed to set non-blocking socket error: " + ZError::getSystemError());
+        ELOG("ZSocket: failed to set non-blocking socket error: " + ZError::getSocketError());
         return false;
     }
 #else
@@ -474,7 +482,8 @@ ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){
     int status;
     addrinfo *result;
     if((status = ::getaddrinfo(aptr, sptr, &hints, &result)) != 0){
-        ELOG("ZSocket: getaddrinfo for " << name << " " << (zuint)addr.port() << ": " << status <<": " << gai_strerror(status));
+        //ELOG("ZSocket: getaddrinfo for [" << name << "]:" << (zuint)addr.port() << " " << status <<": " << gai_strerror(status));
+        ELOG("ZSocket: getaddrinfo for [" << name << "]:" << (zuint)addr.port() << " " << ZError::getSocketError());
         return ZList<SockAddr>();
     }
 
@@ -500,7 +509,7 @@ ZList<ZSocket::SockAddr> ZSocket::lookupAddr(ZAddress addr, int type){
     return addrs;
 }
 
-ZString ZSocket::errorStr(ZSocket::socketerror err){
+ZString ZSocket::errorStr(ZSocket::socket_error err){
     return socketerrors[err];
 }
 

@@ -33,6 +33,7 @@
 namespace LibChaos {
 
 typedef zu16 zport;
+typedef socklen_t zsocklen;
 
 class ZAddressData {
 protected:
@@ -98,7 +99,7 @@ public:
 
     ZAddress(zport port);
 
-    ZAddress(const sockaddr_storage *addr, socklen_t len);
+    ZAddress(const sockaddr_storage *addr, zsocklen len);
     ZAddress(const sockaddr *sa);
 
     ~ZAddress();
@@ -149,7 +150,7 @@ public:
      */
     bool populate(sockaddr_storage *ptr) const;
     //! Get the size of the sockaddr struct corresponding to this address.
-    socklen_t getSockLen() const;
+    zsocklen getSockLen() const;
 
     //! Get a string describing the address in the form [addr]:port,family,type,protocol.
     ZString debugStr() const {

@@ -18,7 +18,7 @@
 namespace LibChaos {
 
 #if LIBCHAOS_PLATFORM == LIBCHAOS_PLATFORM_WINDOWS
-    typedef unsigned long long int zsocktype;
+    typedef SOCKET zsocktype;
 #else
     typedef int zsocktype;
 #endif
@@ -41,7 +41,7 @@ public:
         };
     };
 
-    enum socketerror {
+    enum socket_error {
         OK = 0,         //!< No error.
         DONE,           //!< Nothing to read/write.
         AGAIN,          //!< Socket operation would block.
@@ -91,7 +91,7 @@ public:
     bool listen();
 
     //! Accept a TCP connection on the socket.
-    socketerror accept(zsocktype &connfd, ZAddress &connaddr);
+    socket_error accept(zsocktype &connfd, ZAddress &connaddr);
 
     /*! Read from the socket into \p data.
      *  Will read up to the size of \p data, so \p data must be resized first.
@@ -102,7 +102,7 @@ public:
      *  \return \ref ERR_READ on read failure.
      *  \return \ref ERR_BUFFER when \p data is empty.
      */
-    socketerror read(ZBinary &data);
+    socket_error read(ZBinary &data);
 
     /*! Write the contents of \p data to the socket.
      *  \return \ref OK on success.
@@ -111,7 +111,7 @@ public:
      *  \return \ref ERR_WRITE on write failure.
      *  \return \ref ERR_BUFFER when \p data is empty.
      */
-    socketerror write(const ZBinary &data);
+    socket_error write(const ZBinary &data);
 
     //! \}
 
@@ -121,12 +121,12 @@ public:
     /*! Send a datagram to \a destination with \a data.
      *  \return True on success.
      */
-    socketerror send(ZAddress destination, const ZBinary &data);
+    socket_error send(ZAddress destination, const ZBinary &data);
 
     /*! Receive a datagram, put the source address in \a sender, and datagram's data in \a data.
      *  \return Size of \a data.
      */
-    socketerror receive(ZAddress &sender, ZBinary &data);
+    socket_error receive(ZAddress &sender, ZBinary &data);
 
     //! \}
 
@@ -152,7 +152,10 @@ public:
     //! Get the bound address.
     inline ZAddress getBoundAddress() const { return _bound; }
 
-    static ZString errorStr(socketerror err);
+    static ZString errorStr(socket_error err);
+
+    static void _sockInit();
+    static void _sockDeInit();
 
 protected:
     //! Construct ZSocket from already opened socket.

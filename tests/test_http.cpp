@@ -27,12 +27,14 @@ void http_get(){
 
     ZAddress addr(host, 80);
 
-    ZConnection conn;
+    zsocktype connfd;
+    ZAddress connaddr;
     LOG("Connecting to " << addr.str());
-    if(!sock.connect(addr, conn)){
+    if(!sock.connect(addr, connfd, connaddr)){
         ELOG("Socket Connect Fail");
         TASSERT(false);
     }
+    ZConnection conn(connfd, connaddr);
     LOG("connected " << conn.peer().str());
 
 //    ZThread::sleep(1);
@@ -40,7 +42,7 @@ void http_get(){
 
     ZString reqstr = "GET " + path.str() + " HTTP/1.1\nHost: " + host + "\n\n";
     ZBinary request(reqstr.bytes(), reqstr.size());
-    ZSocket::socketerror err = conn.write(request);
+    ZSocket::socket_error err = conn.write(request);
     TASSERT(err == ZSocket::OK);
     LOG("write (" << request.size() << "): \"" << request << "\"");
 

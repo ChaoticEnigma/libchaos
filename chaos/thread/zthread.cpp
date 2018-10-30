@@ -23,6 +23,8 @@
 
 namespace LibChaos {
 
+ZThread::ZThreadContainer::~ZThreadContainer(){}
+
 bool ZThread::ZThreadContainer::stop() const {
     return _stop;
 }
