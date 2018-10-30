@@ -27,6 +27,7 @@ public:
     enum { NONE = ZU64_MAX };
 
     class ZArrayIterator;
+    class ZArrayConstIterator;
 
 public:
     //! ZArray default constructor, optional user allocator.
@@ -309,6 +310,15 @@ public:
         return ZArrayIterator(this, size()-1);
     }
 
+    //! Get a constant iterator starting at the beginning of the array.
+    ZArrayConstIterator cbegin() const {
+        return ZArrayConstIterator(this, 0);
+    }
+    //! Get a constant iterator starting at the end of the array.
+    ZArrayConstIterator cend() const {
+        return ZArrayConstIterator(this, size()-1);
+    }
+
     inline bool isEmpty() const { return (_size == 0); }
     inline bool empty() const { return isEmpty(); }
 
@@ -365,6 +375,47 @@ public:
         ZArray<T> *_array;
         zu64 _index;
     };
+
+    class ZArrayConstIterator : public ZRandomConstIterator<T> {
+    public:
+        ZArrayConstIterator(const ZArray<T> *array, zu64 index) : _array(array), _index(index){}
+
+        const T &get() const {
+            return _array->at(_index);
+        }
+
+        bool more() const {
+            return (_index < _array->size());
+        }
+        void advance(){
+            ++_index;
+        }
+
+        bool less() const {
+            return (_index >= 0 && _index < _array->size());
+        }
+        void recede(){
+            --_index;
+        }
+
+        zu64 size() const {
+            return _array->size();
+        }
+
+        const T &at(zu64 i) const {
+            return _array->at(i);
+        }
+
+        //bool compare(ZListIterator it) const {
+        //    return (_list == it._list && _node == it._node);
+        //}
+        //ZITERATOR_COMPARE_OVERLOADS(ZListIterator)
+
+    private:
+        const ZArray<T> *_array;
+        zu64 _index;
+    };
+
 
 private:
     //! Buffer memory allocator.

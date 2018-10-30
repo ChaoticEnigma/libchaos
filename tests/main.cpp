@@ -1,14 +1,32 @@
 #include "tests.h"
 #include "zexception.h"
+#include "zworkqueue.h"
 
 #include <stdio.h>
 
 using namespace LibChaosTest;
 
+class TestRunner : public ZThread::ZThreadContainer {
+    // ZThreadContainer interface
+private:
+    void *run(void *arg){
+        LOG("Test Thread Start");
+        Test *test;
+        while(!stop()){
+            test = queue->getWork();
+
+        }
+        return nullptr;
+    }
+
+private:
+    ZWorkQueue<Test*> *queue;
+};
+
 //! Add a test to testout and testmapout, resolving and adding recursive dependencies first.
 void addTest(Test &test, ZMap<ZString, Test*> &testmap, ZArray<Test> &testout, ZMap<ZString, Test> &testmapout){
     // Check for dependencies
-    for(auto i = test.deps.begin(); i.more(); ++i){
+    for(auto i = test.pre_deps.begin(); i.more(); ++i){
         if(testmap.contains(*i)){
             addTest(*testmap[*i], testmap, testout, testmapout);
         } else {
@@ -45,40 +63,9 @@ int main(int argc, char **argv){
             << " " << type[(conf) & 0xf]
         );
 
-        // Test registration functions
-        ZArray<reg_func> regtests = {
-            allocator_tests,
-            pointer_tests,
-
-            binary_tests,
-            array_tests,
-            list_tests,
-
-            string_tests,
-            path_tests,
-            json_tests,
-
-            hash_tests,
-            table_tests,
-            graph_tests,
-            misc_tests,
-            number_tests,
-
-            file_tests,
-            image_tests,
-            pdf_tests,
-
-            socket_tests,
-
-            thread_tests,
-            error_tests,
-
-            sandbox_tests
-        };
-
         // List tests
         ZArray<Test> alltests;
-        for(auto i = regtests.begin(); i.more(); ++i)
+        for(auto i = regtests.cbegin(); i.more(); ++i)
             alltests.append(i.get()());
 
         // Build map
@@ -132,21 +119,31 @@ int main(int argc, char **argv){
         // Add tests and resolve dependencies
         ZArray<Test> tests;
         ZMap<ZString, Test> testm;
-        for(auto i = alltests.begin(); i.more(); ++i){
-            if(i.get().run)
-                addTest(i.get(), testmap, tests, testm);
+        for(auto it = alltests.begin(); it.more(); ++it){
+            if(it.get().run)
+                addTest(it.get(), testmap, tests, testm);
         }
 
+//        ZWorkQueue<Test *> testqueue;
+//        TestRunner tr;
+//        ZArray<ZPointer<ZThread>> threads;
+//        for(zsize i = 0; i < 1; ++i){
+//            threads.push(new ZThread(&tr));
+//        }
+//        for(zsize i = 0; i < 1; ++i){
+//            threads[i]->join();
+//        }
+
         // Run tests
-        ZMap<ZString, int> teststatus;
+        ZMap<ZString, test_status> teststatus;
         zu64 failed = 0;
         for(zu64 i = 0; i < tests.size(); ++i){
             Test test = tests[i];
             ZString status = " PASS";
 
             bool skip = false;
-            for(auto j = test.deps.begin(); j.more(); ++j){
-                if(teststatus.contains(*j) && teststatus[*j] == 2){
+            for(auto j = test.pre_deps.begin(); j.more(); ++j){
+                if(teststatus.contains(*j) && teststatus[*j] == FAIL){
                     skip = true;
                     status = ZString("-SKIP: ") + *j;
                 }
@@ -165,21 +162,21 @@ int main(int argc, char **argv){
                     test.func();
                     clock.stop();
                     // PASS
-                    teststatus[test.name] = 1;
+                    teststatus[test.name] = PASS;
                 } catch(int e){
                     // FAIL
                     status = ZString("!FAIL: line ") + e;
-                    teststatus[test.name] = 2;
+                    teststatus[test.name] = FAIL;
                     ++failed;
                 } catch(ZException e){
                     // FAIL
                     status = ZString("!FAIL: ZException: ") + e.what();
-                    teststatus[test.name] = 2;
+                    teststatus[test.name] = FAIL;
                     ++failed;
                 } catch(zexception e){
                     // FAIL
                     status = ZString("!FAIL: zexception: ") + e.what;
-                    teststatus[test.name] = 2;
+                    teststatus[test.name] = FAIL;
                     ++failed;
                 }
                 if(hideout){
@@ -189,7 +186,7 @@ int main(int argc, char **argv){
             }
 
             ZString result = status;
-            if(teststatus.contains(test.name) && teststatus[test.name] == 1){
+            if(teststatus.contains(test.name) && teststatus[test.name] == PASS){
                 // Test pass
                 double time = clock.getSecs();
                 ZString unit = "s";
