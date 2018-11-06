@@ -281,16 +281,21 @@ MACRO(TargetConfigure TAR)
             # GCC-only
             $<$<CXX_COMPILER_ID:GNU>:
                 -Wlogical-op
-                $<$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,4.9.0>>:
-                    -Wno-expansion-to-defined
-                >
                 $<$<COMPILE_LANGUAGE:CXX>:
                     -Wnoexcept -Wstrict-null-sentinel
+                >
+                # Version 7.0 or greater
+                $<$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,7.0.0>>:
+                    -Wno-expansion-to-defined
                 >
             >
             # Clang-only
             $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
                 -Wno-nested-anon-types -Wno-c++11-extensions
+                # Version 3.9 or greater
+                $<$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,3.9.0>>:
+                    -Wno-expansion-to-defined
+                >
             >
         )
     ENDIF()
