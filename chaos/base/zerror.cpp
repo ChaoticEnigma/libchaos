@@ -797,7 +797,7 @@ bool registerSignalHandler(zerror_signal sigtype, signalHandler handler){
 
     sigmap[sig] = { sigtype, handler };
 
-    static uint8_t alternate_stack[SIGSTKSZ];
+    uint8_t alternate_stack[SIGSTKSZ];
     stack_t ss;
      /* malloc is usually used here, I'm not 100% sure my static allocation
      is valid but it seems to work just fine. */
